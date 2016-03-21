@@ -1,16 +1,17 @@
 ADD/Change
 
+Add WorkSpaces 
 start xfce auto 
    cp /etc/skel/.xinitrc ~/
    nano ~/.xinitrc
    #to add
     exec startxfce4
      
- CHANGE BACKGROUND 
- ice Dove setup
- lair -
- 
- Password Safe
+Pick background  
+ice Dove setup
+lair -
+Bookmarks 
+Password Safe
  
  
  

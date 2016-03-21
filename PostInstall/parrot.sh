@@ -2834,8 +2834,8 @@ rm -f /usr/share/windows-binaries/{AccessChk.zip,Eula.txt}
 ##### Install veil framework
 echo -e "\n ${GREEN}[+]${RESET} Installing ${GREEN}veil-evasion framework${RESET} ~ bypassing anti-virus"
 if [[ "$(uname -m)" == 'x86_64' ]]; then
-  #dpkg --add-architecture i386 && apt-get -qq update
-  #apt-get -y -qq install veil-evasion:i386 || echo -e ' '${RED}'[!] Issue with apt-get'${RESET} 1>&2
+  dpkg --add-architecture i386 && apt-get -qq update
+  apt-get -y -qq install veil-evasion:i386 || echo -e ' '${RED}'[!] Issue with apt-get'${RESET} 1>&2
   echo -e ' '${RED}'[!]'${RESET}" veil-evasion has issues with x64. Skipping..." 1>&2   # (https://bugs.kali.org/view.php?id=2673)
 else
   apt-get -y -qq install veil-evasion || echo -e ' '${RED}'[!] Issue with apt-get'${RESET} 1>&2

@@ -6,7 +6,7 @@ start xfce auto
    nano ~/.xinitrc
    #to add
     exec startxfce4
-     
+Docker     
 Pick background  
 ice Dove setup
 lair -

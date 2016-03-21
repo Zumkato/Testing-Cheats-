@@ -1721,48 +1721,7 @@ EOF
 #echo -e 'sleep 10\ndb_status\n#db_rebuild_cache\n#sleep 310\nexit' > /tmp/msf.rc && msfconsole -r /tmp/msf.rc
 echo -e "\n ${GREEN}[+]${RESET} ${GREEN}Starting Metasploit for the first time${RESET} ~ this ${BOLD}will take a ~350 seconds${RESET}"
 msfconsole -q -x 'version;db_status;sleep 310;exit'   #db_rebuild_cache;
-#--- Check
-#systemctl postgresql status
-#--- Add to start up
-#systemctl enable postgresql
-#--- Wipe database and start fresh - or just 'reinit'
-#systemctl stop metasploit
-#sudo -u postgres dropdb msf3
-#sudo -u postgres createdb -O msf3 msf3
-#systemctl restart metasploit
-#msfconsole -q -x 'db_rebuild_cache;sleep 300;exit'
-#--- Oracle - Due to licensing issues, Kali/Metasploit can't ship certain Oracle's library files. (https://github.com/rapid7/metasploit-framework/wiki/How-to-get-Oracle-Support-working-with-Kali-Linux)     #*** Doesn't automate
-## Download: "http://www.oracle.com/technetwork/database/features/instant-client/index-097480.html"
-#URL="http://www.oracle.com/technetwork/topics/linuxsoft-082809.html"                                            # x86
-#[[ "$(uname -m)" == 'x86_64' ]] && URL="http://www.oracle.com/technetwork/topics/linuxx86-64soft-092277.html"   # x64
-#xdg-open "$URL"
-#mkdir -p /opt/oracle/
-#for FILE in $(find ~/Downloads/ -maxdepth 1 -type f -name 'instantclient*.zip'); do
-#  unzip -q -o -d /opt/oracle/ "${FILE}"
-#done
-#pushd /opt/oracle/instantclient_12_1/ >/dev/null
-#ln -sf /opt/oracle/instantclient_12_1/libclntsh.so.12.1 /opt/oracle/instantclient_12_1/libclntsh.so
-#file=~/.bash_profile; [ -e "${file}" ] && cp -n $file{,.bkup}
-#grep -q '/opt/oracle/instantclient' ${file} 2>/dev/null
-#if [ $? -ne 0 ]; then
-#  file=~/.bash_profile; [ -e "${file}" ] && cp -n $file{,.bkup}
-#  echo 'export PATH=$PATH:/opt/oracle/instantclient_12_1' >> "${file}"
-#  echo "export SQLPATH=/opt/oracle/instantclient_12_1" >> "${file}"
-#  echo "export TNS_ADMIN=/opt/oracle/instantclient_12_1" >> "${file}"
-#  echo "export LD_LIBRARY_PATH=/opt/oracle/instantclient_12_1" >> "${file}"
-#  echo "export ORACLE_HOME=/opt/oracle/instantclient_12_1" >> "${file}"
-#fi
-##if [[ "${SHELL}" == "/bin/zsh" ]]; then source ~/.zshrc else source "${file}"; fi
-#apt-get -y -qq install ruby-dev libgmp-dev || echo -e ' '${RED}'[!] Issue with apt-get'${RESET} 1>&2
-#wget -q -O ruby-oci8.zip https://codeload.github.com/kubo/ruby-oci8/zip/ruby-oci8-2.1.8 && unzip -q -o -d /opt/oracle/ ruby-oci8.zip && rm -f ruby-oci8.zip
-#pushd /opt/oracle/ruby-oci8-ruby-oci8-*/ >/dev/null
-#if [[ "${SHELL}" == "/bin/zsh" ]]; then source ~/.zshrc else source "${file}"; fi    # Lose values due to pushd
-#export PATH=/opt/metasploit/ruby/bin:$PATH                                       # Lose values due source ${file}
-#make -s clean; make -s && make -s install
-#popd >/dev/null   # ruby-oci8-ruby-oci8
-#popd >/dev/null   # instantclient_12_1
-#--- Check
-#msfconsole -q 'use auxiliary/admin/oracle/oracle_login, set RHOST 127.0.0.1, run, exit'
+
 #--- Aliases to speed up msfvenom (create static output)
 file=~/.bash_aliases; [ -e "${file}" ] && cp -n $file{,.bkup}   #/etc/bash.bash_aliases
 ([[ -e "${file}" && "$(tail -c 1 ${file})" != "" ]]) && echo >> "${file}"

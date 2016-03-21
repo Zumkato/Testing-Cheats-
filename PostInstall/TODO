@@ -1,1 +1,16 @@
+ADD/Change
 
+start xfce auto 
+   cp /etc/skel/.xinitrc ~/
+   nano ~/.xinitrc
+   #to add
+    exec startxfce4
+     
+ CHANGE BACKGROUND 
+ ice Dove setup
+ lair -
+ 
+ Password Safe
+ 
+ 
+ 

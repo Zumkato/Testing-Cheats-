@@ -2922,21 +2922,9 @@ gem build bettercap.gemspec
 gem install bettercap*.gem
 popd >/dev/null
 
-
-##### Install the MITMf (GIT)
-#echo -e "\n ${GREEN}[+]${RESET} Installing ${GREEN}MITMf${RESET} (GIT) ~ framework for MITM attacks"
-##apt-get -y -qq install mitmf || echo -e ' '${RED}'[!] Issue with apt-get'${RESET}     # repo version. stable, but dated
-#apt-get -y -qq install git  || echo -e ' '${RED}'[!] Issue with apt-get'${RESET}       #  git version. bleeding edge
-#git clone -q https://github.com/byt3bl33d3r/MITMf.git /opt/mitmf-git/
-#pushd /opt/mitmf-git/ >/dev/null
-#git pull -q
-#bash kali_setup.sh
-#popd >/dev/null
-
-
 ##### Install FuzzDB
-#echo -e "\n ${GREEN}[+]${RESET} Installing ${GREEN}FuzzDB${RESET} ~ multiple types of (word)lists (and similar things)"
-#svn -q checkout "http://fuzzdb.googlecode.com/svn/trunk/" /usr/share/wordlists/fuzzdb-svn/
+echo -e "\n ${GREEN}[+]${RESET} Installing ${GREEN}FuzzDB${RESET} ~ multiple types of (word)lists (and similar things)"
+svn -q checkout "http://fuzzdb.googlecode.com/svn/trunk/" /usr/share/wordlists/fuzzdb-svn/
 
 
 ##### Install seclist
@@ -2980,22 +2968,10 @@ apt-file update
 echo -e "\n ${GREEN}[+]${RESET} Installing ${GREEN}apt-show-versions${RESET} ~ which package version in repo"
 apt-get -y -qq install apt-show-versions || echo -e ' '${RED}'[!] Issue with apt-get'${RESET} 1>&2
 
-
-##### Install Debian weak SSH keys
-#echo -e "\n ${GREEN}[+]${RESET} Installing ${GREEN}Debian weak SSH keys${RESET} ~ OpenSSL predictable PRNG"
-#dpkg --remove --force-depends openssh-blacklist
-#grep -q '^PermitBlacklistedKeys yes' /etc/ssh/sshd_config || echo PermitBlacklistedKeys yes >> /etc/ssh/sshd_config
-#apt-get -y -qq install git || echo -e ' '${RED}'[!] Issue with apt-get'${RESET} 1>&2
-#git clone -q https://github.com/g0tmi1k/debian-ssh.git /opt/exploit-debianssh-git/
-#pushd /opt/exploit-debianssh/ >/dev/null
-#git pull -q
-#popd >/dev/null
-
-
 ##### Install Exploit-DB binaries
 echo -e "\n ${GREEN}[+]${RESET} Installing ${GREEN}Installing Exploit-DB binaries${RESET} ~ pre-compiled exploits"
 apt-get -y -qq install git || echo -e ' '${RED}'[!] Issue with apt-get'${RESET} 1>&2
-git clone -q https://github.com/offensive-security/exploit-database-bin-sploits.git /opt/exploitdb-bin-git/
+git clone -q https://github.com/offensive-security/exploit-database-bin-sploits.git/ /opt/exploitdb-bin-git/
 pushd /opt/exploitdb-bin/ >/dev/null
 git pull -q
 popd >/dev/null
@@ -3003,7 +2979,7 @@ popd >/dev/null
 ##### Install Exploit-DB 
 echo -e "\n ${GREEN}[+]${RESET} Installing ${GREEN}Installing Exploit-DB${RESET} ~ The Exploit Databases"
 apt-get -y -qq install git || echo -e ' '${RED}'[!] Issue with apt-get'${RESET} 1>&2
-git clone -q https://github.com/offensive-security/exploit-database.git /opt/exploitdb-git/
+git clone -q https://github.com/offensive-security/exploit-database.git/ /opt/exploitdb-git/
 pushd /opt/exploitdb/ >/dev/null
 git pull -q
 popd >/dev/null
@@ -3043,17 +3019,6 @@ pushd /opt/gdb-peda-git/ >/dev/null
 git pull -q
 popd >/dev/null
 echo "source ~/peda/peda.py" >> ~/.gdbinit
-
-
-##### Install radare2 (https://bugs.kali.org/view.php?id=2169)
-#echo -e "\n ${GREEN}[+]${RESET} Installing ${GREEN}radare2${RESET} ~ reverse engineering framework"
-#apt-get -y -qq install git gdb || echo -e ' '${RED}'[!] Issue with apt-get'${RESET} 1>&2
-#git clone -q https://github.com/radare/radare2.git /opt/radare2-git/
-#pushd /opt/radare2-git/ >/dev/null
-#git pull -q
-#bash sys/install.sh
-#popd >/dev/null
-
 
 ##### Install ropeme (https://bugs.kali.org/view.php?id=2328)
 echo -e "\n ${GREEN}[+]${RESET} Installing ${GREEN}ropeme${RESET} ~ generate ROP gadgets and payload"
@@ -3248,17 +3213,6 @@ cat <<EOF > "${file}" || echo -e ' '${RED}'[!] Issue with writing file'${RESET} 
 cd /opt/cmsmap-git/ && python cmsmap.py "\$@"
 EOF
 chmod +x "${file}"
-
-
-##### Install CMSScanner
-#echo -e "\n ${GREEN}[+]${RESET} Installing ${GREEN}CMSScanner${RESET} ~ CMS detection"
-#apt-get -y -qq install git || echo -e ' '${RED}'[!] Issue with apt-get'${RESET} 1>&2
-#git clone -q https://github.com/wpscanteam/CMSScanner.git /opt/cmsscanner-git/
-#pushd /opt/cmsscanner-git/ >/dev/null
-#git pull -q
-#bundle install
-#popd >/dev/null
-
 
 ##### Install droopescan
 echo -e "\n ${GREEN}[+]${RESET} Installing ${GREEN}DroopeScan${RESET} ~ Drupal vulnerability scanner"
@@ -3514,13 +3468,6 @@ password=
 EOF
 fi
 
-
-##### Install phpmyadmin
-#echo -e "\n ${GREEN}[+]${RESET} Installing ${GREEN}phpmyadmin${RESET} ~ database web ui"
-#apt-get -y -qq install phpmyadmin
-#sed -i "s_^// \$cfg\['Servers'\]\[\$i\]\['AllowNoPassword'\] = .*;_\$cfg\['Servers'\]\[\$i\]\['AllowNoPassword'\] = yes;_" /etc/phpmyadmin/config.inc.php
-
-
 ##### Install rsh-client
 echo -e "\n ${GREEN}[+]${RESET} Installing ${GREEN}rsh-client${RESET} ~ remote shell connections"
 apt-get -y -qq install rsh-client || echo -e ' '${RED}'[!] Issue with apt-get'${RESET} 1>&2
@@ -3601,12 +3548,6 @@ systemctl enable ssh
 file=~/.bash_aliases; [ -e "${file}" ] && cp -n $file{,.bkup}   #/etc/bash.bash_aliases
 ([[ -e "${file}" && "$(tail -c 1 ${file})" != "" ]]) && echo >> "${file}"
 grep -q '^## ssh' "${file}" 2>/dev/null || echo -e '## ssh\nalias ssh-start="systemctl restart ssh"\nalias ssh-stop="systemctl stop ssh"\n' >> "${file}"
-
-
-###### Setup G/UFW
-#echo -e "\n ${GREEN}[+]${RESET} Installing ${GREEN}G/UFW${RESET} ~ firewall rule generator"
-#apt-get -y -qq install ufw gufw || echo -e ' '${RED}'[!] Issue with apt-get'${RESET} 1>&2
-
 
 ##### Custom insert point
 

@@ -1747,17 +1747,6 @@ git clone -q https://github.com/rapid7/metasploit-framework.git /opt/metasploit-
 pushd /opt/metasploit-framework-git/ >/dev/null; bundle install; popd >/dev/null
 ln -sf /opt/metasploit-framework-git/msfconsole /usr/local/bin/msfconsole-git; ln -sf /opt/metasploit-framework-git/msfupdate /usr/local/bin/msfupdate-git
 
-
-##### Install armitage
-#echo -e "\n ${GREEN}[+]${RESET} Installing ${GREEN}armitage${RESET} ~ GUI Metasploit UI"
-#export MSF_DATABASE_CONFIG=/opt/metasploit/apps/pro/ui/config/database.yml
-#file=~/.bash_aliases; [ -e "${file}" ] && cp -n $file{,.bkup}   #/etc/bash.bash_aliases
-#([[ -e "${file}" && "$(tail -c 1 ${file})" != "" ]]) && echo >> "${file}"
-#grep -q 'MSF_DATABASE_CONFIG' "${file}" 2>/dev/null || echo -e 'MSF_DATABASE_CONFIG=/opt/metasploit/apps/pro/ui/config/database.yml\n' >> "${file}"
-#chmod 0644 /opt/metasploit/apps/pro/ui/config/database.yml
-#msfrpcd -U msf -P test -f -S -a 127.0.0.1
-
-
 ##### Install exe2hex
 echo -e "\n ${GREEN}[+]${RESET} Installing ${GREEN}exe2hex${RESET} ~ Inline file transfer"
 timeout 300 curl --progress -k -L -f "https://raw.githubusercontent.com/g0tmi1k/exe2hex/master/exe2hex.py" > /usr/local/bin/exe2hex || echo -e ' '${RED}'[!]'${RESET}" Issue downloading exe2hex" 1>&2
@@ -1877,10 +1866,10 @@ EOF
 
 ##### Install PyCharm (Community Edition)
 echo -e "\n ${GREEN}[+]${RESET} Installing ${GREEN}PyCharm ${RESET} ~ Python IDE"
-timeout 300 curl --progress -k -L -f "https://download.jetbrains.com/python/pycharm-professional-5.0.4.tar.gz" > /tmp/pycharms-community.tar.gz || echo -e ' '${RED}'[!]'${RESET}" Issue downloading pycharms-community.tar.gz" 1>&2       #***!!! hardcoded version!
-tar -xf /tmp/pycharms-community.tar.gz -C /tmp/
+timeout 300 curl --progress -k -L -f "https://download.jetbrains.com/python/pycharm-professional-5.0.4.tar.gz" > /tmp/pycharms-community.tar.gz || echo -e ' '${RED}'[!]'${RESET}" Issue downloading pycharms-professional.tar.gz" 1>&2       #***!!! hardcoded version!
+tar -xf /tmp/pycharms-professional.tar.gz -C /tmp/
 rm -rf /usr/share/pycharms/
-mv -f /tmp/pycharm-community-*/ /usr/share/pycharms
+mv -f /tmp/pycharm-professional-*/ /usr/share/pycharms
 ln -sf /usr/share/pycharms/bin/pycharm.sh /usr/local/bin/pycharms
 
 

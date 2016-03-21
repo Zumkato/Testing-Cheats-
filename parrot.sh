@@ -466,15 +466,15 @@ update-grub
 
 
 ###### Disable login manager (console login - non GUI) ***
-echo -e "\n ${GREEN}[+]${RESET} ${GREEN}Disabling GUI${RESET} login screen"
---- Disable GUI login screen
-systemctl set-default multi-user.target   # ...or: file=/etc/X11/default-display-manager; [ -e "${file}" ] && cp -n $file{,.bkup} ; echo /bin/true > "${file}"   # ...or: mv -f /etc/rc2.d/S19gdm3 /etc/rc2.d/K17gdm   # ...or: apt-get -y -qq install chkconfig; chkconfig gdm3 off
---- Enable auto (gui) login
-file=/etc/gdm3/daemon.conf; [ -e "${file}" ] && cp -n $file{,.bkup}
-sed -i 's/^.*AutomaticLoginEnable = .*/AutomaticLoginEnable = true/' "${file}"
-sed -i 's/^.*AutomaticLogin = .*/AutomaticLogin = root/' "${file}"
+#echo -e "\n ${GREEN}[+]${RESET} ${GREEN}Disabling GUI${RESET} login screen"
+#--- Disable GUI login screen
+#systemctl set-default multi-user.target   # ...or: file=/etc/X11/default-display-manager; [ -e "${file}" ] && cp -n $file{,.bkup} ; echo /bin/true > "${file}"   # ...or: mv -f /etc/rc2.d/S19gdm3 /etc/rc2.d/K17gdm   # ...or: apt-get -y -qq install chkconfig; chkconfig gdm3 off
+#--- Enable auto (gui) login
+#file=/etc/gdm3/daemon.conf; [ -e "${file}" ] && cp -n $file{,.bkup}
+#sed -i 's/^.*AutomaticLoginEnable = .*/AutomaticLoginEnable = true/' "${file}"
+#sed -i 's/^.*AutomaticLogin = .*/AutomaticLogin = root/' "${file}"
 #--- Shortcut for when you want to start GUI
-[ -e /usr/sbin/gdm3 ] && ln -sf /usr/sbin/gdm3 /usr/bin/startx
+#[ -e /usr/sbin/gdm3 ] && ln -sf /usr/sbin/gdm3 /usr/bin/startx
 
 
 ###### Configure startup   ***

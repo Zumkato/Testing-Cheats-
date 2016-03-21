@@ -2,13 +2,15 @@
 #-Metadata----------------------------------------------------#
 #  Filename: kali.sh                     (Update: 2015-12-02) #
 #-Info--------------------------------------------------------#
-#  Personal post-install script for Kali Linux 2.0.           #
+#  Personal post-install script for Parrot Security OS#
 #-Author(s)---------------------------------------------------#
 #  g0tmilk ~ https://blog.g0tmi1k.com/                        #
+#-Modder------------------------------------------------------#
+#  Zumkato                                                    #
 #-Operating System--------------------------------------------#
-#  Designed for: Kali Linux 2.x [x64] (VM - VMware)           #
+#  Modded for: Kali Linux 2.x [x64] (VM - VMware)           #
+#      on: Kali Linux 2.0.0 x64/x84/full/light/mini/vm  #
 #     Tested on: Kali Linux 2.0.0 x64/x84/full/light/mini/vm  #
-#     Kali v1.x: https://g0tmi1k/os-scripts/master/kali1.sh   #
 #-Licence-----------------------------------------------------#
 #  MIT License ~ http://opensource.org/licenses/MIT           #
 #-Notes-------------------------------------------------------#
@@ -136,7 +138,7 @@ if [[ ${EUID} -ne 0 ]]; then
   echo -e ' '${RED}'[!]'${RESET}" This script must be ${RED}run as root${RESET}. Quitting..." 1>&2
   exit 1
 else
-  echo -e " ${BLUE}[*]${RESET} ${BOLD}Kali Linux 2.x post-install script${RESET}"
+  echo -e " ${BLUE}[*]${RESET} ${BOLD}Parrot Security OS 2.x post-install script${RESET}"
 fi
 
 
@@ -236,7 +238,7 @@ if [[ $? -ne 0 ]]; then
 fi
 
 
-##### (Optional) Check to see if Kali is in a VM. If so, install "Virtual Machine Addons/Tools" for a "better" virtual experiment
+##### (Optional) Check to see if ParrotSec is in a VM. If so, install "Virtual Machine Addons/Tools" for a "better" virtual experiment
 if [ -e "/etc/vmware-tools" ]; then
   echo -e "\n "${RED}'[!]'${RESET}" VMware Tools is ${RED}already installed${RESET}. Skipping..." 1>&2
 elif (dmidecode | grep -iq vmware); then
@@ -418,7 +420,7 @@ fi
 
 
 ##### Update OS from network repositories
-echo -e "\n ${GREEN}[+]${RESET} ${GREEN}Updating OS${RESET} from network repositories ~ this ${BOLD}may take a while${RESET} depending on your Internet connection & Kali version/age"
+echo -e "\n ${GREEN}[+]${RESET} ${GREEN}Updating OS${RESET} from network repositories ~ this ${BOLD}may take a while${RESET} depending on your Internet connection & ParrotSec version/age"
 for FILE in clean autoremove; do apt-get -y -qq "${FILE}"; done         # Clean up      clean remove autoremove autoclean
 export DEBIAN_FRONTEND=noninteractive
 apt-get -qq update && APT_LISTCHANGES_FRONTEND=none apt-get -o Dpkg::Options::="--force-confnew" -y dist-upgrade --fix-missing || echo -e ' '${RED}'[!] Issue with apt-get'${RESET} 1>&2
@@ -439,9 +441,9 @@ fi
 
 
 ##### Install "kali full" meta packages (default tool selection)
-echo -e "\n ${GREEN}[+]${RESET} Installing ${GREEN}kali-linux-full${RESET} meta-package ~ this ${BOLD}may take a while${RESET} depending on your Kali version (e.g. ARM, light, mini or docker...)"
+#echo -e "\n ${GREEN}[+]${RESET} Installing ${GREEN}kali-linux-full${RESET} meta-package ~ this ${BOLD}may take a while${RESET} depending on your Kali version (e.g. ARM, light, mini or docker...)"
 #--- Kali's default tools ~ https://www.kali.org/news/kali-linux-metapackages/
-apt-get -y -qq install kali-linux-full || echo -e ' '${RED}'[!] Issue with apt-get'${RESET} 1>&2
+#apt-get -y -qq install kali-linux-full || echo -e ' '${RED}'[!] Issue with apt-get'${RESET} 1>&2
 
 
 ##### Fix audio issues
@@ -464,13 +466,13 @@ update-grub
 
 
 ###### Disable login manager (console login - non GUI) ***
-#echo -e "\n ${GREEN}[+]${RESET} ${GREEN}Disabling GUI${RESET} login screen"
-#--- Disable GUI login screen
-#systemctl set-default multi-user.target   # ...or: file=/etc/X11/default-display-manager; [ -e "${file}" ] && cp -n $file{,.bkup} ; echo /bin/true > "${file}"   # ...or: mv -f /etc/rc2.d/S19gdm3 /etc/rc2.d/K17gdm   # ...or: apt-get -y -qq install chkconfig; chkconfig gdm3 off
-#--- Enable auto (gui) login
-#file=/etc/gdm3/daemon.conf; [ -e "${file}" ] && cp -n $file{,.bkup}
-#sed -i 's/^.*AutomaticLoginEnable = .*/AutomaticLoginEnable = true/' "${file}"
-#sed -i 's/^.*AutomaticLogin = .*/AutomaticLogin = root/' "${file}"
+echo -e "\n ${GREEN}[+]${RESET} ${GREEN}Disabling GUI${RESET} login screen"
+--- Disable GUI login screen
+systemctl set-default multi-user.target   # ...or: file=/etc/X11/default-display-manager; [ -e "${file}" ] && cp -n $file{,.bkup} ; echo /bin/true > "${file}"   # ...or: mv -f /etc/rc2.d/S19gdm3 /etc/rc2.d/K17gdm   # ...or: apt-get -y -qq install chkconfig; chkconfig gdm3 off
+--- Enable auto (gui) login
+file=/etc/gdm3/daemon.conf; [ -e "${file}" ] && cp -n $file{,.bkup}
+sed -i 's/^.*AutomaticLoginEnable = .*/AutomaticLoginEnable = true/' "${file}"
+sed -i 's/^.*AutomaticLogin = .*/AutomaticLogin = root/' "${file}"
 #--- Shortcut for when you want to start GUI
 [ -e /usr/sbin/gdm3 ] && ln -sf /usr/sbin/gdm3 /usr/bin/startx
 
@@ -592,7 +594,7 @@ gsettings set org.gnome.desktop.interface clock-show-date true                  
 gsettings set org.gnome.shell.extensions.dash-to-dock extend-height true                 # Set dock to use the full height
 gsettings set org.gnome.shell.extensions.dash-to-dock dock-position 'RIGHT'              # Set dock to the right
 gsettings set org.gnome.shell.extensions.dash-to-dock dock-fixed true                    # Set dock to be always visible
-gsettings set org.gnome.shell favorite-apps "['gnome-terminal.desktop', 'org.gnome.Nautilus.desktop', 'iceweasel.desktop', 'kali-burpsuite.desktop', 'kali-msfconsole.desktop', 'geany.desktop']"
+gsettings set org.gnome.shell favorite-apps "['gnome-terminal.desktop', 'org.gnome.Nautilus.desktop', 'iceweasel.desktop', 'geany.desktop']"
 #--- Keyboard shortcuts
 (dmidecode | grep -iq virtual) && gsettings set org.gnome.mutter overlay-key "Super_R"   # Change 'super' key to right side (rather than left key)
 #--- Disable tracker service (But enables it in XFCE)
@@ -725,32 +727,6 @@ Type=Application
 Categories=Utility;X-XFCE;X-Xfce-Toplevel;
 X-XFCE-Source=file:///usr/share/applications/exo-terminal-emulator.desktop
 EOF
-cat <<EOF > ~/.config/xfce4/panel/launcher-4/14470234761.desktop || echo -e ' '${RED}'[!] Issue with writing file'${RESET} 1>&2
-[Desktop Entry]
-Name=wireshark
-Encoding=UTF-8
-Exec=sh -c "wireshark"
-Icon=wireshark
-StartupNotify=false
-Terminal=false
-Type=Application
-Categories=09-sniffing-spoofing;
-X-Kali-Package=wireshark
-X-XFCE-Source=file:///usr/share/applications/kali-wireshark.desktop
-EOF
-cat <<EOF > ~/.config/xfce4/panel/launcher-5/14470234962.desktop || echo -e ' '${RED}'[!] Issue with writing file'${RESET} 1>&2
-[Desktop Entry]
-Name=burpsuite
-Encoding=UTF-8
-Exec=sh -c "java -jar /usr/bin/burpsuite"
-Icon=burpsuite
-StartupNotify=false
-Terminal=false
-Type=Application
-Categories=03-webapp-analysis;03-06-web-application-proxies;
-X-Kali-Package=burpsuite
-X-XFCE-Source=file:///usr/share/applications/kali-burpsuite.desktop
-EOF
 cat <<EOF > ~/.config/xfce4/panel/launcher-6/13684522587.desktop || echo -e ' '${RED}'[!] Issue with writing file'${RESET} 1>&2
 [Desktop Entry]
 Name=Iceweasel
@@ -861,7 +837,7 @@ xfconf-query -n -c xfwm4 -p /general/workspace_count -t int -s 3
 xfconf-query -n -c xsettings -p /Net/ThemeName -s "Kali-X"
 xfconf-query -n -c xsettings -p /Net/IconThemeName -s "Vibrancy-Kali"
 xfconf-query -n -c xsettings -p /Gtk/MenuImages -t bool -s true
-xfconf-query -n -c xfce4-panel -p /plugins/plugin-1/button-icon -t string -s "kali-menu"
+xfconf-query -n -c xfce4-panel -p /plugins/plugin-1/button-icon -t string -s "parrot-menu"
 #--- Window management
 xfconf-query -n -c xfwm4 -p /general/snap_to_border -t bool -s true
 xfconf-query -n -c xfwm4 -p /general/snap_to_windows -t bool -s true
@@ -1282,7 +1258,7 @@ grep -q 'globdots' "${file}" 2>/dev/null || echo 'setopt globdots' >> "${file}"
 grep -q '.bash_aliases' "${file}" 2>/dev/null || echo 'source $HOME/.bash_aliases' >> "${file}"
 grep -q '/usr/bin/tmux' "${file}" 2>/dev/null || echo '#if ([[ -z "$TMUX" && -n "$SSH_CONNECTION" ]]); then /usr/bin/tmux attach || /usr/bin/tmux new; fi' >> "${file}"   # If not already in tmux and via SSH
 #--- Configure zsh (themes) ~ https://github.com/robbyrussell/oh-my-zsh/wiki/Themes
-sed -i 's/ZSH_THEME=.*/ZSH_THEME="mh"/' "${file}"   # Other themes: mh, jreese,   alanpeabody,   candy,   terminalparty, kardan,   nicoulaj, sunaku
+sed -i 's/ZSH_THEME=.*/ZSH_THEME="random"/' "${file}"   # Other themes: mh, jreese,   alanpeabody,   candy,   terminalparty, kardan,   nicoulaj, sunaku
 #--- Configure oh-my-zsh
 sed -i 's/.*DISABLE_AUTO_UPDATE="true"/DISABLE_AUTO_UPDATE="true"/' "${file}"
 sed -i 's/plugins=(.*)/plugins=(git tmux last-working-dir)/' "${file}"
@@ -1704,10 +1680,10 @@ echo -e "\n ${GREEN}[+]${RESET} Installing ${GREEN}metasploit${RESET} ~ exploit 
 apt-get -y -qq install metasploit-framework 2>/dev/null || echo -e ' '${RED}'[!] Issue with apt-get'${RESET} 1>&2
 mkdir -p ~/.msf4/modules/{auxiliary,exploits,payloads,post}/
 #--- ASCII art
-export GOCOW=1   # Always a cow logo ;)   Others: THISISHALLOWEEN (Halloween), APRILFOOLSPONIES (My Little Pony)
-file=~/.bashrc; [ -e "${file}" ] && cp -n $file{,.bkup}
-([[ -e "${file}" && "$(tail -c 1 ${file})" != "" ]]) && echo >> "${file}"
-grep -q '^GOCOW' "${file}" 2>/dev/null || echo 'GOCOW=1' >> "${file}"
+#export GOCOW=1   # Always a cow logo ;)   Others: THISISHALLOWEEN (Halloween), APRILFOOLSPONIES (My Little Pony)
+#file=~/.bashrc; [ -e "${file}" ] && cp -n $file{,.bkup}
+#([[ -e "${file}" && "$(tail -c 1 ${file})" != "" ]]) && echo >> "${file}"
+#grep -q '^GOCOW' "${file}" 2>/dev/null || echo 'GOCOW=1' >> "${file}"
 #--- Fix any port issues
 file=$(find /etc/postgresql/*/main/ -maxdepth 1 -type f -name postgresql.conf -print -quit); [ -e "${file}" ] && cp -n $file{,.bkup}
 sed -i 's/port = .* #/port = 5432 /' "${file}"
@@ -1948,8 +1924,8 @@ EOF
 
 
 ##### Install PyCharm (Community Edition)
-echo -e "\n ${GREEN}[+]${RESET} Installing ${GREEN}PyCharm (Community Edition)${RESET} ~ Python IDE"
-timeout 300 curl --progress -k -L -f "https://download.jetbrains.com/python/pycharm-community-5.0.tar.gz" > /tmp/pycharms-community.tar.gz || echo -e ' '${RED}'[!]'${RESET}" Issue downloading pycharms-community.tar.gz" 1>&2       #***!!! hardcoded version!
+echo -e "\n ${GREEN}[+]${RESET} Installing ${GREEN}PyCharm ${RESET} ~ Python IDE"
+timeout 300 curl --progress -k -L -f "https://download.jetbrains.com/python/pycharm-professional-5.0.4.tar.gz" > /tmp/pycharms-community.tar.gz || echo -e ' '${RED}'[!]'${RESET}" Issue downloading pycharms-community.tar.gz" 1>&2       #***!!! hardcoded version!
 tar -xf /tmp/pycharms-community.tar.gz -C /tmp/
 rm -rf /usr/share/pycharms/
 mv -f /tmp/pycharm-community-*/ /usr/share/pycharms
@@ -3019,7 +2995,7 @@ popd >/dev/null
 
 ##### Install FuzzDB
 #echo -e "\n ${GREEN}[+]${RESET} Installing ${GREEN}FuzzDB${RESET} ~ multiple types of (word)lists (and similar things)"
-#svn -q checkout "http://fuzzdb.googlecode.com/svn/trunk/" /usr/share/fuzzdb-svn/
+#svn -q checkout "http://fuzzdb.googlecode.com/svn/trunk/" /usr/share/wordlists/fuzzdb-svn/
 
 
 ##### Install seclist
@@ -3076,13 +3052,20 @@ apt-get -y -qq install apt-show-versions || echo -e ' '${RED}'[!] Issue with apt
 
 
 ##### Install Exploit-DB binaries
-#echo -e "\n ${GREEN}[+]${RESET} Installing ${GREEN}Installing Exploit-DB binaries${RESET} ~ pre-compiled exploits"
-#apt-get -y -qq install git || echo -e ' '${RED}'[!] Issue with apt-get'${RESET} 1>&2
-#git clone -q https://github.com/offensive-security/exploit-database-bin-sploits.git /opt/exploitdb-bin-git/
-#pushd /opt/exploitdb-bin/ >/dev/null
-#git pull -q
-#popd >/dev/null
+echo -e "\n ${GREEN}[+]${RESET} Installing ${GREEN}Installing Exploit-DB binaries${RESET} ~ pre-compiled exploits"
+apt-get -y -qq install git || echo -e ' '${RED}'[!] Issue with apt-get'${RESET} 1>&2
+git clone -q https://github.com/offensive-security/exploit-database-bin-sploits.git /opt/exploitdb-bin-git/
+pushd /opt/exploitdb-bin/ >/dev/null
+git pull -q
+popd >/dev/null
 
+##### Install Exploit-DB 
+echo -e "\n ${GREEN}[+]${RESET} Installing ${GREEN}Installing Exploit-DB${RESET} ~ The Exploit Databases"
+apt-get -y -qq install git || echo -e ' '${RED}'[!] Issue with apt-get'${RESET} 1>&2
+git clone -q https://github.com/offensive-security/exploit-database.git /opt/exploitdb-git/
+pushd /opt/exploitdb/ >/dev/null
+git pull -q
+popd >/dev/null
 
 ##### Install Babel scripts
 echo -e "\n ${GREEN}[+]${RESET} Installing ${GREEN}Babel scripts${RESET} ~ post exploitation scripts"
@@ -3672,7 +3655,7 @@ sed -i 's/^PermitRootLogin .*/PermitRootLogin yes/g' "${file}"      # Accept pas
 sed -i 's/^#AuthorizedKeysFile /AuthorizedKeysFile /g' "${file}"    # Allow for key based login
 #sed -i 's/^Port .*/Port 2222/g' "${file}"
 #--- Enable ssh at startup
-#systemctl enable ssh
+systemctl enable ssh
 #--- Setup alias (handy for 'zsh: correct 'ssh' to '.ssh' [nyae]? n')
 file=~/.bash_aliases; [ -e "${file}" ] && cp -n $file{,.bkup}   #/etc/bash.bash_aliases
 ([[ -e "${file}" && "$(tail -c 1 ${file})" != "" ]]) && echo >> "${file}"

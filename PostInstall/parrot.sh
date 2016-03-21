@@ -440,12 +440,6 @@ if [[ "${_TMP}" -gt 1 ]]; then
 fi
 
 
-##### Install "kali full" meta packages (default tool selection)
-#echo -e "\n ${GREEN}[+]${RESET} Installing ${GREEN}kali-linux-full${RESET} meta-package ~ this ${BOLD}may take a while${RESET} depending on your Kali version (e.g. ARM, light, mini or docker...)"
-#--- Kali's default tools ~ https://www.kali.org/news/kali-linux-metapackages/
-#apt-get -y -qq install kali-linux-full || echo -e ' '${RED}'[!] Issue with apt-get'${RESET} 1>&2
-
-
 ##### Fix audio issues
 echo -e "\n ${GREEN}[+]${RESET} Fixing ${GREEN}audio${RESET} issues"
 #--- Unmute on startup
@@ -466,16 +460,15 @@ update-grub
 
 
 ###### Disable login manager (console login - non GUI) ***
-#echo -e "\n ${GREEN}[+]${RESET} ${GREEN}Disabling GUI${RESET} login screen"
+echo -e "\n ${GREEN}[+]${RESET} ${GREEN}Disabling GUI${RESET} login screen"
 #--- Disable GUI login screen
-#systemctl set-default multi-user.target   # ...or: file=/etc/X11/default-display-manager; [ -e "${file}" ] && cp -n $file{,.bkup} ; echo /bin/true > "${file}"   # ...or: mv -f /etc/rc2.d/S19gdm3 /etc/rc2.d/K17gdm   # ...or: apt-get -y -qq install chkconfig; chkconfig gdm3 off
+systemctl set-default multi-user.target   # ...or: file=/etc/X11/default-display-manager; [ -e "${file}" ] && cp -n $file{,.bkup} ; echo /bin/true > "${file}"   # ...or: mv -f /etc/rc2.d/S19gdm3 /etc/rc2.d/K17gdm   # ...or: apt-get -y -qq install chkconfig; chkconfig gdm3 off
 #--- Enable auto (gui) login
-#file=/etc/gdm3/daemon.conf; [ -e "${file}" ] && cp -n $file{,.bkup}
-#sed -i 's/^.*AutomaticLoginEnable = .*/AutomaticLoginEnable = true/' "${file}"
-#sed -i 's/^.*AutomaticLogin = .*/AutomaticLogin = root/' "${file}"
+file=/etc/gdm3/daemon.conf; [ -e "${file}" ] && cp -n $file{,.bkup}
+sed -i 's/^.*AutomaticLoginEnable = .*/AutomaticLoginEnable = true/' "${file}"
+sed -i 's/^.*AutomaticLogin = .*/AutomaticLogin = root/' "${file}"
 #--- Shortcut for when you want to start GUI
-#[ -e /usr/sbin/gdm3 ] && ln -sf /usr/sbin/gdm3 /usr/bin/startx
-
+[ -e /usr/sbin/gdm3 ] && ln -sf /usr/sbin/gdm3 /usr/bin/startx
 
 ###### Configure startup   ***
 #echo -e "\n ${GREEN}[+]${RESET} Configuring ${GREEN}startup${RESET} ~ randomize the hostname, eth0 & wlan0s MAC address"
@@ -1477,7 +1470,7 @@ echo -e "\n ${GREEN}[+]${RESET} Installing ${GREEN}iceweasel's plugins${RESET} ~
 #--- Configure iceweasel
 export DISPLAY=:0.0   #[[ -z $SSH_CONNECTION ]] || export DISPLAY=:0.0
 #--- Download extensions
-ffpath="$(find ~/.mozilla/firefox/*.default*/ -maxdepth 0 -mindepth 0 -type d -name '*.default*' -print -quit)/extensions"
+ffpath="$(find ~/.mozilla/firefox/*.Parrot*/ -maxdepth 0 -mindepth 0 -type d -name '*.Parrot*' -print -quit)/extensions"
 [ "${ffpath}" == "/extensions" ] && echo -e ' '${RED}'[!]'${RESET}" Couldn't find Firefox/Iceweasel folder" 1>&2
 mkdir -p "${ffpath}/"
 #curl --progress -k -L -f "https://github.com/mozmark/ringleader/blob/master/fx_pnh.xpi?raw=true"  || echo -e ' '${RED}'[!]'${RESET}" Issue downloading fx_pnh.xpi" 1>&2                                                                                                                                     # plug-n-hack

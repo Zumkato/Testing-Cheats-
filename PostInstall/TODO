@@ -32,6 +32,8 @@ https://github.com/GDSSecurity/Windows-Exploit-Suggester
 
 
 pip 
+yapf
+PEP 8
 glances
 whatportis
 Maybe - See What A Program Does Before Deciding Whether You Really Want It To Happen
@@ -40,4 +42,7 @@ Bookmarks
 https://github.com/vhf/free-programming-books/blob/master/free-programming-books.md
 https://github.com/PaulSec/awesome-sec-talks 
  
+ Use For alias 
  
+echo "alias listen=\"lsof -i TCP -n -P | grep LISTEN\"" >> ~/.bash_profile # show listening ports
+echo "alias atom='open -a \"Atom\"'" >> ~/.bash_profile   # alternative to sublime

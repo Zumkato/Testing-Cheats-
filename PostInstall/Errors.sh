@@ -18,6 +18,8 @@ Consult the make.log in the build directory
 /var/lib/dkms/open-vm-tools/9.10.2/build/ for more information.
 update-initramfs: deferring update (trigger activated)
 
+Possible - https://communities.vmware.com/message/2546788 --^^
+
 update-initramfs: Generating /boot/initrd.img-4.3.3-parrot-amd64
 W: plymouth: The plugin label.so is missing, the selected theme might not work as expected.
 W: plymouth: You might want to install the plymouth-themes package to fix this.
@@ -182,10 +184,11 @@ find: `/root/.mozilla/firefox/*.default*/': No such file or directory
  [!] Something went wrong with the FoxyProxy iceweasel extension (did any extensions install?). Skipping...
 find: `/root/.mozilla/firefox/*.default*/': No such file or directory
 
-
+Need to Check
 ./parrot.sh: line 1786: msfvenom-list-generate: command not found
 ./parrot.sh: line 1786: _msfvenom-list-generate: command not found
 
+Changed
 [+] Installing PyCharm  ~ Python IDE
 ######################################################################## 100.0%
 mv: cannot stat ‘/tmp/pycharm-community-*/’: No such file or directory
@@ -194,6 +197,7 @@ mv: cannot stat ‘/tmp/pycharm-community-*/’: No such file or directory
 Did not receive a reply. Possible causes include: the remote application did not send a reply, the message bus security policy blocked the reply, the reply timeout expired, or the network connection was broken.
 Error setting value: No D-BUS daemon running
 
+Changed to Add 32bit
  [!] veil-evasion has issues with x64. Skipping...
 
  installing mingw32-base-2013072200-mingw32-bin.meta

@@ -1,16 +1,14 @@
 #!/bin/bash
 #-Metadata----------------------------------------------------#
-#  Filename: kali.sh                     (Update: 2015-12-02) #
+#  Filename: parrot.sh                     (Update: 2016-20-03) #
 #-Info--------------------------------------------------------#
 #  Personal post-install script for Parrot Security OS#
 #-Author(s)---------------------------------------------------#
 #  g0tmilk ~ https://blog.g0tmi1k.com/                        #
 #-Modder------------------------------------------------------#
-#  Zumkato                                                    #
+#  Zumkato ~ I_am@Zumkato.ninja                               #
 #-Operating System--------------------------------------------#
-#  Modded for: Kali Linux 2.x [x64] (VM - VMware)           #
-#      on: Kali Linux 2.0.0 x64/x84/full/light/mini/vm  #
-#     Tested on: Kali Linux 2.0.0 x64/x84/full/light/mini/vm  #
+#  Modded for: Parrot Security OS 2.2.*                       #
 #-Licence-----------------------------------------------------#
 #  MIT License ~ http://opensource.org/licenses/MIT           #
 #-Notes-------------------------------------------------------#
@@ -24,7 +22,7 @@
 #    -hold     = Disable updating certain packages (e.g. msf) #
 #    -openvas  = Installs & configures OpenVAS vuln scanner   #
 #    -osx      = Configures Apple keyboard layout             #
-#    -rolling  = Use kali-rolling repository                  #
+#                                                             #
 #                                                             #
 #    -keyboard <value> = Change the keyboard layout language  #
 #    -timezone <value> = Change the timezone location         #
@@ -59,7 +57,7 @@ burpFree=false              # Disable configuring Burp Suite (for Burp Pro users
 hardenDNS=false             # Set static & lock DNS name server                         [ --dns ]
 freezeDEB=false             # Disable updating certain packages (e.g. Metasploit)       [ --hold ]
 openVAS=false               # Install & configure OpenVAS (not everyone wants it...)    [ --openvas ]
-rolling=false               # Enable kali-rolling repos?                                [ --rolling ]
+
 
 ##### (Optional) Enable debug mode?
 #set -x
@@ -99,9 +97,6 @@ while [[ "${#}" -gt 0 && ."${1}" == .-* ]]; do
 
     -burp|--burp )
       burpFree=true;;
-
-    -rolling|--rolling )
-      rolling=true;;
 
     -keyboard|--keyboard )
        keyboardLayout="${1}"; shift;;
@@ -204,18 +199,26 @@ timeout 300 curl --progress -k -L -f "https://status.github.com/api/status.json"
 
 
 ##### Enable default network repositories ~ http://docs.kali.org/general-use/kali-linux-sources-list-repositories
-echo -e "\n ${GREEN}[+]${RESET} Enabling default kali ${GREEN}network repositories${RESET} ~ ...if they were not selected during installation"
+echo -e "\n ${GREEN}[+]${RESET} Enabling default ParrotSec OS ${GREEN}network repositories${RESET} ~ ...if they were not selected during installation"
+
+echo -e "\n ${GREEN}[+]${RESET} Installing ${GREEN}Parrot gpg and keyring${RESET}"
+wget -qO - http://archive.parrotsec.org/parrot/misc/parrotsec.gpg | apt-key add -
+	apt-get update
+	apt-get -y --force-yes install apt-parrot parrot-archive-keyring --no-install-recommends
+
 #--- Add network repositories
 file=/etc/apt/sources.list; [ -e "${file}" ] && cp -n $file{,.bkup}
 ([[ -e "${file}" && "$(tail -c 1 ${file})" != "" ]]) && echo >> "${file}"
-#--- Main
-grep -q 'deb .* sana main non-free contrib' "${file}" 2>/dev/null || echo "deb http://http.kali.org/kali sana main non-free contrib" >> "${file}"
-grep -q 'deb-src .* sana main non-free contrib' "${file}" 2>/dev/null || echo "deb-src http://http.kali.org/kali sana main non-free contrib" >> "${file}"
-#--- Security
-grep -q 'deb .* sana/updates main contrib non-free' "${file}" 2>/dev/null || echo "deb http://security.kali.org/kali-security sana/updates main contrib non-free" >> "${file}"
-grep -q 'deb-src .* sana/updates main contrib non-free' "${file}" 2>/dev/null || echo "deb-src http://security.kali.org/kali-security sana/updates main contrib non-free" >> "${file}"
-#--- Disable CD repositories
-sed -i '/kali/ s/^\( \|\t\|\)deb cdrom/#deb cdrom/g' "${file}"
+#--- Stable
+grep -q 'deb .* main non-free contrib' "${file}" 2>/dev/null || echo "deb http://euro3.archive.parrotsec.org/parrotsec stable main non-free contrib" >> "${file}"
+grep -q 'deb-src .* main non-free contrib' "${file}" 2>/dev/null || echo "deb-src http://euro3.archive.parrotsec.org/parrotsec stable main non-free contrib" >> "${file}"
+#--- Stable-security
+grep -q 'deb .* stable-security main contrib non-free' "${file}" 2>/dev/null || echo "deb http://usa3.archive.parrotsec.org/parrotsec stable-security main contrib non-free" >> "${file}"
+grep -q 'deb-src .* stable-security main contrib non-free' "${file}" 2>/dev/null || echo "deb-src http://usa3.archive.parrotsec.org/parrotsec stable-security main contrib non-free" >> "${file}"
+#--- Security-updates
+grep -q 'deb .* stable-updates main contrib non-free' "${file}" 2>/dev/null || echo "deb http://euro3.archive.parrotsec.org/parrotsec stable-security main contrib non-free" >> "${file}"
+grep -q 'deb-src .* stable-updates main contrib non-free' "${file}" 2>/dev/null || echo "deb-src http://euro3.archive.parrotsec.org/parrotsec stable-security main contrib non-free" >> "${file}"
+
 #--- Update
 apt-get -qq update
 if [[ "$?" -ne 0 ]]; then
@@ -393,30 +396,6 @@ if [ "${freezeDEB}" != "false" ]; then
 fi
 
 
-if [ "${rolling}" != "false" ]; then
-  ##### Enable default network repositories ~ http://docs.kali.org/general-use/kali-linux-sources-list-repositories
-  echo -e "\n ${GREEN}[+]${RESET} Enabling ${GREEN}rolling repositories${RESET} ~ ${BOLD}Should only be used by advanced users${RESET}! Using this means tools will be updated more frequently"
-  #--- Add network repositories
-  file=/etc/apt/sources.list; [ -e "${file}" ] && cp -n $file{,.bkup}
-  ([[ -e "${file}" && "$(tail -c 1 ${file})" != "" ]]) && echo >> "${file}"
-  #--- Enable Rolling
-  ([[ -e "${file}" && "$(tail -c 1 ${file})" != "" ]]) && echo >> "${file}"
-  grep -q 'deb .* kali-rolling main contrib non-free' "${file}" 2>/dev/null || echo -e "\n\n# Kali Rolling\ndeb http://http.kali.org/kali kali-rolling main contrib non-free" >> "${file}"
-  grep -q 'deb-src .* kali-rolling main contrib non-free' "${file}" 2>/dev/null || echo -e "deb-src http://http.kali.org/kali kali-rolling main contrib non-free" >> "${file}"
-  #grep -q 'sana-proposed-updates main contrib non-free' "${file}" 2>/dev/null || echo -e "deb http://repo.kali.org/kali sana-proposed-updates main contrib non-free\ndeb-src http://repo.kali.org/kali sana-proposed-updates main contrib non-free" >> "${file}"
-  #--- Disable main repo
-  sed -i 's_deb http://http.kali.org/kali sana main_#deb http://http.kali.org/kali sana main_' ${file}
-  sed -i 's_deb-src http://http.kali.org/kali sana main_#deb-src http://http.kali.org/kali sana main_' ${file}
-  #--- Update
-  apt-get -qq update
-  if [[ "$?" -ne 0 ]]; then
-    echo -e ' '${RED}'[!]'${RESET}" There was an ${RED}issue accessing network repositories${RESET}" 1>&2
-    echo -e " ${YELLOW}[i]${RESET} Are the remote network repositories ${YELLOW}currently being sync'd${RESET}?"
-    echo -e " ${YELLOW}[i]${RESET} YOUR ${YELLOW}network repositories information${RESET}:"
-    curl -sI http://http.kali.org/README
-    exit 1
-  fi
-fi
 
 
 ##### Update OS from network repositories
@@ -424,12 +403,10 @@ echo -e "\n ${GREEN}[+]${RESET} ${GREEN}Updating OS${RESET} from network reposit
 for FILE in clean autoremove; do apt-get -y -qq "${FILE}"; done         # Clean up      clean remove autoremove autoclean
 export DEBIAN_FRONTEND=noninteractive
 apt-get -qq update && APT_LISTCHANGES_FRONTEND=none apt-get -o Dpkg::Options::="--force-confnew" -y dist-upgrade --fix-missing || echo -e ' '${RED}'[!] Issue with apt-get'${RESET} 1>&2
+
 #--- Cleaning up temp stuff
 for FILE in clean autoremove; do apt-get -y -qq "${FILE}"; done         # Clean up - clean remove autoremove autoclean
-#--- Enable bleeding edge ~ http://www.kali.org/kali-monday/bleeding-edge-kali-repositories/
-#file=/etc/apt/sources.list; [ -e "${file}" ] && cp -n $file{,.bkup}
-#grep -q 'kali-bleeding-edge' "${file}" 2>/dev/null || echo -e "\n\n## Bleeding edge\ndeb http://repo.kali.org/kali sana-bleeding-edge main" >> "${file}"
-#apt-get -qq update && apt-get -y -qq upgrade
+
 #--- Check kernel stuff
 _TMP=$(dpkg -l | grep linux-image- | grep -vc meta)
 if [[ "${_TMP}" -gt 1 ]]; then
@@ -457,7 +434,6 @@ file=/etc/default/grub; [ -e "${file}" ] && cp -n $file{,.bkup}
 sed -i 's/^GRUB_TIMEOUT=.*/GRUB_TIMEOUT='${grubTimeout}'/' "${file}"                 # Time out (lower if in a virtual machine, else possible dual booting)
 sed -i 's/^GRUB_CMDLINE_LINUX_DEFAULT=.*/GRUB_CMDLINE_LINUX_DEFAULT=""/' "${file}"   # TTY resolution    #GRUB_CMDLINE_LINUX_DEFAULT="vga=0x0318 quiet"   (crashes VM/vmwgfx)   (See Cosmetics)
 update-grub
-
 
 ###### Disable login manager (console login - non GUI) ***
 echo -e "\n ${GREEN}[+]${RESET} ${GREEN}Disabling GUI${RESET} login screen"
@@ -976,17 +952,15 @@ xfconf-query -n -c xsettings -p /Net/ThemeName -s "axiomd"
 xfconf-query -n -c xsettings -p /Net/IconThemeName -s "Vibrancy-Kali-Dark"
 #--- Get new desktop wallpaper
 mkdir -p /usr/share/wallpapers/
-timeout 300 curl --progress -k -L -f "http://www.kali.org/images/wallpapers-01/kali-wp-june-2014_1920x1080_A.png" > /usr/share/wallpapers/kali_blue_3d_a.png || echo -e ' '${RED}'[!]'${RESET}" Issue downloading kali_blue_3d_a.png" 1>&2     #***!!! hardcoded paths!
-timeout 300 curl --progress -k -L -f "http://www.kali.org/images/wallpapers-01/kali-wp-june-2014_1920x1080_B.png" > /usr/share/wallpapers/kali_blue_3d_b.png || echo -e ' '${RED}'[!]'${RESET}" Issue downloading kali_blue_3d_b.png" 1>&2
-timeout 300 curl --progress -k -L -f "http://www.kali.org/images/wallpapers-01/kali-wp-june-2014_1920x1080_G.png" > /usr/share/wallpapers/kali_black_honeycomb.png || echo -e ' '${RED}'[!]'${RESET}" Issue downloading kali_black_honeycomb.png" 1>&2
-timeout 300 curl --progress -k -L -f "http://imageshack.us/a/img17/4646/vzex.png" > /usr/share/wallpapers/kali_blue_splat.png || echo -e ' '${RED}'[!]'${RESET}" Issue downloading kali_blue_splat.png" 1>&2
-timeout 300 curl --progress -k -L -f "http://wallpaperstock.net/kali-linux_wallpapers_39530_1920x1080.jpg" > /usr/share/wallpapers/kali-linux_wallpapers_39530.png || echo -e ' '${RED}'[!]'${RESET}" Issue downloading kali-linux_wallpapers_39530.png" 1>&2
-timeout 300 curl --progress -k -L -f "http://em3rgency.com/wp-content/uploads/2012/12/Kali-Linux-faded-no-Dragon-small-text.png" > /usr/share/wallpapers/kali_black_clean.png || echo -e ' '${RED}'[!]'${RESET}" Issue downloading kali_black_clean.png" 1>&2
+timeout 300 curl --progress -k -L -f "http://orig11.deviantart.net/4b8b/f/2011/137/a/1/noob_saibot_wallpaper_2_hd_by_gurt1337-d3gl9nv.jpg" > /usr/share/wallpapers/noob_saibot2.jpg || echo -e ' '${RED}'[!]'${RESET}" Issue downloading noob_saibot_wallpaper_2_hd_by_gurt1337-d3gl9nv.jpg" 1>&2
+timeout 300 curl --progress -k -L -f "http://orig04.deviantart.net/e24e/f/2011/274/6/2/mortal_kombat___noob_saibot_by_xenon90-d4bib6a.jpg" > /usr/share/wallpapers/noob_saibot_by_xenon90-d4bib6a.jpg || echo -e ' '${RED}'[!]'${RESET}" Issue downloading mortal_kombat___noob_saibot_by_xenon90-d4bib6a.jpg" 1>&2
 timeout 300 curl --progress -k -L -f "http://www.hdwallpapers.im/download/kali_linux-wallpaper.jpg" > /usr/share/wallpapers/kali_black_stripes.jpg || echo -e ' '${RED}'[!]'${RESET}" Issue downloading kali_black_stripes.jpg" 1>&2
 timeout 300 curl --progress -k -L -f "http://fc01.deviantart.net/fs71/f/2011/118/e/3/bt___edb_wallpaper_by_xxdigipxx-d3f4nxv.png" > /usr/share/wallpapers/kali_bt_edb.jpg || echo -e ' '${RED}'[!]'${RESET}" Issue downloading kali_bt_edb.jpg" 1>&2
+timeout 300 curl --progress -k -L -f
+timeout 300 curl --progress -k -L -f
 timeout 300 curl --progress -k -L -f "http://pre07.deviantart.net/58d1/th/pre/i/2015/223/4/8/kali_2_0_alternate_wallpaper_by_xxdigipxx-d95800s.png" > /usr/share/wallpapers/kali_2_0_alternate_wallpaper.png || echo -e ' '${RED}'[!]'${RESET}" Issue downloading kali_2_0_alternate_wallpaper.png" 1>&2
 timeout 300 curl --progress -k -L -f "http://pre01.deviantart.net/4210/th/pre/i/2015/195/3/d/kali_2_0__personal__wp_by_xxdigipxx-d91c8dq.png" > /usr/share/wallpapers/kali_2_0__personal.png || echo -e ' '${RED}'[!]'${RESET}" Issue downloading kali_2_0__personal.png" 1>&2
-_TMP="$(find /usr/share/wallpapers/ -maxdepth 1 -type f \( -name 'kali_*' -o -empty \) | xargs -n1 file | grep -i 'HTML\|empty' | cut -d ':' -f1)"
+_TMP="$(find /usr/share/wallpapers/ -maxdepth 1 -type f \( -name 'noob_*' -o -empty \) | xargs -n1 file | grep -i 'HTML\|empty' | cut -d ':' -f1)"
 for FILE in $(echo ${_TMP}); do rm -f "${FILE}"; done
 [[ -e "/usr/share/wallpapers/kali_default-1440x900.jpg" ]] && ln -sf /usr/share/wallpapers/kali/contents/images/1440x900.png /usr/share/wallpapers/kali_default-1440x900.jpg                       # Kali1
 [[ -e "/usr/share/images/desktop-base/kali-wallpaper_1920x1080.png" ]] && ln -sf /usr/share/images/desktop-base/kali-wallpaper_1920x1080.png /usr/share/wallpapers/kali_default2.0-1920x1080.jpg   # Kali2

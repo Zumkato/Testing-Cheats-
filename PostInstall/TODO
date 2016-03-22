@@ -14,10 +14,9 @@ start xfce auto
     exec startxfce4
 Docker     
 Pick background  
-ice Dove setup
 lair -
 Password Safe
-Chrome or Chouiumi
+Chrome or Chouiumi - https://www.comodo.com/home/browsers-toolbars/chromodo-private-internet-browser.php
 http://www.kitploit.com/2016/03/ctf-tools-some-setup-scripts-for.html
 http://www.kitploit.com/2016/01/gdb-dashboard-modular-visual-interface.html - GDB-Dashboard - Modular Visual Interface For Gdb In Python
 http://www.kitploit.com/2015/12/flashlight-automated-information.html - Flashlight - Automated Information Gathering Tool for Penetration Testers
@@ -28,7 +27,7 @@ http://www.kitploit.com/2015/10/powercat-netcat-powershell-version.html - Powerc
 http://www.kitploit.com/2015/10/burpkit-next-gen-burpsuite-penetration.html - Burpkit - Next-Gen Burpsuite Penetration Testing Tool
 http://www.kitploit.com/2015/10/thefuck-magnificent-app-which-corrects.html - TheFuck - Magnificent App Which Corrects Your Previous Console Command
 https://github.com/n1nj4sec/pupy
-
+https://github.com/GDSSecurity/Windows-Exploit-Suggester
 
 
 

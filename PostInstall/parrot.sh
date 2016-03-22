@@ -556,7 +556,7 @@ dconf write /org/gnome/shell/extensions/TaskBar/separator-five false
 dconf write /org/gnome/shell/extensions/TaskBar/separator-six false
 #--- Workspaces
 gsettings set org.gnome.shell.overrides dynamic-workspaces false
-gsettings set org.gnome.desktop.wm.preferences num-workspaces 3
+gsettings set org.gnome.desktop.wm.preferences num-workspaces 5
 #--- Top bar
 gsettings set org.gnome.desktop.interface clock-show-date true                           # Show date next to time
 #--- Dock settings
@@ -588,7 +588,6 @@ gsettings set org.gnome.desktop.session idle-delay 0                            
 #timeout 30 killall -q -w gnome-panel >/dev/null && gnome-shell --replace&   # Still need to logoff!
 #reboot
 fi
-
 
 ##### Install XFCE4
 echo -e "\n ${GREEN}[+]${RESET} Installing ${GREEN}XFCE4${RESET}${RESET} ~ desktop environment"
@@ -801,7 +800,7 @@ xfconf-query -n -c xfce4-panel -p /plugins/plugin-17/digital-format -t string -s
 # pager / workspace
 xfconf-query -n -c xfce4-panel -p /plugins/plugin-19/miniature-view -t bool -s true
 xfconf-query -n -c xfce4-panel -p /plugins/plugin-19/rows -t int -s 1
-xfconf-query -n -c xfwm4 -p /general/workspace_count -t int -s 3
+xfconf-query -n -c xfwm4 -p /general/workspace_count -t int -s 5
 #--- Theme options
 xfconf-query -n -c xsettings -p /Net/ThemeName -s "Kali-X"
 xfconf-query -n -c xsettings -p /Net/IconThemeName -s "Vibrancy-Kali"
@@ -841,7 +840,6 @@ grep -q "NotShowIn=XFCE" "${file}" || echo "NotShowIn=XFCE;" >> "${file}"
 #--- Enable compositing
 xfconf-query -n -c xfwm4 -p /general/use_compositing -t bool -s true
 xfconf-query -n -c xfwm4 -p /general/frame_opacity -t int -s 85
-
 
 ##### Configure XFCE4
 echo -e "\n ${GREEN}[+]${RESET} Configuring ${GREEN}XFCE4${RESET}${RESET} ~ desktop environment"

@@ -954,8 +954,6 @@ timeout 300 curl --progress -k -L -f "http://orig11.deviantart.net/4b8b/f/2011/1
 timeout 300 curl --progress -k -L -f "http://orig04.deviantart.net/e24e/f/2011/274/6/2/mortal_kombat___noob_saibot_by_xenon90-d4bib6a.jpg" > /usr/share/wallpapers/noob_saibot_by_xenon90-d4bib6a.jpg || echo -e ' '${RED}'[!]'${RESET}" Issue downloading mortal_kombat___noob_saibot_by_xenon90-d4bib6a.jpg" 1>&2
 timeout 300 curl --progress -k -L -f "http://www.hdwallpapers.im/download/kali_linux-wallpaper.jpg" > /usr/share/wallpapers/kali_black_stripes.jpg || echo -e ' '${RED}'[!]'${RESET}" Issue downloading kali_black_stripes.jpg" 1>&2
 timeout 300 curl --progress -k -L -f "http://fc01.deviantart.net/fs71/f/2011/118/e/3/bt___edb_wallpaper_by_xxdigipxx-d3f4nxv.png" > /usr/share/wallpapers/kali_bt_edb.jpg || echo -e ' '${RED}'[!]'${RESET}" Issue downloading kali_bt_edb.jpg" 1>&2
-timeout 300 curl --progress -k -L -f
-timeout 300 curl --progress -k -L -f
 timeout 300 curl --progress -k -L -f "http://pre07.deviantart.net/58d1/th/pre/i/2015/223/4/8/kali_2_0_alternate_wallpaper_by_xxdigipxx-d95800s.png" > /usr/share/wallpapers/kali_2_0_alternate_wallpaper.png || echo -e ' '${RED}'[!]'${RESET}" Issue downloading kali_2_0_alternate_wallpaper.png" 1>&2
 timeout 300 curl --progress -k -L -f "http://pre01.deviantart.net/4210/th/pre/i/2015/195/3/d/kali_2_0__personal__wp_by_xxdigipxx-d91c8dq.png" > /usr/share/wallpapers/kali_2_0__personal.png || echo -e ' '${RED}'[!]'${RESET}" Issue downloading kali_2_0__personal.png" 1>&2
 _TMP="$(find /usr/share/wallpapers/ -maxdepth 1 -type f \( -name 'noob_*' -o -empty \) | xargs -n1 file | grep -i 'HTML\|empty' | cut -d ':' -f1)"

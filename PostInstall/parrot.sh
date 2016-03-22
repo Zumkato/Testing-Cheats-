@@ -1394,7 +1394,7 @@ apt-get install -y -qq unzip curl iceweasel || echo -e ' '${RED}'[!] Issue with 
 export DISPLAY=:0.0   #[[ -z $SSH_CONNECTION ]] || export DISPLAY=:0.0
 timeout 15 iceweasel >/dev/null 2>&1  #iceweasel & sleep 15s; killall -q -w iceweasel >/dev/null   # Start and kill. Files needed for first time run
 timeout 5 killall -9 -q -w iceweasel >/dev/null   #|| echo -e ' '${RED}'[!]'${RESET}" Failed to kill ${RED}iceweasel${RESET}"
-file=$(find ~/.mozilla/firefox/*.default*/ -maxdepth 1 -type f -name 'prefs.js' -print -quit) && [ -e "${file}" ] && cp -n $file{,.bkup}   #/etc/iceweasel/pref/*.js
+file=$(find ~/.mozilla/firefox/*.Parrot*/ -maxdepth 1 -type f -name 'prefs.js' -print -quit) && [ -e "${file}" ] && cp -n $file{,.bkup}   #/etc/iceweasel/pref/*.js
 ([[ -e "${file}" && "$(tail -c 1 ${file})" != "" ]]) && echo >> "${file}"
 #sed -i 's/^.network.proxy.socks_remote_dns.*/user_pref("network.proxy.socks_remote_dns", true);' "${file}" 2>/dev/null || echo 'user_pref("network.proxy.socks_remote_dns", true);' >> "${file}"
 sed -i 's/^.browser.safebrowsing.enabled.*/user_pref("browser.safebrowsing.enabled", false);' "${file}" 2>/dev/null || echo 'user_pref("browser.safebrowsing.enabled", false);' >> "${file}"                             # Iceweasel -> Edit -> Preferences -> Security -> Block reported web forgeries
@@ -1406,7 +1406,7 @@ sed -i 's/^.*browser.showQuitWarning.*/user_pref("browser.showQuitWarning", true
 sed -i 's/^.*extensions.https_everywhere._observatory.popup_shown.*/user_pref("extensions.https_everywhere._observatory.popup_shown", true);' "${file}" 2>/dev/null || echo 'user_pref("extensions.https_everywhere._observatory.popup_shown", true);' >> "${file}"
 sed -i 's/^.network.security.ports.banned.override/user_pref("network.security.ports.banned.override", "1-65455");' "${file}" 2>/dev/null || echo 'user_pref("network.security.ports.banned.override", "1-65455");' >> "${file}"    # Remove "This address is restricted"
 #--- Replace bookmarks (base: http://pentest-bookmarks.googlecode.com)
-file=$(find ~/.mozilla/firefox/*.default*/ -maxdepth 1 -type f -name 'bookmarks.html' -print -quit) && [ -e "${file}" ] && cp -n $file{,.bkup}   #/etc/iceweasel/profile/bookmarks.html
+file=$(find ~/.mozilla/firefox/*.Parrot*/ -maxdepth 1 -type f -name 'bookmarks.html' -print -quit) && [ -e "${file}" ] && cp -n $file{,.bkup}   #/etc/iceweasel/profile/bookmarks.html
 timeout 300 curl --progress -k -L -f "http://pentest-bookmarks.googlecode.com/files/bookmarksv1.5.html" > /tmp/bookmarks_new.html || echo -e ' '${RED}'[!]'${RESET}" Issue downloading bookmarks_new.html" 1>&2      #***!!! hardcoded version! Need to manually check for updates
 #--- Configure bookmarks
 awk '!a[$0]++' /tmp/bookmarks_new.html | \egrep -v ">(Latest Headlines|Getting Started|Recently Bookmarked|Recent Tags|Mozilla Firefox|Help and Tutorials|Customize Firefox|Get Involved|About Us|Hacker Media|Bookmarks Toolbar|Most Visited)</" | \egrep -v "^    </DL><p>" | \egrep -v "^<DD>Add" > "${file}"
@@ -1427,8 +1427,8 @@ sed -i 's#^</DL><p>#    <DT><A HREF="http://offset-db.com/">Offset-DB</A>\n</DL>
 sed -i 's#^</DL><p>#    <DT><A HREF="https://ifconfig.io/">ifconfig</A>\n</DL><p>#' "${file}"                                     # Add ifconfig.io to bookmark toolbar
 sed -i 's#<HR>#<DT><H3 ADD_DATE="1303667175" LAST_MODIFIED="1303667175" PERSONAL_TOOLBAR_FOLDER="true">Bookmarks Toolbar</H3>\n<DD>Add bookmarks to this folder to see them displayed on the Bookmarks Toolbar#' "${file}"
 #--- Clear bookmark cache
-find ~/.mozilla/firefox/*.default*/ -maxdepth 1 -mindepth 1 -type f -name places.sqlite -delete
-find ~/.mozilla/firefox/*.default*/bookmarkbackups/ -type f -delete
+find ~/.mozilla/firefox/*.Parrot*/ -maxdepth 1 -mindepth 1 -type f -name places.sqlite -delete
+find ~/.mozilla/firefox/*.Parrot*/bookmarkbackups/ -type f -delete
 #--- Default for XFCE
 file=~/.config/xfce4/helpers.rc; [ -e "${file}" ] && cp -n $file{,.bkup}    #exo-preferred-applications   #xdg-mime default
 sed -i 's#^WebBrowser=.*#WebBrowser=iceweasel#' "${file}"
@@ -1469,7 +1469,7 @@ done
 #--- Enable Iceweasel's addons/plugins/extensions
 timeout 15 iceweasel >/dev/null 2>&1   #iceweasel & sleep 15s; killall -q -w iceweasel >/dev/null
 sleep 3s
-file=$(find ~/.mozilla/firefox/*.default*/ -maxdepth 1 -type f -name 'extensions.sqlite' -print -quit)   #&& [ -e "${file}" ] && cp -n $file{,.bkup}
+file=$(find ~/.mozilla/firefox/*.Parrot*/ -maxdepth 1 -type f -name 'extensions.sqlite' -print -quit)   #&& [ -e "${file}" ] && cp -n $file{,.bkup}
 if [ ! -e "${file}" ] || [ -z "${file}" ]; then
   #echo -e ' '${RED}'[!]'${RESET}" Something went wrong enabling Iceweasel's extensions via method #1. Trying method #2..." 1>&2
   false
@@ -1480,7 +1480,7 @@ else
   echo "UPDATE 'main'.'addon' SET 'active' = 1, 'userDisabled' = 0;" > /tmp/iceweasel.sql    # Force them all!
   sqlite3 "${file}" < /tmp/iceweasel.sql      #fuser extensions.sqlite
 fi
-file=$(find ~/.mozilla/firefox/*.default*/ -maxdepth 1 -type f -name 'extensions.json' -print -quit)   #&& [ -e "${file}" ] && cp -n $file{,.bkup}
+file=$(find ~/.mozilla/firefox/*.Parrot*/ -maxdepth 1 -type f -name 'extensions.json' -print -quit)   #&& [ -e "${file}" ] && cp -n $file{,.bkup}
 if [ ! -e "${file}" ] || [ -z "${file}" ]; then
   #echo -e ' '${RED}'[!]'${RESET}" Something went wrong enabling Iceweasel's extensions via method #2. Did method #1 also fail?" 1>&2
   false
@@ -1489,20 +1489,20 @@ else
   sed -i 's/"active":false,/"active":true,/g' "${file}"                # Force them all!
   sed -i 's/"userDisabled":true,/"userDisabled":false,/g' "${file}"    # Force them all!
 fi
-file=$(find ~/.mozilla/firefox/*.default*/ -maxdepth 1 -type f -name 'prefs.js' -print -quit)   #&& [ -e "${file}" ] && cp -n $file{,.bkup}
+file=$(find ~/.mozilla/firefox/*.Parrot*/ -maxdepth 1 -type f -name 'prefs.js' -print -quit)   #&& [ -e "${file}" ] && cp -n $file{,.bkup}
 [ ! -z "${file}" ] && sed -i '/extensions.installCache/d' "${file}"
 timeout 5 iceweasel >/dev/null 2>&1   # For extensions that just work without restarting
 sleep 3s
 timeout 5 iceweasel >/dev/null 2>&1   # ...for (most) extensions, as they need iceweasel to restart
 sleep 5s
 #--- Configure HackBar
-file=$(find ~/.mozilla/firefox/*.default*/ -maxdepth 1 -type f -name 'xulstore.json' -print -quit)   #&& [ -e "${file}" ] && cp -n $file{,.bkup}
+file=$(find ~/.mozilla/firefox/*.Parrot*/ -maxdepth 1 -type f -name 'xulstore.json' -print -quit)   #&& [ -e "${file}" ] && cp -n $file{,.bkup}
 if [ -e "${file}" ]; then
   sed -i 's/"hackBarToolbar":{"collapsed":".*"},/"hackBarToolbar":{"collapsed":"true"},/g' "${file}"                                   # Hide the bar on startup
   grep -q "hackBarToolbar" "${file}" 2>/dev/null || sed -i 's/"nav-bar"/"hackBarToolbar":{"collapsed":"true"},"nav-bar"/g' "${file}"   # Hide the bar on startup
 fi
 #--- Configure foxyproxy
-file=$(find ~/.mozilla/firefox/*.default*/ -maxdepth 1 -type f -name 'foxyproxy.xml' -print -quit)   #&& [ -e "${file}" ] && cp -n $file{,.bkup}
+file=$(find ~/.mozilla/firefox/*.Parrot*/ -maxdepth 1 -type f -name 'foxyproxy.xml' -print -quit)   #&& [ -e "${file}" ] && cp -n $file{,.bkup}
 if [ -z "${file}" ]; then
   echo -e ' '${RED}'[!]'${RESET}' Something went wrong with the FoxyProxy iceweasel extension (did any extensions install?). Skipping...' 1>&2
 elif [ -e "${file}" ]; then
@@ -1518,7 +1518,7 @@ else
   echo -e '</proxies></foxyproxy>' >> "${file}"
 fi
 #--- Wipe session (due to force close)
-find ~/.mozilla/firefox/*.default*/ -maxdepth 1 -type f -name 'sessionstore.*' -delete
+find ~/.mozilla/firefox/*.Parrot*/ -maxdepth 1 -type f -name 'sessionstore.*' -delete
 #--- Remove old temp files
 rm -f /tmp/iceweasel.sql
 
@@ -1730,19 +1730,6 @@ echo -e "\n ${GREEN}[+]${RESET} Installing ${GREEN}MPC${RESET} ~ Msfvenom Payloa
 timeout 300 curl --progress -k -L -f "https://raw.githubusercontent.com/g0tmi1k/mpc/master/mpc.sh" > /usr/local/bin/mpc || echo -e ' '${RED}'[!]'${RESET}" Issue downloading mpc" 1>&2
 chmod +x /usr/local/bin/mpc
 
-
-##### Install avb
-#echo -e "\n ${GREEN}[+]${RESET} Installing ${GREEN}abc${RESET} ~ simple anti-virus bypass"
-#curl --progress -k -L -f "https://raw.githubusercontent.com/g0tmi1k/avb/master/avb.sh" > /usr/local/bin/avb || echo -e ' '${RED}'[!]'${RESET}" Issue downloading avb" 1>&2
-#chmod +x /usr/local/bin/avb
-
-
-##### Install ifile
-#echo -e "\n ${GREEN}[+]${RESET} Installing ${GREEN}ifile${RESET} ~ more informations about files"
-#curl --progress -k -L -f "https://raw.githubusercontent.com/g0tmi1k/ifile/master/ifile.sh" > /usr/local/bin/ifile || echo -e ' '${RED}'[!]'${RESET}" Issue downloading ifile" 1>&2
-#chmod +x /usr/local/bin/ifile
-
-
 ##### Install Geany
 echo -e "\n ${GREEN}[+]${RESET} Installing ${GREEN}Geany${RESET} ~ GUI text editor"
 export DISPLAY=:0.0   #[[ -z $SSH_CONNECTION ]] || export DISPLAY=:0.0
@@ -1836,7 +1823,7 @@ EOF
 #fi
 
 
-##### Install PyCharm (Community Edition)
+##### Install PyCharm 
 echo -e "\n ${GREEN}[+]${RESET} Installing ${GREEN}PyCharm ${RESET} ~ Python IDE"
 timeout 300 curl --progress -k -L -f "https://download.jetbrains.com/python/pycharm-professional-5.0.4.tar.gz" > /tmp/pycharms-community.tar.gz || echo -e ' '${RED}'[!]'${RESET}" Issue downloading pycharms-professional.tar.gz" 1>&2       #***!!! hardcoded version!
 tar -xf /tmp/pycharms-professional.tar.gz -C /tmp/
@@ -1973,7 +1960,7 @@ EOF
   #--- Remove old temp files
   sleep 1s
   find /tmp/ -maxdepth 1 -name 'burp*.tmp' -delete
-  find ~/.mozilla/firefox/*.default*/ -maxdepth 1 -type f -name 'sessionstore.*' -delete
+  find ~/.mozilla/firefox/*.Parrot*/ -maxdepth 1 -type f -name 'sessionstore.*' -delete
   rm -f /tmp/burp.crt
   unset http_proxy
 else

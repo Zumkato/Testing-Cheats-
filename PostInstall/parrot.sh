@@ -897,11 +897,6 @@ sed -i 's/LastShowHidden=.*/LastShowHidden=TRUE/' "${file}" 2>/dev/null || echo 
 #--- Fix GNOME keyring issue
 file=/etc/xdg/autostart/gnome-keyring-pkcs11.desktop;   #[ -e "${file}" ] && cp -n $file{,.bkup}
 grep -q "XFCE" "${file}" || sed -i 's/^OnlyShowIn=*/OnlyShowIn=XFCE;/' "${file}"
-#--- Disable tracker (issue is, enables it in GNOME)
-tracker-control -r
-mkdir -p ~/.config/autostart/
-rm -f ~/.config/autostart/tracker-*.desktop
-rm -f /etc/xdg/autostart/tracker-*.desktop
 #--- Set XFCE as default desktop manager
 file=~/.xsession; [ -e "${file}" ] && cp -n $file{,.bkup}       #~/.xsession
 echo xfce4-session > "${file}"
@@ -1387,7 +1382,7 @@ git config --global mergetool.prompt false
 
 ##### Setup iceweasel
 echo -e "\n ${GREEN}[+]${RESET} Installing ${GREEN}iceweasel${RESET} ~ GUI web browser"
-apt-get install -y -qq unzip curl iceweasel || echo -e ' '${RED}'[!] Issue with apt-get'${RESET} 1>&2
+#apt-get install -y -qq unzip curl iceweasel || echo -e ' '${RED}'[!] Issue with apt-get'${RESET} 1>&2
 #--- Configure iceweasel
 export DISPLAY=:0.0   #[[ -z $SSH_CONNECTION ]] || export DISPLAY=:0.0
 timeout 15 iceweasel >/dev/null 2>&1  #iceweasel & sleep 15s; killall -q -w iceweasel >/dev/null   # Start and kill. Files needed for first time run
@@ -1412,7 +1407,6 @@ sed -i 's#^</DL><p>#        </DL><p>\n    </DL><p>\n</DL><p>#' "${file}"        
 sed -i 's#^    <DL><p>#    <DL><p>\n    <DT><A HREF="http://127.0.0.1/">localhost</A>#' "${file}"                                 # Add localhost to bookmark toolbar (before hackery folder)
 sed -i 's#^</DL><p>#    <DT><A HREF="https://127.0.0.1:8834/">Nessus</A>\n</DL><p>#' "${file}"                                    # Add Nessus UI bookmark toolbar
 [ "${openVAS}" != "false" ] && sed -i 's#^</DL><p>#    <DT><A HREF="https://127.0.0.1:9392/">OpenVAS</A>\n</DL><p>#' "${file}"     # Add OpenVAS UI to bookmark toolbar
-#sed -i 's#^</DL><p>#    <DT><A HREF="https://127.0.0.1:3780/">Nexpose</A>\n</DL><p>#' "${file}"                                  # Add Nexpose UI to bookmark toolbar
 sed -i 's#^</DL><p>#    <DT><A HREF="http://127.0.0.1:3000/ui/panel">BeEF</A>\n</DL><p>#' "${file}"                               # Add BeEF UI to bookmark toolbar
 sed -i 's#^</DL><p>#    <DT><A HREF="http://127.0.0.1/rips/">RIPS</A>\n</DL><p>#' "${file}"                                       # Add RIPs to bookmark toolbar
 sed -i 's#^</DL><p>#    <DT><A HREF="https://paulschou.com/tools/xlate/">XLATE</A>\n</DL><p>#' "${file}"                          # Add XLATE to bookmark toolbar
@@ -1843,31 +1837,6 @@ gconftool-2 -t bool -s /apps/meld/show_line_numbers true
 gconftool-2 -t bool -s /apps/meld/show_whitespace true
 gconftool-2 -t bool -s /apps/meld/use_syntax_highlighting true
 gconftool-2 -t int -s /apps/meld/edit_wrap_lines 2
-
-
-##### Install nessus    #*** Doesn't automate
-#echo -e "\n ${GREEN}[+]${RESET} Installing ${GREEN}nessus${RESET} ~ vulnerability scanner"
-#--- Get download link
-#xdg-open http://www.tenable.com/products/nessus/select-your-operating-system    *** #wget -q "http://downloads.nessus.org/<file>" -O /usr/local/src/nessus.deb   #***!!! Hardcoded version value
-#dpkg -i /usr/local/src/Nessus-*-debian6_*.deb
-#systemctl start nessusd
-#xdg-open http://www.tenable.com/products/nessus-home
-#/opt/nessus/sbin/nessus-adduser   #*** Doesn't automate
-##rm -f /usr/local/src/Nessus-*-debian6_*.deb
-#--- Check email
-#/opt/nessus/sbin/nessuscli fetch --register <key>   #*** Doesn't automate
-#/opt/nessus/sbin/nessusd -R
-#/opt/nessus/sbin/nessus-service -D
-#xdg-open https://127.0.0.1:8834/
-#--- Remove from start up
-#systemctl disable nessusd
-
-
-##### Install Nexpose    #*** Doesn't automate
-#/opt/rapid7/nexpose/nsc/nsc.sh
-#--- Remove from start up
-#systemctl disable nexposeconsole.rc
-
 
 ##### Install OpenVAS
 if [ "${openVAS}" != "false" ]; then

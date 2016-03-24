@@ -440,9 +440,9 @@ echo -e "\n ${GREEN}[+]${RESET} ${GREEN}Disabling GUI${RESET} login screen"
 #--- Disable GUI login screen
 systemctl set-default multi-user.target   # ...or: file=/etc/X11/default-display-manager; [ -e "${file}" ] && cp -n $file{,.bkup} ; echo /bin/true > "${file}"   # ...or: mv -f /etc/rc2.d/S19gdm3 /etc/rc2.d/K17gdm   # ...or: apt-get -y -qq install chkconfig; chkconfig gdm3 off
 #--- Enable auto (gui) login
-file=/etc/gdm3/daemon.conf; [ -e "${file}" ] && cp -n $file{,.bkup}
-sed -i 's/^.*AutomaticLoginEnable = .*/AutomaticLoginEnable = true/' "${file}"
-sed -i 's/^.*AutomaticLogin = .*/AutomaticLogin = root/' "${file}"
+#file=/etc/gdm3/daemon.conf; [ -e "${file}" ] && cp -n $file{,.bkup}
+#sed -i 's/^.*AutomaticLoginEnable = .*/AutomaticLoginEnable = true/' "${file}"
+#sed -i 's/^.*AutomaticLogin = .*/AutomaticLogin = root/' "${file}"
 #--- Shortcut for when you want to start GUI
 [ -e /usr/sbin/gdm3 ] && ln -sf /usr/sbin/gdm3 /usr/bin/startx
 
@@ -2055,11 +2055,6 @@ EOF
 chmod +x "${file}"
 
 
-##### Install libreoffice
-echo -e "\n ${GREEN}[+]${RESET} Installing ${GREEN}LibreOffice${RESET} ~ GUI office suite"
-apt-get -y -qq install libreoffice || echo -e ' '${RED}'[!] Issue with apt-get'${RESET} 1>&2
-
-
 ##### Install cherrytree
 echo -e "\n ${GREEN}[+]${RESET} Installing ${GREEN}cherrytree${RESET} ~ GUI note taking"
 apt-get -y -qq install cherrytree || echo -e ' '${RED}'[!] Issue with apt-get'${RESET} 1>&2
@@ -2080,11 +2075,6 @@ apt-get -y -qq install gtk-recordmydesktop || echo -e ' '${RED}'[!] Issue with a
 ##### Install asciinema
 echo -e "\n ${GREEN}[+]${RESET} Installing ${GREEN}asciinema${RESET} ~ CLI terminal recorder"
 curl -s -L https://asciinema.org/install | sh
-
-
-##### Install gimp
-#echo -e "\n ${GREEN}[+]${RESET} Installing ${GREEN}gimp${RESET} ~ GUI image editing"
-#apt-get -y -qq install gimp || echo -e ' '${RED}'[!] Issue with apt-get'${RESET} 1>&2
 
 
 ##### Install shutter
@@ -2199,22 +2189,6 @@ timeout 5 filezilla >/dev/null 2>&1    #filezilla & sleep 5s; killall -q -w file
 mkdir -p ~/.config/filezilla/
 file=~/.config/filezilla/filezilla.xml; [ -e "${file}" ] && cp -n $file{,.bkup}
 sed -i 's#^.*"Default editor".*#\t<Setting name="Default editor">2/usr/bin/geany</Setting>#' "${file}"
-
-
-##### Install remmina
-#echo -e "\n ${GREEN}[+]${RESET} Installing ${GREEN}remmina${RESET} ~ GUI remote desktop"
-#apt-get -y -qq install remmina remmina-plugin-xdmcp remmina-plugin-rdp remmina-plugin-vnc || echo -e ' '${RED}'[!] Issue with apt-get'${RESET} 1>&2
-
-
-##### Install xrdp
-#echo -e "\n ${GREEN}[+]${RESET} Installing ${GREEN}xrdp${RESET} ~ GUI remote desktop"
-#apt-get -y -qq install xrdp || echo -e ' '${RED}'[!] Issue with apt-get'${RESET} 1>&2
-
-
-##### Install x2go client
-#echo -e "\n ${GREEN}[+]${RESET} Installing ${GREEN}x2go client${RESET} ~ GUI remote desktop"
-#apt-get -y -qq install x2goclient || echo -e ' '${RED}'[!] Issue with apt-get'${RESET} 1>&2
-
 
 ##### Install lynx
 echo -e "\n ${GREEN}[+]${RESET} Installing ${GREEN}lynx${RESET} ~ CLI web browser"
@@ -2902,13 +2876,6 @@ pushd /opt/exploitdb-bin/ >/dev/null
 git pull -q
 popd >/dev/null
 
-##### Install Exploit-DB 
-echo -e "\n ${GREEN}[+]${RESET} Installing ${GREEN}Installing Exploit-DB${RESET} ~ The Exploit Databases"
-apt-get -y -qq install git || echo -e ' '${RED}'[!] Issue with apt-get'${RESET} 1>&2
-git clone -q https://github.com/offensive-security/exploit-database.git/ /opt/exploitdb-git/
-pushd /opt/exploitdb/ >/dev/null
-git pull -q
-popd >/dev/null
 
 ##### Install Babel scripts
 echo -e "\n ${GREEN}[+]${RESET} Installing ${GREEN}Babel scripts${RESET} ~ post exploitation scripts"

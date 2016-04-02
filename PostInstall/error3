@@ -1,0 +1,94 @@
+ [+] Installing Aircrack-ng ~ Wi-Fi cracking suite
+/usr/bin/update-oui
+Downloading http://standards.ieee.org/regauth/oui/oui.txt to /var/lib/ieee-data//oui.txt
+Downloading http://standards.ieee.org/regauth/oui/iab.txt to /var/lib/ieee-data//iab.txt
+Downloading http://standards.ieee.org/develop/regauth/oui28/mam.txt to /var/lib/ieee-data//mam.txt
+Downloading http://standards.ieee.org/develop/regauth/oui36/oui36.txt to /var/lib/ieee-data//oui36.txt
+ [!] Issue downloading oui.txt
+
+Step 1: Checking OpenVAS Scanner ... 
+        OK: OpenVAS Scanner is present in version 5.0.1.
+        OK: OpenVAS Scanner CA Certificate is present as /var/lib/openvas/CA/cacert.pem.
+        OK: OpenVAS Scanner server certificate is valid and present as /var/lib/openvas/CA/servercert.pem.
+        OK: NVT collection in /var/lib/openvas/plugins contains 46540 NVTs.
+        WARNING: Signature checking of NVTs is not enabled in OpenVAS Scanner.
+        SUGGEST: Enable signature checking (see http://www.openvas.org/trusted-nvts.html).
+        OK: The NVT cache in /var/cache/openvas contains 46540 files for 46540 NVTs.
+        OK: redis-server is present in version v=2.8.17.
+        OK: scanner (kb_location setting) is configured properly using the redis-server socket: /var/lib/redis/redis.sock
+        OK: redis-server is running and listening on socket: /var/lib/redis/redis.sock.
+        OK: redis-server configuration is OK and redis-server is running.
+Step 2: Checking OpenVAS Manager ... 
+        OK: OpenVAS Manager is present in version 6.0.1.
+        OK: OpenVAS Manager client certificate is valid and present as /var/lib/openvas/CA/clientcert.pem.
+        OK: OpenVAS Manager database found in /var/lib/openvas/mgr/tasks.db.
+        OK: Access rights for the OpenVAS Manager database are correct.
+        OK: At least one user exists.
+        OK: sqlite3 found, extended checks of the OpenVAS Manager installation enabled.
+        OK: OpenVAS Manager database is at revision 146.
+        OK: OpenVAS Manager expects database at revision 146.
+        OK: Database schema is up to date.
+        OK: OpenVAS Manager database contains information about 46536 NVTs.
+        OK: OpenVAS SCAP database found in /var/lib/openvas/scap-data/scap.db.
+        OK: OpenVAS CERT database found in /var/lib/openvas/cert-data/cert.db.
+        OK: xsltproc found.
+Step 3: Checking user configuration ... 
+        WARNING: Your password policy is empty.
+        SUGGEST: Edit the /etc/openvas/pwpolicy.conf file to set a password policy.
+Step 4: Checking Greenbone Security Assistant (GSA) ... 
+        OK: Greenbone Security Assistant is present in version 6.0.1.
+Step 5: Checking OpenVAS CLI ... 
+        OK: OpenVAS CLI version 1.4.0.
+Step 6: Checking Greenbone Security Desktop (GSD) ... 
+        SKIP: Skipping check for Greenbone Security Desktop.
+Step 7: Checking if OpenVAS services are up and running ... 
+        OK: netstat found, extended checks of the OpenVAS services enabled.
+        ERROR: OpenVAS Scanner is NOT running!
+        FIX: Start OpenVAS Scanner (openvassd).
+        WARNING: OpenVAS Manager is running and listening only on the local interface.
+        This means that you will not be able to access the OpenVAS Manager from the
+        outside using GSD or OpenVAS CLI.
+        SUGGEST: Ensure that OpenVAS Manager listens on all interfaces unless you want
+        a local service only.
+        OK: OpenVAS Manager is listening on port 9390, which is the default port.
+        WARNING: Greenbone Security Assistant is running and listening only on the local interface.
+        This means that you will not be able to access the Greenbone Security Assistant from the
+        outside using a web browser.
+        SUGGEST: Ensure that Greenbone Security Assistant listens on all interfaces.
+        OK: Greenbone Security Assistant is listening on port 9392, which is the default port.
+
+ ERROR: Your OpenVAS-8 installation is not yet complete!
+
+Please follow the instructions marked with FIX above and run this
+script again.
+
+If you think this result is wrong, please report your observation
+and help us to improve this check routine:
+http://lists.wald.intevation.org/mailman/listinfo/openvas-discuss
+Please attach the log-file (/tmp/openvas-check-setup.log) to help us analyze the problem.
+
+Synchronizing state for openvas-manager.service with sysvinit using update-rc.d...
+Executing /usr/sbin/update-rc.d openvas-manager defaults
+Executing /usr/sbin/update-rc.d openvas-manager disable
+update-rc.d: error: openvas-manager Default-Start contains no runlevels, aborting.
+Synchronizing state for openvas-scanner.service with sysvinit using update-rc.d...
+Executing /usr/sbin/update-rc.d openvas-scanner defaults
+Executing /usr/sbin/update-rc.d openvas-scanner disable
+update-rc.d: error: openvas-scanner Default-Start contains no runlevels, aborting.
+Synchronizing state for greenbone-security-assistant.service with sysvinit using update-rc.d...
+Executing /usr/sbin/update-rc.d greenbone-security-assistant defaults
+Executing /usr/sbin/update-rc.d greenbone-security-assistant disable
+update-rc.d: error: greenbone-security-assistant Default-Start contains no runlevels, aborting.
+
+
+ [+] Installing Burp Suite (Community Edition) ~ web application proxy
+Selecting previously unselected package libnss3-tools.
+(Reading database ... 297451 files and directories currently installed.)
+Preparing to unpack .../libnss3-tools_2%3a3.17.2-1.1+deb8u1_amd64.deb ...
+Unpacking libnss3-tools (2:3.17.2-1.1+deb8u1) ...
+Setting up libnss3-tools (2:3.17.2-1.1+deb8u1) ...
+certutil: function failed: SEC_ERROR_LEGACY_DATABASE: The certificate/key database is in an old, unsupported format.
+ [i] Installed Burp Suite CA
+find: cannot delete `/tmp/burp8914339146287293659.tmp': Directory not empty
+find: cannot delete `/tmp/burp4872882235371465114.tmp': Directory not empty
+

@@ -944,13 +944,14 @@ tar -zxf /tmp/axiom.tar.gz -C ~/.themes/
 xfconf-query -n -c xsettings -p /Net/ThemeName -s "axiomd"
 xfconf-query -n -c xsettings -p /Net/IconThemeName -s "Vibrancy-Kali-Dark"
 #--- Get new desktop wallpaper
+##--Temp for wallpapers
+# timeout 300 curl --progress -k -L -f "" > /usr/share/wallpapers/*name.jpg || echo -e ' '${RED}'[!]'${RESET}" Issue downloading *name.jpg" 1>&2
 mkdir -p /usr/share/wallpapers/
 timeout 300 curl --progress -k -L -f "http://orig11.deviantart.net/4b8b/f/2011/137/a/1/noob_saibot_wallpaper_2_hd_by_gurt1337-d3gl9nv.jpg" > /usr/share/wallpapers/noob_saibot2.jpg || echo -e ' '${RED}'[!]'${RESET}" Issue downloading noob_saibot_wallpaper_2_hd_by_gurt1337-d3gl9nv.jpg" 1>&2
 timeout 300 curl --progress -k -L -f "http://orig04.deviantart.net/e24e/f/2011/274/6/2/mortal_kombat___noob_saibot_by_xenon90-d4bib6a.jpg" > /usr/share/wallpapers/noob_saibot_by_xenon90-d4bib6a.jpg || echo -e ' '${RED}'[!]'${RESET}" Issue downloading mortal_kombat___noob_saibot_by_xenon90-d4bib6a.jpg" 1>&2
-timeout 300 curl --progress -k -L -f "http://www.hdwallpapers.im/download/kali_linux-wallpaper.jpg" > /usr/share/wallpapers/kali_black_stripes.jpg || echo -e ' '${RED}'[!]'${RESET}" Issue downloading kali_black_stripes.jpg" 1>&2
-timeout 300 curl --progress -k -L -f "http://fc01.deviantart.net/fs71/f/2011/118/e/3/bt___edb_wallpaper_by_xxdigipxx-d3f4nxv.png" > /usr/share/wallpapers/kali_bt_edb.jpg || echo -e ' '${RED}'[!]'${RESET}" Issue downloading kali_bt_edb.jpg" 1>&2
-timeout 300 curl --progress -k -L -f "http://pre07.deviantart.net/58d1/th/pre/i/2015/223/4/8/kali_2_0_alternate_wallpaper_by_xxdigipxx-d95800s.png" > /usr/share/wallpapers/kali_2_0_alternate_wallpaper.png || echo -e ' '${RED}'[!]'${RESET}" Issue downloading kali_2_0_alternate_wallpaper.png" 1>&2
-timeout 300 curl --progress -k -L -f "http://pre01.deviantart.net/4210/th/pre/i/2015/195/3/d/kali_2_0__personal__wp_by_xxdigipxx-d91c8dq.png" > /usr/share/wallpapers/kali_2_0__personal.png || echo -e ' '${RED}'[!]'${RESET}" Issue downloading kali_2_0__personal.png" 1>&2
+timeout 300 curl --progress -k -L -f "http://www.goodwp.com/pic/201402/1920x1200/goodwp.com-30740.jpg" > /usr/share/wallpapers/noob_smoke.jpg || echo -e ' '${RED}'[!]'${RESET}" Issue downloading noob_smoke.jpg" 1>&2
+timeout 300 curl --progress -k -L -f "http://wallpapercraze.com/images/wallpapers/tmp/1459982537_noobsaibot_493654.jpeg" > /usr/share/wallpapers/noob_saibot_493654.jpeg || echo -e ' '${RED}'[!]'${RESET}" noob_saibot_493654.jpeg" 1>&2
+timeout 300 curl --progress -k -L -f "http://i.imgur.com/CTWxDQh.jpg" > /usr/share/wallpapers/noob_CTWxDQh.jpg || echo -e ' '${RED}'[!]'${RESET}" Issue downloading noob_CTWxDQh.jpg" 1>&2
 _TMP="$(find /usr/share/wallpapers/ -maxdepth 1 -type f \( -name 'noob_*' -o -empty \) | xargs -n1 file | grep -i 'HTML\|empty' | cut -d ':' -f1)"
 for FILE in $(echo ${_TMP}); do rm -f "${FILE}"; done
 [[ -e "/usr/share/wallpapers/kali_default-1440x900.jpg" ]] && ln -sf /usr/share/wallpapers/kali/contents/images/1440x900.png /usr/share/wallpapers/kali_default-1440x900.jpg                       # Kali1
@@ -968,7 +969,7 @@ cp -f "${wallpaper}" /usr/share/gnome-shell/theme/KaliLogin.png                 
 file=/usr/local/bin/rand-wallpaper; [ -e "${file}" ] && cp -n $file{,.bkup}
 cat <<EOF > "${file}" || echo -e ' '${RED}'[!] Issue with writing file'${RESET} 1>&2
 #!/bin/bash
-wallpaper="\$(shuf -n1 -e \$(find /usr/share/wallpapers/ -maxdepth 1 -type f -name 'kali_*'))"
+wallpaper="\$(shuf -n1 -e \$(find /usr/share/wallpapers/ -maxdepth 1 -type f -name 'noob_*'))"
 /usr/bin/xfconf-query -n -c xfce4-desktop -p /backdrop/screen0/monitor0/image-path -t string -s \${wallpaper}
 /usr/bin/dconf write /org/gnome/desktop/screensaver/picture-uri "'file://\${wallpaper}'"    # Change lock wallpaper (before swipe)
 cp -f "\${wallpaper}" /usr/share/gnome-shell/theme/KaliLogin.png                            # Change login wallpaper (after swipe)
@@ -1382,7 +1383,7 @@ git config --global mergetool.prompt false
 
 ##### Setup iceweasel
 echo -e "\n ${GREEN}[+]${RESET} Installing ${GREEN}iceweasel${RESET} ~ GUI web browser"
-#apt-get install -y -qq unzip curl iceweasel || echo -e ' '${RED}'[!] Issue with apt-get'${RESET} 1>&2
+apt-get install -y -qq unzip curl iceweasel || echo -e ' '${RED}'[!] Issue with apt-get'${RESET} 1>&2
 #--- Configure iceweasel
 export DISPLAY=:0.0   #[[ -z $SSH_CONNECTION ]] || export DISPLAY=:0.0
 timeout 15 iceweasel >/dev/null 2>&1  #iceweasel & sleep 15s; killall -q -w iceweasel >/dev/null   # Start and kill. Files needed for first time run
@@ -2698,18 +2699,18 @@ rm -f /usr/share/windows-binaries/{AccessChk.zip,Eula.txt}
 
 
 ##### Install Python (Windows via WINE) *** WINE is too dated =(  (try again with debian 8 / kali 2.0)
-#echo -e "\n ${GREEN}[+]${RESET} Installing ${GREEN}Python${RESET} ~ python on Windows"
-#curl --progress -k -L -f "https://www.python.org/ftp/python/2.3/Python-2.3.exe" > /tmp/python.exe || echo -e ' '${RED}'[!]'${RESET}" Issue downloading python.exe" 1>&2                                                          #***!!! hardcoded path!
-#wine /tmp/python.exe /s
-#curl --progress -k -L -f "http://sourceforge.net/projects/pywin32/files/pywin32/Build%20218/pywin32-218.win32-py2.3.exe/download" > /tmp/pywin32.exe || echo -e ' '${RED}'[!]'${RESET}" Issue downloading pywin32.exe" 1>&2      #***!!! hardcoded path!
-#wine /tmp/pywin32.exe
-#
-#winetricks python26
-#
-#curl --progress -k -L -f "https://www.python.org/ftp/python/2.7.9/python-2.7.9.msi" > /tmp/python.msi || echo -e ' '${RED}'[!]'${RESET}" Issue downloading python.msi" 1>&2                                                      #***!!! hardcoded path!
-#wine msiexec /i /tmp/python.msi /qb
-#curl --progress -k -L -f "http://sourceforge.net/projects/pywin32/files/pywin32/Build%20219/pywin32-219.win32-py2.7.exe/download" > /tmp/pywin32.exe || echo -e ' '${RED}'[!]'${RESET}" Issue downloading pywin32.exe" 1>&2      #***!!! hardcoded path!
-#wine /tmp/pywin32.exe /s
+echo -e "\n ${GREEN}[+]${RESET} Installing ${GREEN}Python${RESET} ~ python on Windows"
+curl --progress -k -L -f "https://www.python.org/ftp/python/2.3/Python-2.3.exe" > /tmp/python.exe || echo -e ' '${RED}'[!]'${RESET}" Issue downloading python.exe" 1>&2                                                          #***!!! hardcoded path!
+wine /tmp/python.exe /s
+curl --progress -k -L -f "http://sourceforge.net/projects/pywin32/files/pywin32/Build%20218/pywin32-218.win32-py2.3.exe/download" > /tmp/pywin32.exe || echo -e ' '${RED}'[!]'${RESET}" Issue downloading pywin32.exe" 1>&2      #***!!! hardcoded path!
+wine /tmp/pywin32.exe
+
+winetricks python26
+
+curl --progress -k -L -f "https://www.python.org/ftp/python/2.7.9/python-2.7.9.msi" > /tmp/python.msi || echo -e ' '${RED}'[!]'${RESET}" Issue downloading python.msi" 1>&2                                                      #***!!! hardcoded path!
+wine msiexec /i /tmp/python.msi /qb
+curl --progress -k -L -f "http://sourceforge.net/projects/pywin32/files/pywin32/Build%20219/pywin32-219.win32-py2.7.exe/download" > /tmp/pywin32.exe || echo -e ' '${RED}'[!]'${RESET}" Issue downloading pywin32.exe" 1>&2      #***!!! hardcoded path!
+wine /tmp/pywin32.exe /s
 
 
 ##### Install veil framework
@@ -2853,7 +2854,7 @@ apt-get -y -qq install apt-show-versions || echo -e ' '${RED}'[!] Issue with apt
 echo -e "\n ${GREEN}[+]${RESET} Installing ${GREEN}Installing Exploit-DB binaries${RESET} ~ pre-compiled exploits"
 apt-get -y -qq install git || echo -e ' '${RED}'[!] Issue with apt-get'${RESET} 1>&2
 git clone -q https://github.com/offensive-security/exploit-database-bin-sploits.git/ /opt/exploitdb-bin-git/
-pushd /opt/exploitdb-bin/ >/dev/null
+pushd /opt/exploitdb-bin-git/ >/dev/null
 git pull -q
 popd >/dev/null
 
@@ -3312,14 +3313,9 @@ file=~/.bash_aliases; [ -e "${file}" ] && cp -n $file{,.bkup}   #/etc/bash.bash_
 grep -q '^## smb' "${file}" 2>/dev/null || echo -e '## smb\nalias sambaroot="cd /var/samba/"\n#alias smbroot="cd /var/samba/"\n' >> "${file}"
 #---ZSH_aliases
 echo "alias listen=\"lsof -i TCP -n -P | grep LISTEN\"" > ~/.zsh_aliases # show listening ports
-echo "alias ..="cd .."" >> ~/.zsh_aliases
-echo "alias ...="cd ../.." >> ~/.zsh_aliases
-echo "alias ....="cd ../../.."" >> ~/.zsh_aliases
-echo "alias .4="cd ../../../.."" >> ~/.zsh_aliases
 echo "alias lf="ls -CaF"" >> ~/.zsh_aliases
 echo "alias ff="find / -type f -name"" >> ~/.zsh_aliases
 echo "alias f.="find . -type f -name"" >> ~/.zsh_aliases
-echo "alias ports="netstat -tulanp"" >> ~/.zsh_aliases
 echo "alias update="apt-get update && apt-get upgrade"" >> ~/.zsh_aliases
 echo "alias psg="ps aux | grep -v grep | grep -i -e VSZ -e"" >> ~/.zsh_aliases
 echo "alias clc="history | awk '{CMD[$2]++;count++;}END { for (a in CMD)print CMD[a] " " CMD[a]/count*100 "% " a;}' | grep -v "./" | column -c3 -s " " -t | sort -nr | nl |  head -n10 "" >> ~/.zsh_aliases
@@ -3459,7 +3455,8 @@ chmod +x "${file}"
 echo -e "\n ${GREEN}[+]${RESET} Installing ${GREEN}PowerCat${RESET} ~ Poweshell netcat"
 apt-get -y -qq install git || echo -e ' '${RED}'[!] Issue with apt-get'${RESET} 1>&2#git clone -q https://github.com/secabstraction/PowerCat.git /opt/powercat-git/ || echo -e ' '${RED}'[!] Issue when git cloning'${RESET} 1>&2
 
-curl -fsSL https://get.docker.com/ | zsh
+curl --progress -fskSL https://get.docker.com/ /opt/docker| sh || echo -e ' '${RED}'[!]'${RESET}" Issue downloading Docker" 1>&2
+
 
 ##### Clean the system
 echo -e "\n ${GREEN}[+]${RESET} ${GREEN}Cleaning${RESET} the system"

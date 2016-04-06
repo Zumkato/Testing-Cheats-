@@ -1700,7 +1700,7 @@ grep -q "^function _msfvenom-list-generate" "${file}" 2>/dev/null || echo -e "fu
 #--- Apply new aliases
 if [[ "${SHELL}" == "/bin/zsh" ]]; then source ~/.zshrc else source "${file}"; fi
 #--- Generate
-msfvenom-list-generate; _msfvenom-list-generate
+msfvenom-list-generate ; _msfvenom-list-generate
 #--- Remove old temp files
 rm -f /tmp/msf.rc
 

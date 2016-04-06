@@ -1817,10 +1817,10 @@ EOF
 
 ##### Install PyCharm 
 echo -e "\n ${GREEN}[+]${RESET} Installing ${GREEN}PyCharm ${RESET} ~ Python IDE"
-timeout 300 curl --progress -k -L -f "https://download.jetbrains.com/python/pycharm-professional-5.0.4.tar.gz" > /tmp/pycharms-community.tar.gz || echo -e ' '${RED}'[!]'${RESET}" Issue downloading pycharms-professional.tar.gz" 1>&2       #***!!! hardcoded version!
+timeout 300 curl --progress -k -L -f "https://download.jetbrains.com/python/pycharm-professional-2016.1.1.tar.gz" > /tmp/pycharms-professional.tar.gz || echo -e ' '${RED}'[!]'${RESET}" Issue downloading pycharms-professional.tar.gz" 1>&2       #***!!! hardcoded version!
 tar -xf /tmp/pycharms-professional.tar.gz -C /tmp/
 rm -rf /usr/share/pycharms/
-mv -f /tmp/pycharm-professional-*/ /usr/share/pycharms
+mv -f /tmp/pycharm-professional*/ /usr/share/pycharms
 ln -sf /usr/share/pycharms/bin/pycharm.sh /usr/local/bin/pycharms
 
 
@@ -2432,25 +2432,6 @@ echo -e "\n ${GREEN}[+]${RESET} Installing ${GREEN}WeBaCoo${RESET} ~ Web backdoo
 apt-get -y -qq install git || echo -e ' '${RED}'[!] Issue with apt-get'${RESET} 1>&2
 git clone -q https://github.com/anestisb/WeBaCoo.git /opt/webacoo-git/ || echo -e ' '${RED}'[!] Issue when git cloning'${RESET} 1>&2
 ln -sf /opt/webacoo-git/ /usr/share/webshells/php/webacoo
-
-
-##### Install DAws
-#echo -e "\n ${GREEN}[+]${RESET} Installing ${GREEN}DAws${RESET} ~ (PHP) web shell"
-#apt-get -y -qq install git || echo -e ' '${RED}'[!] Issue with apt-get'${RESET} 1>&2
-#git clone -q https://github.com/dotcppfile/DAws.git /opt/daws-git/
-#pushd /opt/daws-git/ >/dev/null
-#git pull -q
-#popd >/dev/null
-#--- Link to others
-#apt-get -y -qq install webshells || echo -e ' '${RED}'[!] Issue with apt-get'${RESET} 1>&2
-#ln -sf /usr/share/daws-git /usr/share/webshells/php/daws
-#--- Bug
-#PHP Fatal error:  Call to undefined function rglob() in /var/www/DAws.php on line 241
-#--- Bug Fix
-#  11 <address>".$_SERVER["SERVER_SOFTWARE"]." Server at ".$_SERVER['SERVER_NAME']." Port 80</address>
-#--- Use
-#curl http://localhost/DAws.php --data 'pass=DAws'
-#echo '<form method="POST" action="localhost/DAws.php"><input type="text" name="pass" value="DAws"><input type="submit" value="Submit"></forum>'
 
 
 ##### Install cmdsql

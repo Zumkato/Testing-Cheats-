@@ -3365,11 +3365,19 @@ fi
 echo -e "\n ${GREEN}[+]${RESET} Installing ${GREEN}rsh-client${RESET} ~ remote shell connections"
 apt-get -y -qq install rsh-client || echo -e ' '${RED}'[!] Issue with apt-get'${RESET} 1>&2
 
+#--- Lair 1.0.1
+apt-get -y -qq install git || echo -e ' '${RED}'[!] Issue with apt-get'${RESET} 1>&2
+git clone -q https://github.com/fishnetsecurity/Lair/releases/download/v1.0.5/lair-v1.0.5-linux-x64.7z /opt/lair|| echo -e ' '${RED}'[!] Issue when lair'${RESET} 1>&2
+
+#--- Lair Drones
+apt-get -y -qq install git || echo -e ' '${RED}'[!] Issue with apt-get'${RESET} 1>&2
+git clone -q https://github.com/lair-framework/lair-drones-version1-deprecated/releases/download/1.0.1/lairdrone-1.0.1.tar.gz /opt/lair|| echo -e ' '${RED}'[!] Issue when Lair Drones'${RESET} 1>&2
+###---- Installing Drones
+pip install /opt/lair/lairdrone-1.0.1.tar.gz || echo -e ' '${RED}'[!] Issue with Drones'${RESET} 1>&2
 
 ##### Install sshpass
 echo -e "\n ${GREEN}[+]${RESET} Installing ${GREEN}sshpass${RESET} ~ automating SSH connections"
 apt-get -y -qq install sshpass || echo -e ' '${RED}'[!] Issue with apt-get'${RESET} 1>&2
-
 
 ##### Install DBeaver
 echo -e "\n ${GREEN}[+]${RESET} Installing ${GREEN}DBeaver${RESET} ~ GUI DB manager"
@@ -3381,7 +3389,6 @@ dpkg -i /tmp/dbeaver.deb
 #--- Add to path
 ln -sf /usr/share/dbeaver/dbeaver /usr/local/bin/dbeaver
 
-
 ##### Install ashttp
 echo -e "\n ${GREEN}[+]${RESET} Installing ${GREEN}ashttp${RESET} ~ Share your terminal via the web"
 apt-get -y -qq install git || echo -e ' '${RED}'[!] Issue with apt-get'${RESET} 1>&2
@@ -3392,27 +3399,6 @@ git clone -q https://github.com/JulienPalard/ashttp.git /opt/ashttp-git/ || echo
 echo -e "\n ${GREEN}[+]${RESET} Installing ${GREEN}gotty${RESET} ~ Share your terminal via the web"
 apt-get -y -qq install git || echo -e ' '${RED}'[!] Issue with apt-get'${RESET} 1>&2
 git clone -q https://github.com/yudai/gotty.git /opt/gotty-git/ || echo -e ' '${RED}'[!] Issue when git cloning'${RESET} 1>&2
-
-
-##### Setup a jail ~ http://allanfeid.com/content/creating-chroot-jail-ssh-access
-echo -e "\n ${GREEN}[+]${RESET} Setting up a ${GREEN}jail${RESET} ~ testing environment"
-apt-get -y -qq install debootstrap curl || echo -e ' '${RED}'[!] Issue with apt-get'${RESET} 1>&2
-#mkdir -p /var/jail/
-#debootstrap wheezy /var/jail/
-#SHELL=/bin/bash
-#chroot /var/jail
-#---
-#mkdir -p /var/jail/{dev,etc,lib,usr,bin}/
-#mkdir -p /var/jail/{,usr/}bin/
-#chown root\:root /var/jail
-#mknod -m 666 /var/jail/dev/null c 1 3
-#cp -f /etc/ld.so.cache /etc/ld.so.cache /etc/ld.so.conf /etc/nsswitch.conf /etc/hosts /var/jail/etc/
-#cp -f /bin/ls /bin/bash /var/jail/bin/
-##ldd /bin/ls
-#curl --progress -k -L -f "http://www.cyberciti.biz/files/lighttpd/l2chroot.txt" > /usr/sbin/l2chroot || echo -e ' '${RED}'[!]'${RESET}" Issue downloading l2chroot" 1>&2        #***!!! hardcoded path!
-#sed -i 's#^BASE=".*"#BASE="/var/jail"#' /usr/sbin/l2chroot
-#chmod +x /usr/sbin/l2chroot
-
 
 ##### Setup SSH
 echo -e "\n ${GREEN}[+]${RESET} Setting up ${GREEN}SSH${RESET} ~ CLI access"
@@ -3427,9 +3413,7 @@ ssh-keygen -b 4096 -t rsa -f /etc/ssh/ssh_host_rsa_key -P ""
 ssh-keygen -b 1024 -t dsa -f /etc/ssh/ssh_host_dsa_key -P ""
 ssh-keygen -b 521 -t ecdsa -f /etc/ssh/ssh_host_ecdsa_key -P ""
 ssh-keygen -b 4096 -t rsa -f ~/.ssh/id_rsa -P ""
-#--- Change MOTD
-apt-get install -y -qq cowsay || echo -e ' '${RED}'[!] Issue with apt-get'${RESET} 1>&2
-echo "Moo" | /usr/games/cowsay > /etc/motd
+
 #--- Change SSH settings
 file=/etc/ssh/sshd_config; [ -e "${file}" ] && cp -n $file{,.bkup}
 sed -i 's/^PermitRootLogin .*/PermitRootLogin yes/g' "${file}"      # Accept password login (overwrite Debian 8's more secuire default option...)
@@ -3441,6 +3425,9 @@ systemctl enable ssh
 file=~/.bash_aliases; [ -e "${file}" ] && cp -n $file{,.bkup}   #/etc/bash.bash_aliases
 ([[ -e "${file}" && "$(tail -c 1 ${file})" != "" ]]) && echo >> "${file}"
 grep -q '^## ssh' "${file}" 2>/dev/null || echo -e '## ssh\nalias ssh-start="systemctl restart ssh"\nalias ssh-stop="systemctl stop ssh"\n' >> "${file}"
+
+############ Pip Install ############
+pip install glances maybe whatportis yapf|| echo -e ' '${RED}'[!] Issue with pip'${RESET} 1>&2
 
 ##### Custom insert point
 

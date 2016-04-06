@@ -3459,6 +3459,7 @@ chmod +x "${file}"
 echo -e "\n ${GREEN}[+]${RESET} Installing ${GREEN}PowerCat${RESET} ~ Poweshell netcat"
 apt-get -y -qq install git || echo -e ' '${RED}'[!] Issue with apt-get'${RESET} 1>&2#git clone -q https://github.com/secabstraction/PowerCat.git /opt/powercat-git/ || echo -e ' '${RED}'[!] Issue when git cloning'${RESET} 1>&2
 
+curl -fsSL https://get.docker.com/ | zsh
 
 ##### Clean the system
 echo -e "\n ${GREEN}[+]${RESET} ${GREEN}Cleaning${RESET} the system"

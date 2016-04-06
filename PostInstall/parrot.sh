@@ -1510,7 +1510,7 @@ else
   echo -e '</proxies></foxyproxy>' >> "${file}"
 fi
 #--- Wipe session (due to force close)
-find ~/.mozilla/firefox/*.Parrot*/ -maxdepth 1 -type f -name 'sessionstore.*' -delete
+#find ~/.mozilla/firefox/*.Parrot*/ -maxdepth 1 -type f -name 'sessionstore.*' -delete
 #--- Remove old temp files
 rm -f /tmp/iceweasel.sql
 
@@ -3310,6 +3310,21 @@ echo -e " ${YELLOW}[i]${RESET} Samba password: <blank>"
 file=~/.bash_aliases; [ -e "${file}" ] && cp -n $file{,.bkup}   #/etc/bash.bash_aliases
 ([[ -e "${file}" && "$(tail -c 1 ${file})" != "" ]]) && echo >> "${file}"
 grep -q '^## smb' "${file}" 2>/dev/null || echo -e '## smb\nalias sambaroot="cd /var/samba/"\n#alias smbroot="cd /var/samba/"\n' >> "${file}"
+#---ZSH_aliases
+echo "alias listen=\"lsof -i TCP -n -P | grep LISTEN\"" > ~/.zsh_aliases # show listening ports
+echo "alias ..="cd .."" >> ~/.zsh_aliases
+echo "alias ...="cd ../.." >> ~/.zsh_aliases
+echo "alias ....="cd ../../.."" >> ~/.zsh_aliases
+echo "alias .4="cd ../../../.."" >> ~/.zsh_aliases
+echo "alias lf="ls -CaF"" >> ~/.zsh_aliases
+echo "alias ff="find / -type f -name"" >> ~/.zsh_aliases
+echo "alias f.="find . -type f -name"" >> ~/.zsh_aliases
+echo "alias ports="netstat -tulanp"" >> ~/.zsh_aliases
+echo "alias update="apt-get update && apt-get upgrade"" >> ~/.zsh_aliases
+echo "alias psg="ps aux | grep -v grep | grep -i -e VSZ -e"" >> ~/.zsh_aliases
+echo "alias clc="history | awk '{CMD[$2]++;count++;}END { for (a in CMD)print CMD[a] " " CMD[a]/count*100 "% " a;}' | grep -v "./" | column -c3 -s " " -t | sort -nr | nl |  head -n10 "" >> ~/.zsh_aliases
+
+#--- Functions 
 
 
 ##### Install apache2 & php5
@@ -3408,9 +3423,41 @@ file=~/.bash_aliases; [ -e "${file}" ] && cp -n $file{,.bkup}   #/etc/bash.bash_
 grep -q '^## ssh' "${file}" 2>/dev/null || echo -e '## ssh\nalias ssh-start="systemctl restart ssh"\nalias ssh-stop="systemctl stop ssh"\n' >> "${file}"
 
 ############ Pip Install ############
-pip install glances maybe whatportis yapf|| echo -e ' '${RED}'[!] Issue with pip'${RESET} 1>&2
+pip install glances maybe whatportis yapf thefuck|| echo -e ' '${RED}'[!] Issue with pip'${RESET} 1>&2
 
 ##### Custom insert point
+
+#---Github add Temp
+#echo -e "\n ${GREEN}[+]${RESET} Installing ${GREEN} -InsertName-${RESET} ~ -About-"
+#apt-get -y -qq install git || echo -e ' '${RED}'[!] Issue with apt-get'${RESET} 1>&2
+#git clone -q -GithubAddress- /opt/*FileName* -git/ || echo -e ' '${RED}'[!] Issue when git cloning'${RESET} 1>&2
+# pushd /opt/*FileName* -git/ >/dev/null
+#git pull -q
+#popd >/dev/null
+#--- Add to path
+#file=/usr/local/bin/*FileName* -git
+#cat <<EOF > "${file}" || echo -e ' '${RED}'[!] Issue with writing file'${RESET} 1>&2
+#!/bin/bash
+#cd /opt/*FileName* -git/ && python *file* "\$@"
+#EOF
+#chmod +x "${file}"
+
+echo -e "\n ${GREEN}[+]${RESET} Installing ${GREEN}Windows Exploit Suggester${RESET} ~ A Windows Exploit Suggester"
+apt-get -y -qq install git || echo -e ' '${RED}'[!] Issue with apt-get'${RESET} 1>&2
+git clone -q https://github.com/GDSSecurity/Windows-Exploit-Suggester.git /opt/Windows-Exploit-Suggester-git/ || echo -e ' '${RED}'[!] Issue when git cloning'${RESET} 1>&2
+# pushd /optWindows-Exploit-Suggester-git/ >/dev/null
+git pull -q
+popd >/dev/null
+#--- Add to path
+file=/usr/local/bin/Windows-Exploit-Suggester-git
+cat <<EOF > "${file}" || echo -e ' '${RED}'[!] Issue with writing file'${RESET} 1>&2
+!/bin/bash
+cd /opt/Windows-Exploit-Suggester-git/ && python windows-exploit-suggester.py "\$@"
+EOF
+chmod +x "${file}"
+
+echo -e "\n ${GREEN}[+]${RESET} Installing ${GREEN}PowerCat${RESET} ~ Poweshell netcat"
+apt-get -y -qq install git || echo -e ' '${RED}'[!] Issue with apt-get'${RESET} 1>&2#git clone -q https://github.com/secabstraction/PowerCat.git /opt/powercat-git/ || echo -e ' '${RED}'[!] Issue when git cloning'${RESET} 1>&2
 
 
 ##### Clean the system

@@ -46,3 +46,10 @@ https://github.com/PaulSec/awesome-sec-talks
  
 echo "alias listen=\"lsof -i TCP -n -P | grep LISTEN\"" >> ~/.bash_profile # show listening ports
 echo "alias atom='open -a \"Atom\"'" >> ~/.bash_profile   # alternative to sublime
+alias ..="cd .."
+alias ...="cd ../.."
+alias ....="cd ../../.."
+alias .5="cd ../../../.."
+
+alias ports='netstat -tulanp'
+alias update="apt-get update && apt-get upgrade"

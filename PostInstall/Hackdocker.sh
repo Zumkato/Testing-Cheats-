@@ -100,12 +100,12 @@ check_forked() {
 					;;
 				esac
 			fi
-					if [ -r /etc/debian_version ] && [ "$lsb_dist" != "Parrot *" ]; then
+					if [ -r /etc/debian_version ] && [ "$lsb_dist" != "Parrot" ]; then
 				# We're Debian and don't even know it!
 				lsb_dist=debian
 				dist_version="$(cat /etc/debian_version | sed 's/\/.*//' | sed 's/\..*//')"
 				case "$dist_version" in
-					8|'Parrot Security *')
+					8|'Parrot Security 2.3 - Glitch')
 						dist_version="jessie"
 					;;
 					7)

@@ -3438,7 +3438,7 @@ pip install glances maybe whatportis yapf thefuck|| echo -e ' '${RED}'[!] Issue 
 #EOF
 #chmod +x "${file}"
 
-echo -e "\n ${GREEN}[+]${RESET} Installing ${GREEN}Windows Exploit Suggester${RESET} ~ A Windows Exploit Suggester"
+echo -e "\n ${GREEN}[+]${RESET} Installing ${GREEN}Windows Exploit Suggester${RESET} ~ "A Windows Exploit Suggester"
 apt-get -y -qq install git || echo -e ' '${RED}'[!] Issue with apt-get'${RESET} 1>&2
 git clone -q https://github.com/GDSSecurity/Windows-Exploit-Suggester.git /opt/Windows-Exploit-Suggester-git/ || echo -e ' '${RED}'[!] Issue when git cloning'${RESET} 1>&2
 # pushd /optWindows-Exploit-Suggester-git/ >/dev/null
@@ -3452,10 +3452,11 @@ cd /opt/Windows-Exploit-Suggester-git/ && python windows-exploit-suggester.py "\
 EOF
 chmod +x "${file}"
 
-echo -e "\n ${GREEN}[+]${RESET} Installing ${GREEN}PowerCat${RESET} ~ Poweshell netcat"
+echo -e "\n ${GREEN}[+]${RESET} Installing ${GREEN}PowerCat${RESET} ~ "Netcat for Powershell "
 apt-get -y -qq install git || echo -e ' '${RED}'[!] Issue with apt-get'${RESET} 1>&2#git clone -q https://github.com/secabstraction/PowerCat.git /opt/powercat-git/ || echo -e ' '${RED}'[!] Issue when git cloning'${RESET} 1>&2
 
-curl --progress -fskSL https://get.docker.com/ /opt/docker| sh || echo -e ' '${RED}'[!]'${RESET}" Issue downloading Docker" 1>&2
+echo -e "\n ${GREEN}[+]${RESET} Installing ${GREEN}Docker${RESET} ~ Open-source application container engine""
+curl --progress -fskSL https://raw.githubusercontent.com/Zumkato/Testing-Cheats-/master/PostInstall/Hackdocker.sh | sh || echo -e ' '${RED}'[!]'${RESET}" Issue downloading Docker" 1>&2
 
 
 ##### Clean the system

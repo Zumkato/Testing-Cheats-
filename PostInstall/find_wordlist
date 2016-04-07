@@ -1,0 +1,15 @@
+#!/bin/bash
+
+# Comand to file password list 
+# find / \( -iname '*wordlist*' -or -iname '*passwords*' \) 
+
+#dontknow what to do with this yet 
+# ls -l {} \;
+
+#ToDo
+# add all out to a file.
+
+# for each line in file add directory and link statment 
+
+#possible 
+# remove al from tmp

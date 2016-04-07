@@ -1,0 +1,165 @@
+Put CDROM labeled [Debian_GNU/Linux_2.2__Stable__-_Official_Snapshot_amd64_LIVE/INSTALL_Binary_20160304-09:28] in the cdrom device and press [ENTER]
+mount: no medium found on /dev/sr0
+cp: cannot stat ‘/media/cdrom/dists/stable/non-free/Contents-amd64.gz’: No such file or directory
+umount: /media/cdrom: not mounted
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+
+  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0curl: (6) Could not resolve host: usa3.archive.parrotsec.org
+Download of http://usa3.archive.parrotsec.org/parrotsec/dists/stable-security/main/Contents-amd64.gz failed
+Command exited with code 6
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+
+  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0curl: (6) Could not resolve host: usa3.archive.parrotsec.org
+Download of http://usa3.archive.parrotsec.org/parrotsec/dists/stable-security/contrib/Contents-amd64.gz failed
+Command exited with code 6
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+
+  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0curl: (6) Could not resolve host: usa3.archive.parrotsec.org
+Download of http://usa3.archive.parrotsec.org/parrotsec/dists/stable-security/non-free/Contents-amd64.gz failed
+Command exited with code 6
+error: RPC failed; result=56, HTTP code = 200
+fatal: The remote end hung up unexpectedly
+fatal: early EOF
+fatal: index-pack failed
+./parrot.sh: line 2857: pushd: /opt/exploitdb-bin-git/: No such file or directory
+./parrot.sh: line 2859: popd: directory stack empty
+Traceback (most recent call last):
+  File "setup.py", line 2, in <module>
+    import ropper
+  File "/opt/ropper-git/ropper/__init__.py", line 20, in <module>
+    from .console import Console
+  File "/opt/ropper-git/ropper/console.py", line 20, in <module>
+    from ropper.loaders.loader import Loader,Type
+  File "/opt/ropper-git/ropper/loaders/__init__.py", line 20, in <module>
+    from . import elf
+  File "/opt/ropper-git/ropper/loaders/elf.py", line 23, in <module>
+    import filebytes.elf as elf
+ImportError: No module named filebytes.elf
+
+###                                                                        4.4%
+###########                                                               16.0%
+##############################                                            42.8%
+#############################################################             85.5%
+######################################################################## 100.0%
+
+######################################################################## 100.0%
+##                                                                         3.0%
+#########################                                                 35.4%
+######################################################################## 100.0%
+
+Extracting templates from packages: 50%
+Extracting templates from packages: 100%
+E: Sub-process /usr/bin/dpkg returned an error code (1)
+ [01;31m[!] Issue with apt-get[00m
+sed: can't read /usr/share/beef-xss/config.yaml: No such file or directory
+sed: can't read /usr/share/beef-xss/config.yaml: No such file or directory
+
+##########################                                                36.7%
+######################################################################## 100.0%
+Synchronizing state for atftpd.service with sysvinit using update-rc.d...
+Executing /usr/sbin/update-rc.d atftpd defaults
+insserv: warning: current start runlevel(s) (empty) of script `atftpd' overrides LSB defaults (2 3 4 5).
+insserv: warning: current stop runlevel(s) (0 1 2 3 4 5 6) of script `atftpd' overrides LSB defaults (0 1 6).
+Executing /usr/sbin/update-rc.d atftpd disable
+insserv: warning: current start runlevel(s) (empty) of script `atftpd' overrides LSB defaults (2 3 4 5).
+insserv: warning: current stop runlevel(s) (0 1 2 3 4 5 6) of script `atftpd' overrides LSB defaults (0 1 6).
+Synchronizing state for pure-ftpd.service with sysvinit using update-rc.d...
+Executing /usr/sbin/update-rc.d pure-ftpd defaults
+insserv: warning: current start runlevel(s) (empty) of script `pure-ftpd' overrides LSB defaults (2 3 4 5).
+insserv: warning: current stop runlevel(s) (0 1 2 3 4 5 6) of script `pure-ftpd' overrides LSB defaults (0 1 6).
+Executing /usr/sbin/update-rc.d pure-ftpd disable
+insserv: warning: current start runlevel(s) (empty) of script `pure-ftpd' overrides LSB defaults (2 3 4 5).
+insserv: warning: current stop runlevel(s) (0 1 2 3 4 5 6) of script `pure-ftpd' overrides LSB defaults (0 1 6).
+Synchronizing state for samba.service with sysvinit using update-rc.d...
+Executing /usr/sbin/update-rc.d samba defaults
+Executing /usr/sbin/update-rc.d samba disable
+update-rc.d: error: samba Default-Start contains no runlevels, aborting.
+grep: option requires an argument -- 'e'
+Usage: grep [OPTION]... PATTERN [FILE]...
+Try 'grep --help' for more information.
+head: cannot open ‘’ for reading: No such file or directory
+fatal: repository 'https://github.com/lair-framework/lair/releases/download/v1.0.5/lair-v1.0.5-linux-x64.7z/' not found
+ [01;31m[!] Issue when lair[00m
+fatal: repository 'https://github.com/lair-framework/lair-drones-version1-deprecated/releases/download/1.0.1/lairdrone-1.0.1.tar.gz/' not found
+ [01;31m[!] Issue when Lair Drones[00m
+ [01;31m[!] Issue with Drones[00m
+
+######################################################################## 100.0%
+                                                                           0.1%
+                                                                           0.3%
+                                                                           1.1%
+#                                                                          1.9%
+#                                                                          2.6%
+##                                                                         3.5%
+###                                                                        4.2%
+###                                                                        5.2%
+####                                                                       6.3%
+#####                                                                      7.5%
+######                                                                     8.7%
+#######                                                                    9.9%
+########                                                                  11.1%
+#########                                                                 12.7%
+##########                                                                14.3%
+##########                                                                15.2%
+############                                                              17.2%
+#############                                                             19.0%
+##############                                                            20.6%
+###############                                                           21.7%
+#################                                                         23.7%
+##################                                                        25.6%
+###################                                                       27.6%
+#####################                                                     29.5%
+######################                                                    31.8%
+#######################                                                   33.2%
+#########################                                                 35.8%
+##########################                                                37.4%
+#############################                                             40.4%
+##############################                                            42.5%
+################################                                          45.4%
+##################################                                        48.2%
+####################################                                      50.7%
+#######################################                                   54.5%
+#######################################                                   55.3%
+########################################                                  56.3%
+#########################################                                 57.4%
+##########################################                                58.8%
+###########################################                               60.2%
+############################################                              61.4%
+#############################################                             62.9%
+##############################################                            64.6%
+###############################################                           66.5%
+################################################                          67.7%
+##################################################                        70.8%
+###################################################                       71.9%
+####################################################                      72.9%
+#####################################################                     74.7%
+#######################################################                   76.6%
+########################################################                  78.3%
+#########################################################                 80.3%
+###########################################################               82.4%
+###########################################################               83.2%
+##############################################################            86.3%
+##############################################################            87.0%
+###############################################################           87.5%
+###############################################################           88.3%
+################################################################          88.9%
+################################################################          88.9%
+#################################################################         90.6%
+#################################################################         91.7%
+##################################################################        92.5%
+###################################################################       93.9%
+####################################################################      94.9%
+####################################################################      95.1%
+######################################################################    97.4%
+#######################################################################   99.3%
+######################################################################## 100.0%
+Synchronizing state for ssh.service with sysvinit using update-rc.d...
+Executing /usr/sbin/update-rc.d ssh defaults
+insserv: warning: current start runlevel(s) (empty) of script `ssh' overrides LSB defaults (2 3 4 5).
+insserv: warning: current stop runlevel(s) (2 3 4 5) of script `ssh' overrides LSB defaults (empty).
+Executing /usr/sbin/update-rc.d ssh enable
+./parrot.sh: line 3505: syntax error near unexpected token `('
+./parrot.sh: line 3505: `echo -e " ${YELLOW}[i]${RESET} + Check the above output (Did everything install? Any errors? (${RED}HINT: What's in RED${RESET}?)"'

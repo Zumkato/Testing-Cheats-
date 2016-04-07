@@ -7,11 +7,18 @@ Internt bookmarks and Plugins
 ADD/Change
 
 Add WorkSpaces 
+
 start xfce auto 
    cp /etc/skel/.xinitrc ~/
    nano ~/.xinitrc
    #to add
     exec startxfce4
+    
+    
+    
+Add destop icon to open file location 
+exo-open --launch FileManager %u
+ /path/to/file
 Docker     
 Pick background  
 lair -

@@ -958,7 +958,7 @@ mkdir -p /usr/share/wallpapers/
 timeout 300 curl --progress -k -L -f "http://orig11.deviantart.net/4b8b/f/2011/137/a/1/noob_saibot_wallpaper_2_hd_by_gurt1337-d3gl9nv.jpg" > /usr/share/wallpapers/noob_saibot2.jpg || echo -e ' '${RED}'[!]'${RESET}" Issue downloading noob_saibot_wallpaper_2_hd_by_gurt1337-d3gl9nv.jpg" 1>&2
 timeout 300 curl --progress -k -L -f "http://orig04.deviantart.net/e24e/f/2011/274/6/2/mortal_kombat___noob_saibot_by_xenon90-d4bib6a.jpg" > /usr/share/wallpapers/noob_saibot_by_xenon90-d4bib6a.jpg || echo -e ' '${RED}'[!]'${RESET}" Issue downloading mortal_kombat___noob_saibot_by_xenon90-d4bib6a.jpg" 1>&2
 timeout 300 curl --progress -k -L -f "http://www.goodwp.com/pic/201402/1920x1200/goodwp.com-30740.jpg" > /usr/share/wallpapers/noob_smoke.jpg || echo -e ' '${RED}'[!]'${RESET}" Issue downloading noob_smoke.jpg" 1>&2
-timeout 300 curl --progress -k -L -f "http://wallpapercraze.com/images/wallpapers/tmp/1459982537_noobsaibot_493654.jpeg" > /usr/share/wallpapers/noob_saibot_493654.jpeg || echo -e ' '${RED}'[!]'${RESET}" noob_saibot_493654.jpeg" 1>&2
+timeout 300 curl --progress -k -L -f "http://wallpapercraze.com/images/wallpapers/noobsaibot-493654.jpeg" > /usr/share/wallpapers/noob_saibot_493654.jpeg || echo -e ' '${RED}'[!]'${RESET}" noob_saibot_493654.jpeg" 1>&2
 timeout 300 curl --progress -k -L -f "http://i.imgur.com/CTWxDQh.jpg" > /usr/share/wallpapers/noob_CTWxDQh.jpg || echo -e ' '${RED}'[!]'${RESET}" Issue downloading noob_CTWxDQh.jpg" 1>&2
 _TMP="$(find /usr/share/wallpapers/ -maxdepth 1 -type f \( -name 'noob_*' -o -empty \) | xargs -n1 file | grep -i 'HTML\|empty' | cut -d ':' -f1)"
 for FILE in $(echo ${_TMP}); do rm -f "${FILE}"; done
@@ -966,7 +966,7 @@ for FILE in $(echo ${_TMP}); do rm -f "${FILE}"; done
 [[ -e "/usr/share/images/desktop-base/kali-wallpaper_1920x1080.png" ]] && ln -sf /usr/share/images/desktop-base/kali-wallpaper_1920x1080.png /usr/share/wallpapers/kali_default2.0-1920x1080.jpg   # Kali2
 [[ -e "/usr/share/gnome-shell/theme/KaliLogin.png" ]] && cp -f /usr/share/gnome-shell/theme/KaliLogin.png /usr/share/wallpapers/KaliLogin2.0-login.jpg                                             # Kali2
 #--- Change desktop wallpaper (single random pick - on each install).   Note: For now...
-wallpaper=$(shuf -n1 -e /usr/share/wallpapers/kali_*)   #wallpaper=/usr/share/wallpapers/kali_blue_splat.png
+wallpaper=$(shuf -n1 -e /usr/share/wallpapers/noob_*)   #wallpaper=/usr/share/wallpapers/kali_blue_splat.png
 xfconf-query -n -c xfce4-desktop -p /backdrop/screen0/monitor0/image-show -t bool -s true
 xfconf-query -n -c xfce4-desktop -p /backdrop/screen0/monitor0/image-path - string -s "${wallpaper}"   # XFCE
 dconf write /org/gnome/desktop/background/picture-uri "'file://${wallpaper}'"                          # GNOME

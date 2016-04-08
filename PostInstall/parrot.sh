@@ -39,10 +39,10 @@
 
 if [ 1 -eq 0 ]; then    # This is never true, thus it acts as block comments ;)
 ### One liner - Grab the latest version and execute! ###########################
-wget -qO kali.sh https://raw.github.com/g0tmi1k/os-scripts/master/kali.sh && bash kali.sh -dns -burp -openvas -rolling -keyboard gb -timezone "Europe/London"
+wget -qO parrot.sh https://raw.githubusercontent.com/Zumkato/Testing-Cheats-/master/PostInstall/parrot.sh && bash parrot.sh -dns -burp -openvas 
 ################################################################################
-## Shorten URL: >->->   wget -qO- http://bit.do/postkali | bash   <-<-<
-##  Alt Method: curl -s -L -k https://raw.github.com/g0tmi1k/kali-postinstall/master/kali_postinstall.sh > kali.sh | nohup bash
+## Shorten URL: >->->   wget -qO- https://goo.gl/MdG1fG | bash   <-<-<
+##  Alt Method: curl -s -L -k https://raw.githubusercontent.com/Zumkato/Testing-Cheats-/master/PostInstall/parrot.sh > parrot.sh | nohup bash
 ################################################################################
 fi
 

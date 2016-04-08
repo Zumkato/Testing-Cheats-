@@ -204,10 +204,10 @@ timeout 300 curl --progress -k -L -f "https://status.github.com/api/status.json"
 ##### Enable default network repositories ~ http://docs.kali.org/general-use/kali-linux-sources-list-repositories
 echo -e "\n ${GREEN}[+]${RESET} Enabling default ParrotSec OS ${GREEN}network repositories${RESET} ~ ...if they were not selected during installation"
 
-echo -e "\n ${GREEN}[+]${RESET} Installing ${GREEN}Parrot gpg and keyring${RESET}"
-wget -qO - http://archive.parrotsec.org/parrot/misc/parrotsec.gpg | apt-key add -
-	apt-get update
-	apt-get -y --force-yes install apt-parrot parrot-archive-keyring --no-install-recommends
+#echo -e "\n ${GREEN}[+]${RESET} Installing ${GREEN}Parrot gpg and keyring${RESET}"
+#wget -qO - http://archive.parrotsec.org/parrot/misc/parrotsec.gpg | apt-key add -
+#	apt-get -y -qq update
+#	apt-get -y --force-yes install apt-parrot parrot-archive-keyring --no-install-recommends
 
 #--- Add network repositories
 file=/etc/apt/sources.list; [ -e "${file}" ] && cp -n $file{,.bkup}
@@ -221,6 +221,11 @@ grep -q 'deb-src .* stable-security main contrib non-free' "${file}" 2>/dev/null
 #--- Security-updates
 grep -q 'deb .* stable-updates main contrib non-free' "${file}" 2>/dev/null || echo "deb http://euro3.archive.parrotsec.org/parrotsec stable-security main contrib non-free" >> "${file}"
 grep -q 'deb-src .* stable-updates main contrib non-free' "${file}" 2>/dev/null || echo "deb-src http://euro3.archive.parrotsec.org/parrotsec stable-security main contrib non-free" >> "${file}"
+
+#---Remove CDROM from repositories
+#file=/etc/apt/sources.list; [ -e "${file}" ] && cp -n $file{,.bkup}
+#([[ -e "${file}" && "$(tail -c 1 ${file})" != "" ]]) && echo >> "${file}"
+
 
 #--- Update
 apt-get -qq update
@@ -1799,24 +1804,24 @@ EOF
 
 
 ###### Install atom
-#echo -e "\n ${GREEN}[+]${RESET} Installing ${GREEN}atom${RESET} ~ text editor"
-#timeout 300 curl --progress -k -L -f "https://atom.io/download/deb" > /tmp/atom.deb || echo -e ' '${RED}'[!]'${RESET}" Issue downloading atom.deb" 1>&2   #***!!! hardcoded version! Need to manually check for updates
-#dpkg -i /tmp/atom.deb
+echo -e "\n ${GREEN}[+]${RESET} Installing ${GREEN}atom${RESET} ~ text editor"
+timeout 300 curl --progress -k -L -f "https://github.com/atom/atom/releases/download/v1.6.2/atom-amd64.deb" > /tmp/atom.deb || echo -e ' '${RED}'[!]'${RESET}" Issue downloading atom.deb" 1>&2   #***!!! hardcoded version! Need to manually check for updates
+dpkg -i /tmp/atom.deb
 ##--- Create config file
-#mkdir -p ~/.atom/
-#if [[ -f ~/.atom/config.cson ]]; then
-#  echo -e ' '${RED}'[!]'${RESET}" Atom config detected. Skipping..." 1>&2
-#else
-#  cat <<EOF > ~/.atom/config.cson
-#"*":
-#  welcome:
-#    showOnStartup: false
-#  core:
-#    disabledPackages: [
-#      "metrics"
-#    ]
-#EOF
-#fi
+mkdir -p ~/.atom/
+if [[ -f ~/.atom/config.cson ]]; then
+  echo -e ' '${RED}'[!]'${RESET}" Atom config detected. Skipping..." 1>&2
+else
+  cat <<EOF > ~/.atom/config.cson
+"*":
+  welcome:
+    showOnStartup: false
+  core:
+    disabledPackages: [
+      "metrics"
+    ]
+EOF
+fi
 
 
 ##### Install PyCharm 
@@ -1824,7 +1829,7 @@ echo -e "\n ${GREEN}[+]${RESET} Installing ${GREEN}PyCharm ${RESET} ~ Python IDE
 timeout 300 curl --progress -k -L -f "https://download.jetbrains.com/python/pycharm-professional-2016.1.1.tar.gz" > /tmp/pycharms-professional.tar.gz || echo -e ' '${RED}'[!]'${RESET}" Issue downloading pycharms-professional.tar.gz" 1>&2       #***!!! hardcoded version!
 tar -xf /tmp/pycharms-professional.tar.gz -C /tmp/
 rm -rf /usr/share/pycharms/
-mv -f /tmp/pycharm-professional*/ /usr/share/pycharms
+mv -f /tmp/pycharm-professional/ /usr/share/pycharms
 ln -sf /usr/share/pycharms/bin/pycharm.sh /usr/local/bin/pycharms
 
 
@@ -3361,12 +3366,15 @@ echo -e "\n ${GREEN}[+]${RESET} Installing ${GREEN}rsh-client${RESET} ~ remote s
 apt-get -y -qq install rsh-client || echo -e ' '${RED}'[!] Issue with apt-get'${RESET} 1>&2
 
 #--- Lair 1.0.1
-apt-get -y -qq install git || echo -e ' '${RED}'[!] Issue with apt-get'${RESET} 1>&2
-git clone -q https://github.com/fishnetsecurity/Lair/releases/download/v1.0.5/lair-v1.0.5-linux-x64.7z /opt/lair|| echo -e ' '${RED}'[!] Issue when lair'${RESET} 1>&2
+mkdir /opt/lair
+
+echo -e "\n ${GREEN}[+]${RESET} Installing ${GREEN}Lair v1.0.5 ${RESET} ~ Reporting framework"
+curl -sSLkf https://github.com/lair-framework/lair/releases/download/v1.0.5/lair-v1.0.5-linux-x64.7z > /opt/lair/lair-v1.0.5-linux-x64.7z|| echo -e ' '${RED}'[!] Issue when lair'${RESET} 1>&2
+sleep 2s
+ex /opt/lair/
 
 #--- Lair Drones
-apt-get -y -qq install git || echo -e ' '${RED}'[!] Issue with apt-get'${RESET} 1>&2
-git clone -q https://github.com/lair-framework/lair-drones-version1-deprecated/releases/download/1.0.1/lairdrone-1.0.1.tar.gz /opt/lair|| echo -e ' '${RED}'[!] Issue when Lair Drones'${RESET} 1>&2
+curl -sSLkf https://github.com/lair-framework/lair-drones-version1-deprecated/releases/download/1.0.1/lairdrone-1.0.1.tar.gz /opt/lair/lairdrone-1.0.1.tar.gz|| echo -e ' '${RED}'[!] Issue when Lair Drones'${RESET} 1>&2
 ###---- Installing Drones
 pip install /opt/lair/lairdrone-1.0.1.tar.gz || echo -e ' '${RED}'[!] Issue with Drones'${RESET} 1>&2
 
@@ -3459,6 +3467,9 @@ echo -e "\n ${GREEN}[+]${RESET} Installing ${GREEN}PowerCat${RESET} ~ Netcat for
 apt-get -y -qq install git || echo -e ' '${RED}'[!] Issue with apt-get'${RESET} 1>&2
 git clone -q https://github.com/secabstraction/PowerCat.git /opt/powercat-git/ || echo -e ' '${RED}'[!] Issue when git cloning powercat'${RESET} 1>&2
 
+echo -e "\n ${GREEN}[+]${RESET} Installing ${GREEN}KeyBase${RESET} ~ Keys for everyone"
+curl -O https://dist.keybase.io/linux/deb/keybase-latest-amd64.deb \ && sudo dpkg -i keybase-latest-amd64.deb
+
 echo -e "\n ${GREEN}[+]${RESET} Installing ${GREEN}Docker${RESET} ~ Opensource application container engine"
 curl --progress -fskSL "https://raw.githubusercontent.com/Zumkato/Testing-Cheats-/master/PostInstall/Hackdocker.sh" | sh || echo -e ' '${RED}'[!]${RESET} Issue downloading Docker' 1>&2
 
@@ -3468,14 +3479,15 @@ docker pull jess/hollywood
 sleep 3s
 ##---Dev testing
 docker pull golang 
+docker pull 
 sleep 3s
 docker pull 
 ##--- Malware ana
 sleep 3s
 remnux/thug
-
 ##---Misc docker images 
 docker pull debian 
+ 
  
 
 ##### Clean the system

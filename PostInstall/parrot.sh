@@ -213,14 +213,14 @@ echo -e "\n ${GREEN}[+]${RESET} Enabling default ParrotSec OS ${GREEN}network re
 file=/etc/apt/sources.list; [ -e "${file}" ] && cp -n $file{,.bkup}
 ([[ -e "${file}" && "$(tail -c 1 ${file})" != "" ]]) && echo >> "${file}"
 #--- Stable
-grep -q 'deb .* main non-free contrib' "${file}" 2>/dev/null || echo "deb http://euro3.archive.parrotsec.org/parrotsec stable main non-free contrib" >> "${file}"
-grep -q 'deb-src .* main non-free contrib' "${file}" 2>/dev/null || echo "deb-src http://euro3.archive.parrotsec.org/parrotsec stable main non-free contrib" >> "${file}"
+#grep -q 'deb .* main non-free contrib' "${file}" 2>/dev/null || echo "deb http://euro3.archive.parrotsec.org/parrotsec stable main non-free contrib" >> "${file}"
+#grep -q 'deb-src .* main non-free contrib' "${file}" 2>/dev/null || echo "deb-src http://euro3.archive.parrotsec.org/parrotsec stable main non-free contrib" >> "${file}"
 #--- Stable-security
 grep -q 'deb .* stable-security main contrib non-free' "${file}" 2>/dev/null || echo "deb http://euro3.archive.parrotsec.org/parrotsec stable-security main contrib non-free" >> "${file}"
 grep -q 'deb-src .* stable-security main contrib non-free' "${file}" 2>/dev/null || echo "deb-src http://euro3.archive.parrotsec.org/parrotsec stable-security main contrib non-free" >> "${file}"
 #--- Security-updates
-grep -q 'deb .* stable-updates main contrib non-free' "${file}" 2>/dev/null || echo "deb http://euro3.archive.parrotsec.org/parrotsec stable-security main contrib non-free" >> "${file}"
-grep -q 'deb-src .* stable-updates main contrib non-free' "${file}" 2>/dev/null || echo "deb-src http://euro3.archive.parrotsec.org/parrotsec stable-security main contrib non-free" >> "${file}"
+grep -q 'deb .* stable-updates main contrib non-free' "${file}" 2>/dev/null || echo "deb http://euro3.archive.parrotsec.org/parrotsec stable-updates main contrib non-free" >> "${file}"
+grep -q 'deb-src .* stable-updates main contrib non-free' "${file}" 2>/dev/null || echo "deb-src http://euro3.archive.parrotsec.org/parrotsec stable-updates main contrib non-free" >> "${file}"
 
 #---Remove CDROM from repositories
 #file=/etc/apt/sources.list; [ -e "${file}" ] && cp -n $file{,.bkup}

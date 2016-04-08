@@ -1,3 +1,23 @@
+ [+] Updating OS from network repositories ~ this may take a while depending on your Internet connection & ParrotSec version/age
+(Reading database ... 235723 files and directories currently installed.)
+Removing guile-2.0-libs:amd64 (2.0.11+1-9) ...
+Processing triggers for libc-bin (2.19-18+deb8u3) ...
+W: Duplicate sources.list entry http://euro3.archive.parrotsec.org/parrotsec/ stable/main amd64 Packages (/var/lib/apt/lists/euro3.archive.parrotsec.org_parrotsec_dists_stable_main_binary-amd64_Packages)
+W: Duplicate sources.list entry http://euro3.archive.parrotsec.org/parrotsec/ stable/contrib amd64 Packages (/var/lib/apt/lists/euro3.archive.parrotsec.org_parrotsec_dists_stable_contrib_binary-amd64_Packages)
+W: Duplicate sources.list entry http://euro3.archive.parrotsec.org/parrotsec/ stable/non-free amd64 Packages (/var/lib/apt/lists/euro3.archive.parrotsec.org_parrotsec_dists_stable_non-free_binary-amd64_Packages)
+W: Duplicate sources.list entry http://euro3.archive.parrotsec.org/parrotsec/ stable-security/main amd64 Packages (/var/lib/apt/lists/euro3.archive.parrotsec.org_parrotsec_dists_stable-security_main_binary-amd64_Packages)
+W: Duplicate sources.list entry http://euro3.archive.parrotsec.org/parrotsec/ stable-security/contrib amd64 Packages (/var/lib/apt/lists/euro3.archive.parrotsec.org_parrotsec_dists_stable-security_contrib_binary-amd64_Packages)
+W: Duplicate sources.list entry http://euro3.archive.parrotsec.org/parrotsec/ stable-security/non-free amd64 Packages (/var/lib/apt/lists/euro3.archive.parrotsec.org_parrotsec_dists_stable-security_non-free_binary-amd64_Packages)
+W: You may want to run apt-get update to correct these problems
+W: Duplicate sources.list entry http://euro3.archive.parrotsec.org/parrotsec/ stable/main amd64 Packages (/var/lib/apt/lists/euro3.archive.parrotsec.org_parrotsec_dists_stable_main_binary-amd64_Packages)
+W: Duplicate sources.list entry http://euro3.archive.parrotsec.org/parrotsec/ stable/contrib amd64 Packages (/var/lib/apt/lists/euro3.archive.parrotsec.org_parrotsec_dists_stable_contrib_binary-amd64_Packages)
+W: Duplicate sources.list entry http://euro3.archive.parrotsec.org/parrotsec/ stable/non-free amd64 Packages (/var/lib/apt/lists/euro3.archive.parrotsec.org_parrotsec_dists_stable_non-free_binary-amd64_Packages)
+W: Duplicate sources.list entry http://euro3.archive.parrotsec.org/parrotsec/ stable-security/main amd64 Packages (/var/lib/apt/lists/euro3.archive.parrotsec.org_parrotsec_dists_stable-security_main_binary-amd64_Packages)
+W: Duplicate sources.list entry http://euro3.archive.parrotsec.org/parrotsec/ stable-security/contrib amd64 Packages (/var/lib/apt/lists/euro3.archive.parrotsec.org_parrotsec_dists_stable-security_contrib_binary-amd64_Packages)
+W: Duplicate sources.list entry http://euro3.archive.parrotsec.org/parrotsec/ stable-security/non-free amd64 Packages (/var/lib/apt/lists/euro3.archive.parrotsec.org_parrotsec_dists_stable-security_non-free_binary-amd64_Packages)
+W: You may want to run apt-get update to correct these problems
+
+
 Put CDROM labeled [Debian_GNU/Linux_2.2__Stable__-_Official_Snapshot_amd64_LIVE/INSTALL_Binary_20160304-09:28] in the cdrom device and press [ENTER]
 mount: no medium found on /dev/sr0
 cp: cannot stat ‘/media/cdrom/dists/stable/non-free/Contents-amd64.gz’: No such file or directory

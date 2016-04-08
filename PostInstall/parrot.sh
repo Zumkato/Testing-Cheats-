@@ -11,6 +11,9 @@
 #  Modded for: Parrot Security OS 2.2.*                       #
 #-Licence-----------------------------------------------------#
 #  MIT License ~ http://opensource.org/licenses/MIT           #
+
+
+
 #-Notes-------------------------------------------------------#
 #  Run as root, just after a fresh/clean install of Kali 2.x. #
 #                             ---                             #
@@ -213,8 +216,8 @@ file=/etc/apt/sources.list; [ -e "${file}" ] && cp -n $file{,.bkup}
 grep -q 'deb .* main non-free contrib' "${file}" 2>/dev/null || echo "deb http://euro3.archive.parrotsec.org/parrotsec stable main non-free contrib" >> "${file}"
 grep -q 'deb-src .* main non-free contrib' "${file}" 2>/dev/null || echo "deb-src http://euro3.archive.parrotsec.org/parrotsec stable main non-free contrib" >> "${file}"
 #--- Stable-security
-grep -q 'deb .* stable-security main contrib non-free' "${file}" 2>/dev/null || echo "deb http://usa3.archive.parrotsec.org/parrotsec stable-security main contrib non-free" >> "${file}"
-grep -q 'deb-src .* stable-security main contrib non-free' "${file}" 2>/dev/null || echo "deb-src http://usa3.archive.parrotsec.org/parrotsec stable-security main contrib non-free" >> "${file}"
+grep -q 'deb .* stable-security main contrib non-free' "${file}" 2>/dev/null || echo "deb http://euro3.archive.parrotsec.org/parrotsec stable-security main contrib non-free" >> "${file}"
+grep -q 'deb-src .* stable-security main contrib non-free' "${file}" 2>/dev/null || echo "deb-src http://euro3.archive.parrotsec.org/parrotsec stable-security main contrib non-free" >> "${file}"
 #--- Security-updates
 grep -q 'deb .* stable-updates main contrib non-free' "${file}" 2>/dev/null || echo "deb http://euro3.archive.parrotsec.org/parrotsec stable-security main contrib non-free" >> "${file}"
 grep -q 'deb-src .* stable-updates main contrib non-free' "${file}" 2>/dev/null || echo "deb-src http://euro3.archive.parrotsec.org/parrotsec stable-security main contrib non-free" >> "${file}"
@@ -3438,10 +3441,10 @@ pip install glances maybe whatportis yapf thefuck|| echo -e ' '${RED}'[!] Issue 
 #EOF
 #chmod +x "${file}"
 
-echo -e "\n ${GREEN}[+]${RESET} Installing ${GREEN}Windows Exploit Suggester${RESET} ~ "A Windows Exploit Suggester"
+echo -e "\n ${GREEN}[+]${RESET} Installing ${GREEN}Windows Exploit Suggester${RESET} ~ A Windows Exploit Suggester"
 apt-get -y -qq install git || echo -e ' '${RED}'[!] Issue with apt-get'${RESET} 1>&2
 git clone -q https://github.com/GDSSecurity/Windows-Exploit-Suggester.git /opt/Windows-Exploit-Suggester-git/ || echo -e ' '${RED}'[!] Issue when git cloning'${RESET} 1>&2
-# pushd /optWindows-Exploit-Suggester-git/ >/dev/null
+pushd /opt/Windows-Exploit-Suggester-git/ >/dev/null
 git pull -q
 popd >/dev/null
 #--- Add to path
@@ -3452,20 +3455,28 @@ cd /opt/Windows-Exploit-Suggester-git/ && python windows-exploit-suggester.py "\
 EOF
 chmod +x "${file}"
 
-echo -e "\n ${GREEN}[+]${RESET} Installing ${GREEN}PowerCat${RESET} ~ "Netcat for Powershell "
-apt-get -y -qq install git || echo -e ' '${RED}'[!] Issue with apt-get'${RESET} 1>&2#git clone -q https://github.com/secabstraction/PowerCat.git /opt/powercat-git/ || echo -e ' '${RED}'[!] Issue when git cloning'${RESET} 1>&2
+echo -e "\n ${GREEN}[+]${RESET} Installing ${GREEN}PowerCat${RESET} ~ Netcat for Powershell "
+apt-get -y -qq install git || echo -e ' '${RED}'[!] Issue with apt-get'${RESET} 1>&2
+git clone -q https://github.com/secabstraction/PowerCat.git /opt/powercat-git/ || echo -e ' '${RED}'[!] Issue when git cloning powercat'${RESET} 1>&2
 
-echo -e "\n ${GREEN}[+]${RESET} Installing ${GREEN}Docker${RESET} ~ Open-source application container engine""
-curl --progress -fskSL https://raw.githubusercontent.com/Zumkato/Testing-Cheats-/master/PostInstall/Hackdocker.sh | sh || echo -e ' '${RED}'[!]'${RESET}" Issue downloading Docker" 1>&2
+echo -e "\n ${GREEN}[+]${RESET} Installing ${GREEN}Docker${RESET} ~ Opensource application container engine"
+curl --progress -fskSL "https://raw.githubusercontent.com/Zumkato/Testing-Cheats-/master/PostInstall/Hackdocker.sh" | sh || echo -e ' '${RED}'[!]${RESET} Issue downloading Docker' 1>&2
+
 #---Docker images 
-sleep 5s
-docker pull jess/hollywood
-sleep 5s
-docker pull golang
-sleep 5s
-docker pull debian
+#fun to have 
+docker pull jess/hollywood 
+sleep 3s
+##---Dev testing
+docker pull golang 
+sleep 3s
+docker pull 
+##--- Malware ana
+sleep 3s
+remnux/thug
 
-
+##---Misc docker images 
+docker pull debian 
+ 
 
 ##### Clean the system
 echo -e "\n ${GREEN}[+]${RESET} ${GREEN}Cleaning${RESET} the system"

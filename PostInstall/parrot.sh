@@ -1135,6 +1135,13 @@ grep -q '^## Extract file' "${file}" 2>/dev/null || echo -e '## Extract file, ex
 grep -q '^## strings' "${file}" 2>/dev/null || echo -e '## strings\nalias strings="strings -a"\n' >> "${file}"
 grep -q '^## history' "${file}" 2>/dev/null || echo -e '## history\nalias hg="history | grep"\n' >> "${file}"
 grep -q '^## Add more aliases' "${file}" 2>/dev/null || echo -e '## Add more aliases\nalias upd="sudo apt-get update"\nalias upg="sudo apt-get upgrade"\nalias ins="sudo apt-get install"\nalias rem="sudo apt-get purge"\nalias fix="sudo apt-get install -f"\n' >> "${file}"
+grep -q '^## show listening ports' "${file}" 2>/dev/null ||echo -e '## show listening ports\nalias listen="lsof -i TCP -n -P | grep LISTEN"\n'>> "${file}" 
+grep -q '^## list with filetype' "${file}" 2>/dev/null ||echo -e '## list with filetype\nalias lf="ls -CaF"\n'>> "${file}"
+grep -q '^## find all' "${file}" 2>/dev/null ||echo -e '## find all\nalias ff="find / -type f -name"\n'>> "${file}"
+grep -q '^## find here' "${file}" 2>/dev/null ||echo -e '## find here\nalias f.="find . -type f -name"\n'>> "${file}"
+grep -q '^## update and upgrade' "${file}" 2>/dev/null ||echo -e '## update and upgrade\nalias update="apt-get update && apt-get upgrade"\n'>> "${file}"
+grep -q '^## process in nice output' "${file}" 2>/dev/null ||echo -e '## process in nice output\nalias psg="ps aux | grep -v grep | grep -i -e VSZ -e"\n'>> "${file}"
+grep -q '^## Command History' "${file}" 2>/dev/null ||echo -e '## Command History\nalias clc="history | awk '{CMD[$2]++;count++;}END { for (a in CMD)print CMD[a] " " CMD[a]/count*100 "% " a;}' | grep -v "./" | column -c3 -s " " -t | sort -nr | nl |  head -n10 "" >> "${file}"
 #alias ll="ls -l --block-size=\'1 --color=auto"
 #--- Add in tools
 grep -q '^## nmap' "${file}" 2>/dev/null || echo -e '## nmap\nalias nmap="nmap --reason --open"\n' >> "${file}"
@@ -3320,13 +3327,7 @@ file=~/.bash_aliases; [ -e "${file}" ] && cp -n $file{,.bkup}   #/etc/bash.bash_
 ([[ -e "${file}" && "$(tail -c 1 ${file})" != "" ]]) && echo >> "${file}"
 grep -q '^## smb' "${file}" 2>/dev/null || echo -e '## smb\nalias sambaroot="cd /var/samba/"\n#alias smbroot="cd /var/samba/"\n' >> "${file}"
 #---ZSH_aliases
-echo "alias listen=\"lsof -i TCP -n -P | grep LISTEN\"" > ~/.zsh_aliases # show listening ports
-echo "alias lf="ls -CaF"" >> ~/.zsh_aliases
-echo "alias ff="find / -type f -name"" >> ~/.zsh_aliases
-echo "alias f.="find . -type f -name"" >> ~/.zsh_aliases
-echo "alias update="apt-get update && apt-get upgrade"" >> ~/.zsh_aliases
-echo "alias psg="ps aux | grep -v grep | grep -i -e VSZ -e"" >> ~/.zsh_aliases
-echo "alias clc="history | awk '{CMD[$2]++;count++;}END { for (a in CMD)print CMD[a] " " CMD[a]/count*100 "% " a;}' | grep -v "./" | column -c3 -s " " -t | sort -nr | nl |  head -n10 "" >> ~/.zsh_aliases
+
 
 #--- Functions 
 

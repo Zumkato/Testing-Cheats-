@@ -1833,10 +1833,10 @@ fi
 
 ##### Install PyCharm 
 echo -e "\n ${GREEN}[+]${RESET} Installing ${GREEN}PyCharm ${RESET} ~ Python IDE"
-timeout 300 curl --progress -k -L -f "https://download.jetbrains.com/python/pycharm-professional-2016.1.1.tar.gz" > /tmp/pycharms-professional.tar.gz || echo -e ' '${RED}'[!]'${RESET}" Issue downloading pycharms-professional.tar.gz" 1>&2       #***!!! hardcoded version!
-tar -xf /tmp/pycharms-professional.tar.gz -C /tmp/
+wget -qO /tmp/pycharms-professional.tar.gz "https://download.jetbrains.com/python/pycharm-professional-2016.1.1.tar.gz" #Hard-coded
+tar -zxf /tmp/pycharms-professional.tar.gz -C /tmp/
 rm -rf /usr/share/pycharms/
-mv -f /tmp/pycharm-professional/ /usr/share/pycharms
+mv -f /tmp/pycharm-2016.1.1/ /usr/share/pycharms #Hard-coded
 ln -sf /usr/share/pycharms/bin/pycharm.sh /usr/local/bin/pycharms
 
 

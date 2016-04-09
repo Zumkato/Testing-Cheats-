@@ -3370,11 +3370,12 @@ mkdir -p /opt/lair
 echo -e "\n ${GREEN}[+]${RESET} Installing ${GREEN}Lair v1.0.5 ${RESET} ~ Reporting framework"
 wget -qO /tmp/lair-v1.0.5-linux-x64.7z https://github.com/lair-framework/lair/releases/download/v1.0.5/lair-v1.0.5-linux-x64.7z  || echo -e ' '${RED}'[!] Issue when lair'${RESET} 1>&2
 sleep 2s
-tar -zxf /tmp/lair-v1.0.5-linux-x64.7z -C /opt/lair/
+7z x /tmp/lair-v1.0.5-linux.7z -y  -o/opt/lair/
 
 #--- Lair Drones
 curl -sSLkf https://github.com/lair-framework/lair-drones-version1-deprecated/releases/download/1.0.1/lairdrone-1.0.1.tar.gz > /opt/lair/lairdrone-1.0.1.tar.gz|| echo -e ' '${RED}'[!] Issue when Lair Drones'${RESET} 1>&2
 ###---- Installing Drones
+sleep 2s
 pip install /opt/lair/lairdrone-1.0.1.tar.gz || echo -e ' '${RED}'[!] Issue with Drones'${RESET} 1>&2
 
 ##### Install sshpass
@@ -3467,7 +3468,7 @@ apt-get -y -qq install git || echo -e ' '${RED}'[!] Issue with apt-get'${RESET} 
 git clone -q https://github.com/secabstraction/PowerCat.git /opt/powercat-git/ || echo -e ' '${RED}'[!] Issue when git cloning powercat'${RESET} 1>&2
 
 echo -e "\n ${GREEN}[+]${RESET} Installing ${GREEN}KeyBase${RESET} ~ Keys for everyone"
-curl -O https://dist.keybase.io/linux/deb/keybase-latest-amd64.deb \ && sudo dpkg -i keybase-latest-amd64.deb
+wget -qO keybase-latest-amd64.deb  https://dist.keybase.io/linux/deb/keybase-latest-amd64.deb && sudo dpkg -i keybase-latest-amd64.deb || echo -e ' '${RED}'[!] Issue downloading KeyBase'${RESET} 1>&2
 
 echo -e "\n ${GREEN}[+]${RESET} Installing ${GREEN}Docker${RESET} ~ Opensource application container engine"
 curl --progress -fskSL "https://raw.githubusercontent.com/Zumkato/Testing-Cheats-/master/PostInstall/Hackdocker.sh" | sh || echo -e ' '${RED}'[!]${RESET} Issue downloading Docker' 1>&2
@@ -3478,14 +3479,13 @@ docker pull jess/hollywood
 sleep 3s
 ##---Dev testing
 docker pull golang 
-docker pull 
+#docker pull 
 sleep 3s
-docker pull 
 ##--- Malware ana
 sleep 3s
-remnux/thug
+docker pull remnux/thug
 ##---Misc docker images 
-docker pull debian 
+#docker pull debian 
  
  
 

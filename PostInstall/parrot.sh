@@ -3362,7 +3362,7 @@ apt-get -y -qq install rsh-client || echo -e ' '${RED}'[!] Issue with apt-get'${
 #--- Lair 1.0.1
 mkdir -p /opt/lair
 echo -e "\n ${GREEN}[+]${RESET} Installing ${GREEN}Lair v1.0.5 ${RESET} ~ Reporting framework"
-wget -qO /tmp/lair-v1.0.5-linux-x64.7z https://github.com/lair-framework/lair/releases/download/v1.0.5/lair-v1.0.5-linux-x64.7z  || echo -e ' '${RED}'[!] Issue when lair'${RESET} 1>&2
+wget -qO /tmp/lair-v1.0.5-linux.7z https://github.com/lair-framework/lair/releases/download/v1.0.5/lair-v1.0.5-linux-x64.7z  || echo -e ' '${RED}'[!] Issue when lair'${RESET} 1>&2
 sleep 2s
 7z x /tmp/lair-v1.0.5-linux.7z -y  -o/opt/lair/
 

@@ -1,6 +1,6 @@
 #!/bin/bash
 #-Metadata----------------------------------------------------#
-#  Filename: parrot.sh                     (Update: 2016-20-03) #
+#  Filename: parrot.sh                   (Update: 2016-20-03) #
 #-Info--------------------------------------------------------#
 #  Personal post-install script for Parrot Security OS#
 #-Author(s)---------------------------------------------------#
@@ -15,7 +15,7 @@
 
 
 #-Notes-------------------------------------------------------#
-#  Run as root, just after a fresh/clean install of Parrot 2.x. #
+#  Run as root, after a fresh/clean install of Parrot 2.x.    #
 #                             ---                             #
 #  You will need 25GB+ of HDD space.                          #
 #                             ---                             #
@@ -3444,7 +3444,7 @@ pip install glances maybe whatportis yapf thefuck|| echo -e ' '${RED}'[!] Issue 
 #--- Add to path
 #file=/usr/local/bin/*FileName* -git
 #cat <<EOF > "${file}" || echo -e ' '${RED}'[!] Issue with writing file'${RESET} 1>&2
-#!/bin/bash
+##!/bin/bash
 #cd /opt/*FileName* -git/ && python *file* "\$@"
 #EOF
 #chmod +x "${file}"
@@ -3458,7 +3458,7 @@ popd >/dev/null
 #--- Add to path
 file=/usr/local/bin/Windows-Exploit-Suggester-git
 cat <<EOF > "${file}" || echo -e ' '${RED}'[!] Issue with writing file'${RESET} 1>&2
-!/bin/bash
+#!/bin/bash
 cd /opt/Windows-Exploit-Suggester-git/ && python windows-exploit-suggester.py "\$@"
 EOF
 chmod +x "${file}"
@@ -3475,15 +3475,39 @@ curl --progress -fskSL "https://raw.githubusercontent.com/Zumkato/Testing-Cheats
 
 #---Docker images 
 #fun to have 
-docker pull jess/hollywood 
+docker pull jess/hollywood || echo -e ' '${RED}'[!] Issue with hollywood docker image'${RESET} 1>&2
 sleep 3s
 ##---Dev testing
-docker pull golang 
+docker pull golang || echo -e ' '${RED}'[!] Issue with golang docker image'${RESET} 1>&2
 #docker pull 
 sleep 3s
-##--- Malware ana
+##--- Analysis
 sleep 3s
-docker pull remnux/thug
+docker pull remnux/thug || echo -e ' '${RED}'[!] Issue with thug docker image'${RESET} 1>&2
+mkdir -p ~/logs
+chmod a+xwr ~/logs
+sleep 3s
+docker pull remnux/crits || echo -e ' '${RED}'[!] Issue with crits docker image'${RESET} 1>&2
+mkdir -p ~/crits-data 
+chmod a+xwr ~/crits-data
+sleep 3s
+docker pull remnux/radare2 || echo -e ' '${RED}'[!] Issue with radare2 docker image'${RESET} 1>&2
+mkdir -p ~/radare2-workdir
+chmod a+xwr ~/radare2-workdir
+docker pull remnux/viper || echo -e ' '${RED}'[!] Issue with viper docker image'${RESET} 1>&2
+sleep 3s
+mkdir -p ~/viper-workdir
+chmod a+xwr ~/viper-workdir
+sleep 3s
+docker pull remnux/volatility
+mkdir -p ~/memdumps
+chmod a+xwr ~/memdumps
+sleep 3s
+docker pull remnux/maltrieve
+mkdir -p ~/archive
+chmod a+xwr ~/archive
+sleep 3s
+docker pull remnux/jsdetox
 ##---Misc docker images 
 #docker pull debian 
  

@@ -2717,9 +2717,9 @@ echo -e "\n ${GREEN}[+]${RESET} Installing ${GREEN}Python${RESET} ~ python on Wi
 curl --progress -k -L -f "https://www.python.org/ftp/python/2.3/Python-2.3.exe" > /tmp/python.exe || echo -e ' '${RED}'[!]'${RESET}" Issue downloading python.exe" 1>&2                                                          #***!!! hardcoded path!
 wine /tmp/python.exe /s
 curl --progress -k -L -f "http://sourceforge.net/projects/pywin32/files/pywin32/Build%20218/pywin32-218.win32-py2.3.exe/download" > /tmp/pywin32.exe || echo -e ' '${RED}'[!]'${RESET}" Issue downloading pywin32.exe" 1>&2      #***!!! hardcoded path!
-wine /tmp/pywin32.exe
+wine /tmp/pywin32.exewin
 
-winetricks python26
+winetricks python26 -q
 
 curl --progress -k -L -f "https://www.python.org/ftp/python/2.7.9/python-2.7.9.msi" > /tmp/python.msi || echo -e ' '${RED}'[!]'${RESET}" Issue downloading python.msi" 1>&2                                                      #***!!! hardcoded path!
 wine msiexec /i /tmp/python.msi /qb
@@ -2729,16 +2729,16 @@ wine /tmp/pywin32.exe /s
 
 ##### Install veil framework
 echo -e "\n ${GREEN}[+]${RESET} Installing ${GREEN}veil-evasion framework${RESET} ~ bypassing anti-virus"
-if [[ "$(uname -m)" == 'x86_64' ]]; then
-  dpkg --add-architecture i386 && apt-get -qq update
-  apt-get -y -qq install veil-evasion:i386 || echo -e ' '${RED}'[!] Issue with apt-get'${RESET} 1>&2
-  echo -e ' '${RED}'[!]'${RESET}" veil-evasion has issues with x64. Skipping..." 1>&2   # (https://bugs.kali.org/view.php?id=2673)
-else
+#if [[ "$(uname -m)" == 'x86_64' ]]; then
+#  dpkg --add-architecture i386 && apt-get -qq update
+#  apt-get -y -qq install veil-evasion:i386 || echo -e ' '${RED}'[!] Issue with apt-get'${RESET} 1>&2
+#  echo -e ' '${RED}'[!]'${RESET}" veil-evasion has issues with x64. Skipping..." 1>&2   # (https://bugs.kali.org/view.php?id=2673)
+#else
   apt-get -y -qq install veil-evasion || echo -e ' '${RED}'[!] Issue with apt-get'${RESET} 1>&2
   bash /usr/share/veil-evasion/setup/setup.sh --silent
   touch /etc/veil/settings.py
   sed -i 's/TERMINAL_CLEAR=".*"/TERMINAL_CLEAR="false"/' /etc/veil/settings.py
-fi
+#fi
 
 
 ##### Install OP packers

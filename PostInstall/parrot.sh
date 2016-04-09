@@ -209,6 +209,12 @@ echo -e "\n ${GREEN}[+]${RESET} Enabling default ParrotSec OS ${GREEN}network re
 #	apt-get -y -qq update
 #	apt-get -y --force-yes install apt-parrot parrot-archive-keyring --no-install-recommends
 
+
+#---Remove CDROM from repositories
+rm /etc/apt/sources.list
+sleep 2s
+touch /etc/apt/sources.list
+sleep 2s
 #--- Add network repositories
 file=/etc/apt/sources.list; [ -e "${file}" ] && cp -n $file{,.bkup}
 ([[ -e "${file}" && "$(tail -c 1 ${file})" != "" ]]) && echo >> "${file}"
@@ -222,9 +228,7 @@ grep -q 'deb-src .* stable-security main contrib non-free' "${file}" 2>/dev/null
 grep -q 'deb .* stable-updates main contrib non-free' "${file}" 2>/dev/null || echo "deb http://euro3.archive.parrotsec.org/parrotsec stable-updates main contrib non-free" >> "${file}"
 grep -q 'deb-src .* stable-updates main contrib non-free' "${file}" 2>/dev/null || echo "deb-src http://euro3.archive.parrotsec.org/parrotsec stable-updates main contrib non-free" >> "${file}"
 
-#---Remove CDROM from repositories
-#file=/etc/apt/sources.list; [ -e "${file}" ] && cp -n $file{,.bkup}
-#([[ -e "${file}" && "$(tail -c 1 ${file})" != "" ]]) && echo >> "${file}"
+
 
 
 #--- Update

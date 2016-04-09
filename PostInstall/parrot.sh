@@ -30,7 +30,7 @@
 #    -keyboard <value> = Change the keyboard layout language  #
 #    -timezone <value> = Change the timezone location         #
 #                                                             #
-#    e.g. # bash parrot.sh -osx -burp -openvas -keyboard gb     #
+#    e.g. # bash parrot.sh -osx -burp -openvas -keyboard gb   #
 #                             ---                             #
 #             ** This script is meant for _ME_. **            #
 #         ** EDIT this to meet _YOUR_ requirements! **        #
@@ -1835,7 +1835,6 @@ fi
 echo -e "\n ${GREEN}[+]${RESET} Installing ${GREEN}PyCharm ${RESET} ~ Python IDE"
 wget -qO /tmp/pycharms-professional.tar.gz "https://download.jetbrains.com/python/pycharm-professional-2016.1.1.tar.gz" #Hard-coded
 tar -zxf /tmp/pycharms-professional.tar.gz -C /tmp/
-rm -rf /usr/share/pycharms/
 mv -f /tmp/pycharm-2016.1.1/ /usr/share/pycharms #Hard-coded
 ln -sf /usr/share/pycharms/bin/pycharm.sh /usr/local/bin/pycharms
 
@@ -3367,15 +3366,14 @@ echo -e "\n ${GREEN}[+]${RESET} Installing ${GREEN}rsh-client${RESET} ~ remote s
 apt-get -y -qq install rsh-client || echo -e ' '${RED}'[!] Issue with apt-get'${RESET} 1>&2
 
 #--- Lair 1.0.1
-mkdir /opt/lair
-
+mkdir -p /opt/lair
 echo -e "\n ${GREEN}[+]${RESET} Installing ${GREEN}Lair v1.0.5 ${RESET} ~ Reporting framework"
-curl -sSLkf https://github.com/lair-framework/lair/releases/download/v1.0.5/lair-v1.0.5-linux-x64.7z > /opt/lair/lair-v1.0.5-linux-x64.7z|| echo -e ' '${RED}'[!] Issue when lair'${RESET} 1>&2
+wget -qO /tmp/lair-v1.0.5-linux-x64.7z https://github.com/lair-framework/lair/releases/download/v1.0.5/lair-v1.0.5-linux-x64.7z  || echo -e ' '${RED}'[!] Issue when lair'${RESET} 1>&2
 sleep 2s
-ex /opt/lair/
+tar -zxf /tmp/lair-v1.0.5-linux-x64.7z -C /opt/lair/
 
 #--- Lair Drones
-curl -sSLkf https://github.com/lair-framework/lair-drones-version1-deprecated/releases/download/1.0.1/lairdrone-1.0.1.tar.gz /opt/lair/lairdrone-1.0.1.tar.gz|| echo -e ' '${RED}'[!] Issue when Lair Drones'${RESET} 1>&2
+curl -sSLkf https://github.com/lair-framework/lair-drones-version1-deprecated/releases/download/1.0.1/lairdrone-1.0.1.tar.gz > /opt/lair/lairdrone-1.0.1.tar.gz|| echo -e ' '${RED}'[!] Issue when Lair Drones'${RESET} 1>&2
 ###---- Installing Drones
 pip install /opt/lair/lairdrone-1.0.1.tar.gz || echo -e ' '${RED}'[!] Issue with Drones'${RESET} 1>&2
 

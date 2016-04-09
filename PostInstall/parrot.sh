@@ -2121,11 +2121,6 @@ echo -e "\n ${GREEN}[+]${RESET} Installing ${GREEN}pwgen${RESET} ~ password gene
 apt-get install -y -qq pwgen || echo -e ' '${RED}'[!] Issue with apt-get'${RESET} 1>&2
 
 
-##### Install midnight commander
-#echo -e "\n ${GREEN}[+]${RESET} Installing ${GREEN}midnight commander${RESET} ~ CLI file manager"
-#apt-get -y -qq install mc || echo -e ' '${RED}'[!] Issue with apt-get'${RESET} 1>&2
-
-
 ##### Install htop
 echo -e "\n ${GREEN}[+]${RESET} Installing ${GREEN}htop${RESET} ~ CLI process viewer"
 apt-get -y -qq install htop || echo -e ' '${RED}'[!] Issue with apt-get'${RESET} 1>&2
@@ -2139,11 +2134,6 @@ apt-get -y -qq install powertop || echo -e ' '${RED}'[!] Issue with apt-get'${RE
 ##### Install iotop
 echo -e "\n ${GREEN}[+]${RESET} Installing ${GREEN}iotop${RESET} ~ CLI I/O usage"
 apt-get -y -qq install iotop || echo -e ' '${RED}'[!] Issue with apt-get'${RESET} 1>&2
-
-
-##### Install glance
-#echo -e "\n ${GREEN}[+]${RESET} Installing ${GREEN}glance${RESET} ~ CLI process viewer"
-#apt-get -y -qq install glance || echo -e ' '${RED}'[!] Issue with apt-get'${RESET} 1>&2
 
 
 ##### Install ca-certificates

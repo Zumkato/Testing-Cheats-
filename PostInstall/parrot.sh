@@ -15,7 +15,7 @@
 
 
 #-Notes-------------------------------------------------------#
-#  Run as root, just after a fresh/clean install of Kali 2.x. #
+#  Run as root, just after a fresh/clean install of Parrot 2.x. #
 #                             ---                             #
 #  You will need 25GB+ of HDD space.                          #
 #                             ---                             #
@@ -30,7 +30,7 @@
 #    -keyboard <value> = Change the keyboard layout language  #
 #    -timezone <value> = Change the timezone location         #
 #                                                             #
-#    e.g. # bash kali.sh -osx -burp -openvas -keyboard gb     #
+#    e.g. # bash parrot.sh -osx -burp -openvas -keyboard gb     #
 #                             ---                             #
 #             ** This script is meant for _ME_. **            #
 #         ** EDIT this to meet _YOUR_ requirements! **        #

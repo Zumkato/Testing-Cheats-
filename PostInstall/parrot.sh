@@ -1027,7 +1027,7 @@ file=/root/.gtk-bookmarks; [ -e "${file}" ] && cp -n $file{,.bkup}
 grep -q '^file:///root/Downloads ' "${file}" 2>/dev/null || echo 'file:///root/Downloads Downloads' >> "${file}"
 (dmidecode | grep -iq vmware) && (mkdir -p /mnt/hgfs/ 2>/dev/null; grep -q '^file:///mnt/hgfs ' "${file}" 2>/dev/null || echo 'file:///mnt/hgfs VMShare' >> "${file}")
 grep -q '^file:///tmp ' "${file}" 2>/dev/null || echo 'file:///tmp TMP' >> "${file}"
-grep -q '^file:///usr/share ' "${file}" 2>/dev/null || echo 'file:///usr/share Kali Tools' >> "${file}"
+grep -q '^file:///usr/share ' "${file}" 2>/dev/null || echo 'file:///usr/share Parrot Tools' >> "${file}"
 grep -q '^file:///opt ' "${file}" 2>/dev/null || echo 'file:///opt Tools' >> "${file}"
 grep -q '^file:///usr/local/src ' "${file}" 2>/dev/null || echo 'file:///usr/local/src SRC' >> "${file}"
 grep -q '^file:///var/ftp ' "${file}" 2>/dev/null || echo 'file:///var/ftp FTP' >> "${file}"
@@ -1140,7 +1140,7 @@ grep -q '^## strings' "${file}" 2>/dev/null || echo -e '## strings\nalias string
 grep -q '^## history' "${file}" 2>/dev/null || echo -e '## history\nalias hg="history | grep"\n' >> "${file}"
 grep -q '^## Add more aliases' "${file}" 2>/dev/null || echo -e '## Add more aliases\nalias upd="sudo apt-get update"\nalias upg="sudo apt-get upgrade"\nalias ins="sudo apt-get install"\nalias rem="sudo apt-get purge"\nalias fix="sudo apt-get install -f"\n' >> "${file}"
 grep -q '^## show listening ports' "${file}" 2>/dev/null ||echo -e '## show listening ports\nalias listen="lsof -i TCP -n -P | grep LISTEN"\n'>> "${file}" 
-grep -q '^## list with filetype' "${file}" 2>/dev/null ||echo -e '## list with filetype\nalias lf="ls -CaF"\n'>> "${file}"
+grep -q '^## list with filetype' "${file}" 2>/dev/null ||echo -e '## list with filetype\nalias lf="ls -CashF"\n'>> "${file}"
 grep -q '^## find all' "${file}" 2>/dev/null ||echo -e '## find all\nalias ff="find / -type f -name"\n'>> "${file}"
 grep -q '^## find here' "${file}" 2>/dev/null ||echo -e '## find here\nalias f.="find . -type f -name"\n'>> "${file}"
 grep -q '^## update and upgrade' "${file}" 2>/dev/null ||echo -e '## update and upgrade\nalias update="apt-get update && apt-get upgrade"\n'>> "${file}"

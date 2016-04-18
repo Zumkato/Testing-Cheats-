@@ -74,6 +74,8 @@ BLUE="\033[01;34m"     # Heading
 BOLD="\033[01;01m"     # Highlight
 RESET="\033[00m"       # Normal
 
+STAGE=0                                                       # Where are we up to
+TOTAL=$(grep '(${STAGE}/${TOTAL})' $0 | wc -l);(( TOTAL-- ))  # How many things have we got todo
 
 #-Arguments------------------------------------------------------------#
 
@@ -155,19 +157,14 @@ export TERM=xterm
 
 if [[ $(which gnome-shell) ]]; then
   ##### Disable notification package updater
-  echo -e "\n ${GREEN}[+]${RESET} Disabling ${GREEN}notification package updater${RESET} service ~ in case it runs during this script"
+(( STAGE++ )); echo -e "\n\n ${GREEN}[+]${RESET} (${STAGE}/${TOTAL}) Disabling ${GREEN}notification package updater${RESET} service ~ in case it runs during this script"
   export DISPLAY=:0.0   #[[ -z $SSH_CONNECTION ]] || export DISPLAY=:0.0
   dconf write /org/gnome/settings-daemon/plugins/updates/active false
   dconf write /org/gnome/desktop/notifications/application/gpk-update-viewer/active false
-  timeout 5 killall -w /usr/lib/apt/methods/http >/dev/null 2>&1   #|| echo -e ' '${RED}'[!]'${RESET}" Failed to kill ${RED}/usr/lib/apt/methods/http${RESET}"
-  #if [[ -e /var/lib/apt/lists/lock ]]; then
-  #  echo -e ' '${RED}'[!]'${RESET}" There might be ${RED}another (background) service${RESET} using ${BOLD}Advanced Packaging Tool${RESET} currently"
-  #  echo -e ' '${RED}'[!]'${RESET}" If you are 100% sure this is a mistake: $ rm -f /var/lib/{dpkg,apt/lists}/lock; dpkg --configure -a"
-  #  exit 1
-  #fi
+  timeout 5 killall -w /usr/lib/apt/methods/http >/dev/null 2>&1  
 
   ##### Disable screensaver
-  echo -e "\n ${GREEN}[+]${RESET} Disabling ${GREEN}screensaver${RESET}"
+(( STAGE++ )); echo -e "\n\n ${GREEN}[+]${RESET} (${STAGE}/${TOTAL}) Disabling ${GREEN}screensaver${RESET}"
   xset s 0 0
   xset s off
   gsettings set org.gnome.desktop.session idle-delay 0   # Disable swipe on lockscreen
@@ -175,7 +172,7 @@ fi
 
 
 ##### Check Internet access
-echo -e "\n ${GREEN}[+]${RESET} Checking ${GREEN}Internet access${RESET}"
+(( STAGE++ )); echo -e "\n\n ${GREEN}[+]${RESET} (${STAGE}/${TOTAL}) Checking ${GREEN}Internet access${RESET}"
 for i in {1..10}; do ping -c 1 -W ${i} www.google.com &>/dev/null && break; done
 if [[ "$?" -ne 0 ]]; then
   echo -e ' '${RED}'[!]'${RESET}" ${RED}Possible DNS issues${RESET}(?). Trying DHCP 'fix'" 1>&2
@@ -200,19 +197,22 @@ if [[ "$?" -ne 0 ]]; then
     echo -e ' '${RED}'[!]'${RESET}" Quitting..." 1>&2
     exit 1
   fi
+else
+  echo -e " ${YELLOW}[i]${RESET} ${YELLOW}Detected Internet access${RESET}" 1>&2
 fi
 #--- GitHub under DDoS?
-timeout 300 curl --progress -k -L -f "https://status.github.com/api/status.json" | grep -q "good" || (echo -e ' '${RED}'[!]'${RESET}" ${RED}GitHub is currently having issues${RESET}. ${BOLD}Lots may fail${RESET}. See: https://status.github.com/" 1>&2 && sleep 10s)
+(( STAGE++ )); echo -e " ${GREEN}[+]${RESET} (${STAGE}/${TOTAL}) Checking ${GREEN}GitHub status${RESET}"
+timeout 300 curl --progress -k -L -f "https://status.github.com/api/status.json" | grep -q "good" \
+  || (echo -e ' '${RED}'[!]'${RESET}" ${RED}GitHub is currently having issues${RESET}. ${BOLD}Lots may fail${RESET}. See: https://status.github.com/" 1>&2 \
+    && exit 1)
 
+(( STAGE++ )); echo -e "\n\n ${GREEN}[+]${RESET} (${STAGE}/${TOTAL})Installing ${GREEN}Parrot gpg and keyring${RESET}"
+ wget -qO - http://archive.parrotsec.org/parrot/misc/parrotsec.gpg | apt-key add -
+  apt-get -y -qq update
+	apt-get -y --force-yes install apt-parrot parrot-archive-keyring --no-install-recommends
 
 ##### Enable default network repositories ~ http://docs.kali.org/general-use/kali-linux-sources-list-repositories
-echo -e "\n ${GREEN}[+]${RESET} Enabling default ParrotSec OS ${GREEN}network repositories${RESET} ~ ...if they were not selected during installation"
-
-#echo -e "\n ${GREEN}[+]${RESET} Installing ${GREEN}Parrot gpg and keyring${RESET}"
-#wget -qO - http://archive.parrotsec.org/parrot/misc/parrotsec.gpg | apt-key add -
-#	apt-get -y -qq update
-#	apt-get -y --force-yes install apt-parrot parrot-archive-keyring --no-install-recommends
-
+(( STAGE++ )); echo -e "\n\n ${GREEN}[+]${RESET} (${STAGE}/${TOTAL}) Enabling default ParrotSec OS ${GREEN}network repositories${RESET} ~ ...if they were not selected during installation"
 
 #---Remove CDROM from repositories
 rm /etc/apt/sources.list
@@ -222,18 +222,12 @@ sleep 2s
 #--- Add network repositories
 file=/etc/apt/sources.list; [ -e "${file}" ] && cp -n $file{,.bkup}
 ([[ -e "${file}" && "$(tail -c 1 ${file})" != "" ]]) && echo >> "${file}"
-#--- Stable
-#grep -q 'deb .* main non-free contrib' "${file}" 2>/dev/null || echo "deb http://euro3.archive.parrotsec.org/parrotsec stable main non-free contrib" >> "${file}"
-#grep -q 'deb-src .* main non-free contrib' "${file}" 2>/dev/null || echo "deb-src http://euro3.archive.parrotsec.org/parrotsec stable main non-free contrib" >> "${file}"
 #--- Stable-security
 grep -q 'deb .* stable-security main contrib non-free' "${file}" 2>/dev/null || echo "deb http://euro3.archive.parrotsec.org/parrotsec stable-security main contrib non-free" >> "${file}"
 grep -q 'deb-src .* stable-security main contrib non-free' "${file}" 2>/dev/null || echo "deb-src http://euro3.archive.parrotsec.org/parrotsec stable-security main contrib non-free" >> "${file}"
 #--- Security-updates
 grep -q 'deb .* stable-updates main contrib non-free' "${file}" 2>/dev/null || echo "deb http://euro3.archive.parrotsec.org/parrotsec stable-updates main contrib non-free" >> "${file}"
 grep -q 'deb-src .* stable-updates main contrib non-free' "${file}" 2>/dev/null || echo "deb-src http://euro3.archive.parrotsec.org/parrotsec stable-updates main contrib non-free" >> "${file}"
-
-
-
 
 #--- Update
 apt-get -qq update
@@ -247,7 +241,7 @@ fi
 
 
 ##### Install kernel headers
-echo -e "\n ${GREEN}[+]${RESET} Installing ${GREEN}kernel headers${RESET}"
+(( STAGE++ )); echo -e "\n\n ${GREEN}[+]${RESET} (${STAGE}/${TOTAL}) Installing ${GREEN}kernel headers${RESET}"
 apt-get -y -qq install make gcc "linux-headers-$(uname -r)" || echo -e ' '${RED}'[!] Issue with apt-get'${RESET} 1>&2
 if [[ $? -ne 0 ]]; then
   echo -e ' '${RED}'[!]'${RESET}" There was an ${RED}issue installing kernel headers${RESET}" 1>&2
@@ -334,7 +328,7 @@ fi
 
 ##### Set static & protecting DNS name servers.   Note: May cause issues with forced values (e.g. captive portals etc)
 if [ "${hardenDNS}" != "false" ]; then
-  echo -e "\n ${GREEN}[+]${RESET} Setting static & protecting ${GREEN}DNS name servers${RESET}"
+ (( STAGE++ )); echo -e "\n\n ${GREEN}[+]${RESET} (${STAGE}/${TOTAL}) Setting static & protecting ${GREEN}DNS name servers${RESET}"
   file=/etc/resolv.conf; [ -e "${file}" ] && cp -n $file{,.bkup}
   chattr -i "${file}" 2>/dev/null
   #--- Remove duplicate results
@@ -353,14 +347,14 @@ fi
 
 
 ##### Update location information - set either value to "" to skip.
-echo -e "\n ${GREEN}[+]${RESET} Updating ${GREEN}location information${RESET}"
+(( STAGE++ )); echo -e "\n\n ${GREEN}[+]${RESET} (${STAGE}/${TOTAL}) Updating ${GREEN}location information${RESET}"
 [ "${keyboardApple}" != "false" ]  && echo -e "\n ${GREEN}[+]${RESET} Applying ${GREEN}Apple hardware${RESET} profile"
 #keyboardLayout="gb"          # Great Britain
 #timezone="Europe/London"     # London, Europe
 #[ -z "${timezone}" ] && timezone=Etc/UTC    #Etc/GMT vs Etc/UTC vs UTC vs Europe/London
 #--- Configure keyboard layout
 if [[ -n "${keyboardLayout}" ]]; then
-  echo -e "\n ${GREEN}[+]${RESET} Updating ${GREEN}location information${RESET} ~ keyboard layout (${BOLD}${keyboardLayout}${RESET})"
+  (( STAGE++ )); echo -e "\n\n ${GREEN}[+]${RESET} (${STAGE}/${TOTAL}) Updating ${GREEN}location information${RESET} ~ keyboard layout (${BOLD}${keyboardLayout}${RESET})"
   geoip_keyboard=$(curl -s http://ifconfig.io/country_code | tr '[:upper:]' '[:lower:]')
   [ "${geoip_keyboard}" != "${keyboardLayout}" ] && echo -e " ${YELLOW}[i]${RESET} Keyboard layout (${BOLD}${keyboardLayout}${RESET}}) doesn't match what's been detected via GeoIP (${BOLD}${geoip_keyboard}${RESET}})"
   file=/etc/default/keyboard; #[ -e "${file}" ] && cp -n $file{,.bkup}
@@ -372,19 +366,14 @@ else
 fi
 #--- Changing time zone
 if [[ -n "${timezone}" ]]; then
-  echo -e "\n ${GREEN}[+]${RESET} Updating ${GREEN}location information${RESET} ~ time zone (${BOLD}${timezone}${RESET})"
+  (( STAGE++ )); echo -e "\n\n ${GREEN}[+]${RESET} (${STAGE}/${TOTAL}) Updating ${GREEN}location information${RESET} ~ time zone (${BOLD}${timezone}${RESET})"
   echo "${timezone}" > /etc/timezone
   ln -sf "/usr/share/zoneinfo/$(cat /etc/timezone)" /etc/localtime
   dpkg-reconfigure -f noninteractive tzdata
 else
-  echo -e " ${YELLOW}[i]${RESET} ${YELLOW}Skipping time zone${RESET} (missing: '$0 ${BOLD}--timezone <value>${RESET}')..." 1>&2
+  (( STAGE++ )); echo -e "\n\n ${GREEN}[+]${RESET} (${STAGE}/${TOTAL}) ${YELLOW}Skipping time zone${RESET} (missing: '$0 ${BOLD}--timezone <value>${RESET}')..." 1>&2
 fi
-#--- Setting locale    # Can't do due to user input
-#sed -i 's/^# en_/en_/' /etc/locale.gen   #en_GB en_US
-#locale-gen
-##echo -e 'LC_ALL=en_US.UTF-8\nLANG=en_US.UTF-8\nLANGUAGE=en_US:en' > /etc/default/locale
-#dpkg-reconfigure -f noninteractive tzdata
-##locale -a    # Check
+
 #--- Installing ntp
 apt-get -y -qq install ntp ntpdate || echo -e ' '${RED}'[!] Issue with apt-get'${RESET} 1>&2
 #--- Configuring ntp
@@ -404,7 +393,7 @@ start_time=$(date +%s)
 
 if [ "${freezeDEB}" != "false" ]; then
   ##### Don't ever update these packages
-  echo -e "\n ${GREEN}[+]${RESET} ${GREEN}Don't update${RESET} these packages:"
+  (( STAGE++ )); echo -e "\n\n ${GREEN}[+]${RESET} (${STAGE}/${TOTAL}) ${GREEN}Don't update${RESET} these packages:"
   for x in metasploit-framework; do
     echo -e " ${YELLOW}[i]${RESET} + ${x}"
     echo "${x} hold" | dpkg --set-selections   # To update: echo "{$} install" | dpkg --set-selections
@@ -412,13 +401,13 @@ if [ "${freezeDEB}" != "false" ]; then
 fi
 
 if [ "${full}" != "false" ]; then
-  echo -e "\n ${GREEN}[+]${RESET} Installing ${GREEN}Parrot With all Tool and Features${RESET}"
+  (( STAGE++ )); echo -e "\n\n ${GREEN}[+]${RESET} (${STAGE}/${TOTAL}) Installing ${GREEN}Parrot With all Tool and Features${RESET}"
   apt-get -y --force-yes install parrot-interface parrot-tools parrot-interface-full parrot-tools-full
 fi
 
 
 ##### Update OS from network repositories
-echo -e "\n ${GREEN}[+]${RESET} ${GREEN}Updating OS${RESET} from network repositories ~ this ${BOLD}may take a while${RESET} depending on your Internet connection & ParrotSec version/age"
+(( STAGE++ )); echo -e "\n\n ${GREEN}[+]${RESET} (${STAGE}/${TOTAL}) ${GREEN}Updating OS${RESET} from network repositories ~ this ${BOLD}may take a while${RESET} depending on your Internet connection & ParrotSec version/age"
 for FILE in clean autoremove; do apt-get -y -qq "${FILE}"; done         # Clean up      clean remove autoremove autoclean
 export DEBIAN_FRONTEND=noninteractive
 apt-get -qq update && APT_LISTCHANGES_FRONTEND=none apt-get -o Dpkg::Options::="--force-confnew" -y dist-upgrade --fix-missing || echo -e ' '${RED}'[!] Issue with apt-get'${RESET} 1>&2
@@ -429,7 +418,7 @@ for FILE in clean autoremove; do apt-get -y -qq "${FILE}"; done         # Clean 
 #--- Check kernel stuff
 _TMP=$(dpkg -l | grep linux-image- | grep -vc meta)
 if [[ "${_TMP}" -gt 1 ]]; then
-  echo -e "\n ${YELLOW}[i]${RESET} Detected multiple kernels installed"
+  (( STAGE++ )); echo -e "\n\n ${GREEN}[+]${RESET} (${STAGE}/${TOTAL}) Detected multiple kernels installed"
   TMP=$(dpkg -l | grep linux-image | grep -v meta | sort -t '.' -k 2 -g | tail -n 1 | grep "$(uname -r)")
   [[ -z "${_TMP}" ]] && echo -e ' '${RED}'[!]'${RESET}' You are '${RED}'not using the latest kernel'${RESET} 1>&2 && echo -e " ${YELLOW}[i]${RESET} You have it downloaded & installed, ${YELLOW}just not using it${RESET}. You ${YELLOW}need to reboot${RESET}" && exit 1
   echo -e " ${YELLOW}[i]${RESET}   Clean up: apt-get remove --purge $(dpkg -l 'linux-image-*' | sed '/^ii/!d;/'"$(uname -r | sed "s/\(.*\)-\([^0-9]\+\)/\1/")"'/d;s/^[^ ]* [^ ]* \([^ ]*\).*/\1/;/[0-9]/!d')"   # DO NOT RUN IF NOT USING THE LASTEST KERNEL!
@@ -437,7 +426,7 @@ fi
 
 
 ##### Fix audio issues
-echo -e "\n ${GREEN}[+]${RESET} Fixing ${GREEN}audio${RESET} issues"
+(( STAGE++ )); echo -e "\n\n ${GREEN}[+]${RESET} (${STAGE}/${TOTAL}) Fixing ${GREEN}audio${RESET} issues"
 #--- Unmute on startup
 apt-get -y -qq install alsa-utils || echo -e ' '${RED}'[!] Issue with apt-get'${RESET} 1>&2
 #--- Set volume now
@@ -450,7 +439,7 @@ pactl set-sink-mute 0 0
 pactl set-sink-volume 0 25%
 
 ##### Configure GRUB
-echo -e "\n ${GREEN}[+]${RESET} Configuring ${GREEN}GRUB${RESET} ~ boot manager"
+(( STAGE++ )); echo -e "\n\n ${GREEN}[+]${RESET} (${STAGE}/${TOTAL}) Configuring ${GREEN}GRUB${RESET} ~ boot manager"
 grubTimeout=5
 (dmidecode | grep -iq virtual) && grubTimeout=1   # Much less if we are in a VM
 file=/etc/default/grub; [ -e "${file}" ] && cp -n $file{,.bkup}
@@ -459,7 +448,7 @@ sed -i 's/^GRUB_CMDLINE_LINUX_DEFAULT=.*/GRUB_CMDLINE_LINUX_DEFAULT=""/' "${file
 update-grub
 
 ###### Disable login manager (console login - non GUI) ***
-echo -e "\n ${GREEN}[+]${RESET} ${GREEN}Disabling GUI${RESET} login screen"
+(( STAGE++ )); echo -e "\n\n ${GREEN}[+]${RESET} (${STAGE}/${TOTAL}) ${GREEN}Disabling GUI${RESET} login screen"
 #--- Disable GUI login screen
 systemctl set-default multi-user.target   # ...or: file=/etc/X11/default-display-manager; [ -e "${file}" ] && cp -n $file{,.bkup} ; echo /bin/true > "${file}"   # ...or: mv -f /etc/rc2.d/S19gdm3 /etc/rc2.d/K17gdm   # ...or: apt-get -y -qq install chkconfig; chkconfig gdm3 off
 if [[ $(dmidecode | grep -i virtual) ]]; then
@@ -471,13 +460,6 @@ if [[ $(dmidecode | grep -i virtual) ]]; then
   sed -i 's/^.*AutomaticLogin = .*/AutomaticLogin = root/' "${file}"
 fi
 
-###### Configure startup   ***
-#echo -e "\n ${GREEN}[+]${RESET} Configuring ${GREEN}startup${RESET} ~ randomize the hostname, eth0 & wlan0s MAC address"
-#--- Start up
-#file=/etc/rc.local; [ -e "${file}" ] && cp -n $file{,.bkup}
-#grep -q "macchanger" "${file}" 2>/dev/null || sed -i "s#^exit 0#for INT in eth0 wlan0; do\n  $(which ip) link set \${INT} down\n  $(which macchanger) -r \${INT} \&\& $(which sleep) 3s\n  $(which ip) link set \${INT} up\ndone\n\n\nexit 0#" "${file}"
-#grep -q "hostname" "${file}" 2>/dev/null || sed -i "s#^exit 0#echo \$($(which cat) /dev/urandom | $(which tr) -dc 'A-Za-z' | $(which head) -c8) > /etc/hostname\nexit 0#" "${file}"
-#--- On demand
 file=/usr/local/bin/mac-rand; [ -e "${file}" ] && cp -n $file{,.bkup}
 cat <<EOF > "${file}" || echo -e ' '${RED}'[!] Issue with writing file'${RESET} 1>&2
 #!/bin/bash
@@ -491,18 +473,6 @@ done
 exit 0
 EOF
 chmod -f 0500 "${file}"
-#--- Auto on interface change state (untested)
-#file=/etc/network/if-pre-up.d/macchanger; [ -e "${file}" ] && cp -n $file{,.bkup}
-#cat <<EOF > "${file}" || echo -e ' '${RED}'[!] Issue with writing file'${RESET} 1>&2
-##!/bin/bash
-#[ "\${IFACE}" == "lo" ] && exit 0
-#ifconfig \${IFACE} down
-#macchanger -r \${IFACE}
-#ifconfig \${IFACE} up
-#exit 0
-#EOF
-#chmod -f 0500 "${file}"
-#--- Disable random MAC address on start up
 rm -f /etc/network/if-pre-up.d/macchanger
 
 
@@ -783,7 +753,7 @@ update-alternatives --set x-session-manager /usr/bin/xfce4-session   #update-alt
 
 
 ##### Configure XFCE4
-echo -e "\n ${GREEN}[+]${RESET} Configuring ${GREEN}XFCE4${RESET}${RESET} ~ desktop environment"
+(( STAGE++ )); echo -e "\n\n ${GREEN}[+]${RESET} (${STAGE}/${TOTAL}) Configuring ${GREEN}XFCE4${RESET}${RESET} ~ desktop environment"
 #--- Disable user folders
 apt-get -y -qq install xdg-user-dirs || echo -e ' '${RED}'[!] Issue with apt-get'${RESET} 1>&2
 xdg-user-dirs-update
@@ -871,7 +841,7 @@ rm -f ~/.cache/sessions/*
 
 
 ##### Cosmetics (themes & wallpapers)
-echo -e "\n ${GREEN}[+]${RESET} ${GREEN}Cosmetics${RESET}${RESET} ~ Making it different each startup"
+(( STAGE++ )); echo -e "\n\n ${GREEN}[+]${RESET} (${STAGE}/${TOTAL}) ${GREEN}Cosmetics${RESET}${RESET} ~ Making it different each startup"
 mkdir -p ~/.themes/
 export DISPLAY=:0.0   #[[ -z $SSH_CONNECTION ]] || export DISPLAY=:0.0
 #--- shiki-colors-light v1.3 XFCE4 theme
@@ -933,7 +903,7 @@ rm -f /tmp/Shiki-Colors-Light-Menus.tar* /tmp/axiom.tar*
 
 
 ##### Configure file   Note: need to restart xserver for effect
-echo -e "\n ${GREEN}[+]${RESET} Configuring ${GREEN}file${RESET} (Nautilus/Thunar) ~ GUI file system navigation"
+(( STAGE++ )); echo -e "\n\n ${GREEN}[+]${RESET} (${STAGE}/${TOTAL}) Configuring ${GREEN}file${RESET} (Nautilus/Thunar) ~ GUI file system navigation"
 mkdir -p ~/.config/gtk-2.0/
 file=~/.config/gtk-2.0/gtkfilechooser.ini; [ -e "${file}" ] && cp -n $file{,.bkup}
 ([[ -e "${file}" && "$(tail -c 1 ${file})" != "" ]]) && echo >> "${file}"
@@ -966,14 +936,14 @@ grep -q '^file:///var/www/html ' "${file}" 2>/dev/null || echo 'file:///var/www/
 
 
 ##### Configure GNOME terminal   Note: need to restart xserver for effect
-echo -e "\n ${GREEN}[+]${RESET} Configuring GNOME ${GREEN}terminal${RESET} ~ CLI interface"
+(( STAGE++ )); echo -e "\n\n ${GREEN}[+]${RESET} (${STAGE}/${TOTAL}) Configuring GNOME ${GREEN}terminal${RESET} ~ CLI interface"
 gconftool-2 -t bool -s /apps/gnome-terminal/profiles/Default/scrollback_unlimited true                   # Terminal -> Edit -> Profile Preferences -> Scrolling -> Scrollback: Unlimited -> Close
 gconftool-2 -t string -s /apps/gnome-terminal/profiles/Default/background_darkness 0.85611499999999996   # Not working 100%!
 gconftool-2 -t string -s /apps/gnome-terminal/profiles/Default/background_type transparent
 
 
 ##### Configure bash - all users
-echo -e "\n ${GREEN}[+]${RESET} Configuring ${GREEN}bash${RESET} ~ CLI shell"
+(( STAGE++ )); echo -e "\n\n ${GREEN}[+]${RESET} (${STAGE}/${TOTAL}) Configuring ${GREEN}bash${RESET} ~ CLI shell"
 file=/etc/bash.bashrc; [ -e "${file}" ] && cp -n $file{,.bkup}   #~/.bashrc
 grep -q "cdspell" "${file}" || echo "shopt -sq cdspell" >> "${file}"             # Spell check 'cd' commands
 grep -q "checkwinsize" "${file}" || echo "shopt -sq checkwinsize" >> "${file}"   # Wrap lines correctly after resizing
@@ -985,7 +955,7 @@ if [[ "${SHELL}" == "/bin/zsh" ]]; then source ~/.zshrc else source "${file}"; f
 
 
 ##### Install bash colour - all users
-echo -e "\n ${GREEN}[+]${RESET} Installing ${GREEN}bash colour${RESET} ~ colours shell output"
+(( STAGE++ )); echo -e "\n\n ${GREEN}[+]${RESET} (${STAGE}/${TOTAL}) Installing ${GREEN}bash colour${RESET} ~ colours shell output"
 file=/etc/bash.bashrc; [ -e "${file}" ] && cp -n $file{,.bkup}   #~/.bashrc
 ([[ -e "${file}" && "$(tail -c 1 ${file})" != "" ]]) && echo >> "${file}"
 sed -i 's/.*force_color_prompt=.*/force_color_prompt=yes/' "${file}"
@@ -1004,7 +974,7 @@ if [[ "${SHELL}" == "/bin/zsh" ]]; then source ~/.zshrc else source "${file}"; f
 
 
 ##### Install grc
-echo -e "\n ${GREEN}[+]${RESET} Installing ${GREEN}grc${RESET} ~ colours shell output"
+(( STAGE++ )); echo -e "\n\n ${GREEN}[+]${RESET} (${STAGE}/${TOTAL}) Installing ${GREEN}grc${RESET} ~ colours shell output"
 apt-get -y -qq install grc || echo -e ' '${RED}'[!] Issue with apt-get'${RESET} 1>&2
 #--- Setup aliases
 file=~/.bash_aliases; [ -e "${file}" ] && cp -n $file{,.bkup}   #/etc/bash.bash_aliases
@@ -1027,7 +997,7 @@ if [[ "${SHELL}" == "/bin/zsh" ]]; then source ~/.zshrc else source "${file}"; f
 
 
 ##### Install bash completion - all users
-echo -e "\n ${GREEN}[+]${RESET} Installing ${GREEN}bash completion${RESET} ~ tab complete CLI commands"
+(( STAGE++ )); echo -e "\n\n ${GREEN}[+]${RESET} (${STAGE}/${TOTAL}) Installing ${GREEN}bash completion${RESET} ~ tab complete CLI commands"
 apt-get -y -qq install bash-completion || echo -e ' '${RED}'[!] Issue with apt-get'${RESET} 1>&2
 file=/etc/bash.bashrc; [ -e "${file}" ] && cp -n $file{,.bkup}   #~/.bashrc
 sed -i '/# enable bash completion in/,+7{/enable bash completion/!s/^#//}' "${file}"
@@ -1036,7 +1006,7 @@ if [[ "${SHELL}" == "/bin/zsh" ]]; then source ~/.zshrc else source "${file}"; f
 
 
 ##### Configure aliases - root user
-echo -e "\n ${GREEN}[+]${RESET} Configuring ${GREEN}aliases${RESET} ~ CLI shortcuts"
+(( STAGE++ )); echo -e "\n\n ${GREEN}[+]${RESET} (${STAGE}/${TOTAL}) Configuring ${GREEN}aliases${RESET} ~ CLI shortcuts"
 #--- Enable defaults - root user
 for FILE in /etc/bash.bashrc ~/.bashrc ~/.bash_aliases; do    #/etc/profile /etc/bashrc /etc/bash_aliases /etc/bash.bash_aliases
   [[ ! -f "${FILE}" ]] && continue
@@ -1067,6 +1037,9 @@ grep -q '^## Directory navigation aliases' "${file}" 2>/dev/null || echo -e '## 
 grep -q '^## Extract file' "${file}" 2>/dev/null || echo -e '## Extract file, example. "ex package.tar.bz2"\nex() {\n  if [[ -f $1 ]]; then\n    case $1 in\n      *.tar.bz2)   tar xjf $1  ;;\n      *.tar.gz)  tar xzf $1  ;;\n      *.bz2)     bunzip2 $1  ;;\n      *.rar)     rar x $1  ;;\n      *.gz)    gunzip $1   ;;\n      *.tar)     tar xf $1   ;;\n      *.tbz2)    tar xjf $1  ;;\n      *.tgz)     tar xzf $1  ;;\n      *.zip)     unzip $1  ;;\n      *.Z)     uncompress $1  ;;\n      *.7z)    7z x $1   ;;\n      *)       echo $1 cannot be extracted ;;\n    esac\n  else\n    echo $1 is not a valid file\n  fi\n}\n' >> "${file}"
 grep -q '^## strings' "${file}" 2>/dev/null || echo -e '## strings\nalias strings="strings -a"\n' >> "${file}"
 grep -q '^## history' "${file}" 2>/dev/null || echo -e '## history\nalias hg="history | grep"\n' >> "${file}"
+grep -q '^## Network Services' "${file}" 2>/dev/null || echo -e '### Network Services\nalias listen="netstat -antp | grep LISTEN"\n' >> "${file}"
+grep -q '^## HDD size' "${file}" 2>/dev/null || echo -e '### HDD size\nalias hogs="for i in G M K; do du -ah | grep [0-9]$i | sort -nr -k 1; done | head -n 11"\n' >> "${file}"
+grep -q '^## Listing' "${file}" 2>/dev/null || echo -e '### Listing\nalias ll="ls -l --block-size=1 --color=auto"\n' >> "${file}"
 grep -q '^## Add more aliases' "${file}" 2>/dev/null || echo -e '## Add more aliases\nalias upd="sudo apt-get update"\nalias upg="sudo apt-get upgrade"\nalias ins="sudo apt-get install"\nalias rem="sudo apt-get purge"\nalias fix="sudo apt-get install -f"\n' >> "${file}"
 grep -q '^## show listening ports' "${file}" 2>/dev/null ||echo -e '## show listening ports\nalias listen="lsof -i TCP -n -P | grep LISTEN"\n'>> "${file}" 
 grep -q '^## list with filetype' "${file}" 2>/dev/null ||echo -e '## list with filetype\nalias lf="ls -CashF"\n'>> "${file}"
@@ -1083,6 +1056,8 @@ grep -q '^## airodump-ng' "${file}" 2>/dev/null || echo -e '## airodump-ng \nali
 grep -q '^## metasploit' "${file}" 2>/dev/null || echo -e '## metasploit\nalias msfc="systemctl start postgresql; msfdb start; msfconsole -q \"$@\""\nalias msfconsole="systemctl start postgresql; msfdb start; msfconsole \"$@\""\n' >> "${file}"
 [ "${openVAS}" != "false" ] && grep -q '^## openvas' "${file}" 2>/dev/null || echo -e '## openvas\nalias openvas="openvas-stop; openvas-start; sleep 3s; xdg-open https://127.0.0.1:9392/ >/dev/null 2>&1"\n' >> "${file}"
 grep -q '^## mana-toolkit' "${file}" 2>/dev/null || echo -e '## mana-toolkit\nalias mana-toolkit-start="a2ensite 000-mana-toolkit;a2dissite 000-default;systemctl apache2 restart"\n\nalias mana-toolkit-stop="a2dissite 000-mana-toolkit;a2ensite 000-default;systemctl apache2 restart"\n' >> "${file}"
+grep -q '^## samba' "${file}" 2>/dev/null || echo -e '## samba\nalias smb-start="systemctl restart smbd nmbd"\nalias smb-stop="systemctl stop smbd nmbd"\n' >> "${file}"
+grep -q '^## rdesktop' "${file}" 2>/dev/null || echo -e '## rdesktop\nalias rdesktop="rdesktop -z -P -g 90% -r disk:local=\"/tmp/\""\n' >> "${file}"
 grep -q '^## ssh' "${file}" 2>/dev/null || echo -e '## ssh\nalias ssh-start="systemctl restart ssh"\nalias ssh-stop="systemctl stop ssh"\n' >> "${file}"
 #airmon-vz --verbose
 #--- Add in folders
@@ -1095,12 +1070,13 @@ grep -q '^## edb' "${file}" 2>/dev/null || echo -e '## edb\nalias edb="cd /usr/s
 grep -q '^## wordlist' "${file}" 2>/dev/null || echo -e '## wordlist\nalias wordlist="cd /usr/share/wordlists/"\nalias wordls="cd /usr/share/wordlists/"\n' >> "${file}"
 #--- Apply new aliases
 if [[ "${SHELL}" == "/bin/zsh" ]]; then source ~/.zshrc else source "${file}"; fi
+source "${file}" || source ~/.zshrc
 #--- Check
 #alias
 
 
 ##### Install GNOME Terminator
-echo -e "\n ${GREEN}[+]${RESET} Installing GNOME ${GREEN}Terminator${RESET} ~ multiple terminals in a single window"
+(( STAGE++ )); echo -e "\n\n ${GREEN}[+]${RESET} (${STAGE}/${TOTAL}) Installing GNOME ${GREEN}Terminator${RESET} ~ multiple terminals in a single window"
 apt-get -y -qq install terminator || echo -e ' '${RED}'[!] Issue with apt-get'${RESET} 1>&2
 #--- Configure terminator
 mkdir -p ~/.config/terminator/
@@ -1142,14 +1118,15 @@ Icon=terminator
 Name=terminator
 X-XFCE-Commands=/usr/bin/terminator
 EOF
+#--- Set terminator for XFCE's default
+mkdir -p ~/.config/xfce4/
 file=~/.config/xfce4/helpers.rc; [ -e "${file}" ] && cp -n $file{,.bkup}    #exo-preferred-applications   #xdg-mime default
 ([[ -e "${file}" && "$(tail -c 1 ${file})" != "" ]]) && echo >> "${file}"
-sed -i 's#^TerminalEmulator=.*#TerminalEmulator=custom-TerminalEmulator#' "${file}"
-grep -q '^TerminalEmulator=custom-TerminalEmulator' "${file}" 2>/dev/null || echo -e 'TerminalEmulator=custom-TerminalEmulator' >> "${file}"
-
+sed -i 's_^TerminalEmulator=.*_TerminalEmulator=debian-x-terminal-emulator_' "${file}" 2>/dev/null \
+  || echo -e 'TerminalEmulator=debian-x-terminal-emulator' >> "${file}"
 
 ##### Install ZSH & Oh-My-ZSH - root user.   Note:  'Open terminal here', will not work with ZSH.   Make sure to have tmux already installed
-echo -e "\n ${GREEN}[+]${RESET} Installing ${GREEN}ZSH${RESET} & ${GREEN}Oh-My-ZSH${RESET} ~ unix shell"
+(( STAGE++ )); echo -e "\n\n ${GREEN}[+]${RESET} (${STAGE}/${TOTAL})Installing ${GREEN}ZSH${RESET} & ${GREEN}Oh-My-ZSH${RESET} ~ unix shell"
 #group="sudo"
 apt-get -y -qq install zsh git curl || echo -e ' '${RED}'[!] Issue with apt-get'${RESET} 1>&2
 #--- Setup oh-my-zsh
@@ -1171,21 +1148,10 @@ sed -i 's/.*DISABLE_AUTO_UPDATE="true"/DISABLE_AUTO_UPDATE="true"/' "${file}"
 sed -i 's/plugins=(.*)/plugins=(git tmux last-working-dir)/' "${file}"
 #--- Set zsh as default shell (current user)
 chsh -s "$(which zsh)"
-#--- Use it ~ Not much point to it being a post-install script
-#/usr/bin/env zsh      # Use it
-#source "${file}"          # Make sure to reload our config
-#--- Copy it to other user(s)
-#if [ -e "/home/${username}/" ]; then   # Will do this later on again, if there isn't already a user
-#  cp -f /{root,home/${username}}/.zshrc
-#  cp -rf /{root,home/${username}}/.oh-my-zsh/
-#  chown -R ${username}\:${group} /home/${username}/.zshrc /home/${username}/.oh-my-zsh/
-#  chsh "${username}" -s "$(which zsh)"
-#  sed -i 's#^export ZSH=/.*/.oh-my-zsh#export ZSH=/home/'${username}'/.oh-my-zsh#' /home/${username}/.zshrc
-#fi
 
 
 ##### Install tmux - all users
-echo -e "\n ${GREEN}[+]${RESET} Installing ${GREEN}tmux${RESET} ~ multiplex virtual consoles"
+(( STAGE++ )); echo -e "\n\n ${GREEN}[+]${RESET} (${STAGE}/${TOTAL})Installing ${GREEN}tmux${RESET} ~ multiplex virtual consoles"
 #group="sudo"
 #apt-get -y -qq remove screen   # Optional: If we're going to have/use tmux, why have screen?
 apt-get -y -qq install tmux || echo -e ' '${RED}'[!] Issue with apt-get'${RESET} 1>&2
@@ -1251,19 +1217,11 @@ file=~/.bash_aliases; [ -e "${file}" ] && cp -n $file{,.bkup}   #/etc/bash.bash_
 grep -q '^alias tmux' "${file}" 2>/dev/null || echo -e '## tmux\nalias tmux="tmux attach || tmux new"\n' >> "${file}"    #alias tmux="tmux attach -t $HOST || tmux new -s $HOST"
 #--- Apply new alias
 if [[ "${SHELL}" == "/bin/zsh" ]]; then source ~/.zshrc else source "${file}"; fi
-#--- Copy it to other user(s) ~
-#if [ -e /home/${username}/ ]; then   # Will do this later on again, if there isn't already a user
-#  cp -f /{etc/,home/${username}/.}tmux.conf    #cp -f /{root,home/${username}}/.tmux.conf
-#  chown ${username}\:${group} /home/${username}/.tmux.conf
-#  file=/home/${username}/.bash_aliases; [ -e "${file}" ] && cp -n $file{,.bkup}
-#  grep -q '^alias tmux' "${file}" 2>/dev/null || echo -e '## tmux\nalias tmux="tmux attach || tmux new"\n' >> "${file}"    #alias tmux="tmux attach -t $HOST || tmux new -s $HOST"
-#fi
-#--- Use it ~ bit pointless if used in a post-install script
-#tmux
+source "${file}" || source ~/.zshrc
 
 
 ##### Configure screen ~ if possible, use tmux instead!
-echo -e "\n ${GREEN}[+]${RESET} Configuring ${GREEN}screen${RESET} ~ multiplex virtual consoles"
+(( STAGE++ )); echo -e "\n\n ${GREEN}[+]${RESET} (${STAGE}/${TOTAL}) ~ multiplex virtual consoles"
 #apt-get -y -qq install screen || echo -e ' '${RED}'[!] Issue with apt-get'${RESET} 1>&2
 #--- Configure screen
 file=~/.screenrc; [ -e "${file}" ] && cp -n $file{,.bkup}
@@ -1289,7 +1247,7 @@ EOF
 
 
 ##### Install vim - all users
-echo -e "\n ${GREEN}[+]${RESET} Installing ${GREEN}vim${RESET} ~ CLI text editor"
+(( STAGE++ )); echo -e "\n\n ${GREEN}[+]${RESET} (${STAGE}/${TOTAL}) Installing ${GREEN}vim${RESET} ~ CLI text editor"
 apt-get -y -qq install vim || echo -e ' '${RED}'[!] Issue with apt-get'${RESET} 1>&2
 #--- Configure vim
 file=/etc/vim/vimrc; [ -e "${file}" ] && cp -n $file{,.bkup}   #~/.vimrc
@@ -1329,77 +1287,133 @@ git config --global merge.conflictstyle diff3
 git config --global mergetool.prompt false
 
 
-##### Setup iceweasel
-echo -e "\n ${GREEN}[+]${RESET} Installing ${GREEN}iceweasel${RESET} ~ GUI web browser"
-apt-get install -y -qq unzip curl iceweasel || echo -e ' '${RED}'[!] Issue with apt-get'${RESET} 1>&2
-#--- Configure iceweasel
-export DISPLAY=:0.0   #[[ -z $SSH_CONNECTION ]] || export DISPLAY=:0.0
-timeout 15 iceweasel >/dev/null 2>&1  #iceweasel & sleep 15s; killall -q -w iceweasel >/dev/null   # Start and kill. Files needed for first time run
-timeout 5 killall -9 -q -w iceweasel >/dev/null   #|| echo -e ' '${RED}'[!]'${RESET}" Failed to kill ${RED}iceweasel${RESET}"
-file=$(find ~/.mozilla/firefox/*.Parrot*/ -maxdepth 1 -type f -name 'prefs.js' -print -quit) && [ -e "${file}" ] && cp -n $file{,.bkup}   #/etc/iceweasel/pref/*.js
+##### Setup firefox
+(( STAGE++ )); echo -e "\n\n ${GREEN}[+]${RESET} (${STAGE}/${TOTAL}) Installing ${GREEN}firefox${RESET} ~ GUI web browser"
+apt -y -qq install unzip curl firefox-esr \
+  || echo -e ' '${RED}'[!] Issue with apt install'${RESET} 1>&2
+#--- Configure firefox
+export DISPLAY=:0.0
+timeout 15 firefox >/dev/null 2>&1                # Start and kill. Files needed for first time run
+timeout 5 killall -9 -q -w firefox-esr >/dev/null
+file=$(find ~/.mozilla/firefox/*.default*/ -maxdepth 1 -type f -name 'prefs.js' -print -quit)
+[ -e "${file}" ] \
+  && cp -n $file{,.bkup}   #/etc/firefox-esr/pref/*.js
 ([[ -e "${file}" && "$(tail -c 1 ${file})" != "" ]]) && echo >> "${file}"
-#sed -i 's/^.network.proxy.socks_remote_dns.*/user_pref("network.proxy.socks_remote_dns", true);' "${file}" 2>/dev/null || echo 'user_pref("network.proxy.socks_remote_dns", true);' >> "${file}"
-sed -i 's/^.browser.safebrowsing.enabled.*/user_pref("browser.safebrowsing.enabled", false);' "${file}" 2>/dev/null || echo 'user_pref("browser.safebrowsing.enabled", false);' >> "${file}"                             # Iceweasel -> Edit -> Preferences -> Security -> Block reported web forgeries
-sed -i 's/^.browser.safebrowsing.malware.enabled.*/user_pref("browser.safebrowsing.malware.enabled", false);' "${file}" 2>/dev/null || echo 'user_pref("browser.safebrowsing.malware.enabled", false);' >> "${file}"     # Iceweasel -> Edit -> Preferences -> Security -> Block reported attack sites
-sed -i 's/^.browser.safebrowsing.remoteLookups.enabled.*/user_pref("browser.safebrowsing.remoteLookups.enabled", false);' "${file}" 2>/dev/null || echo 'user_pref("browser.safebrowsing.remoteLookups.enabled", false);' >> "${file}"
-sed -i 's/^.*browser.startup.page.*/user_pref("browser.startup.page", 0);' "${file}" 2>/dev/null || echo 'user_pref("browser.startup.page", 0);' >> "${file}"                                              # Iceweasel -> Edit -> Preferences -> General -> When firefox starts: Show a blank page
-sed -i 's/^.*privacy.donottrackheader.enabled.*/user_pref("privacy.donottrackheader.enabled", true);' "${file}" 2>/dev/null || echo 'user_pref("privacy.donottrackheader.enabled", true);' >> "${file}"    # Privacy -> Enable: Tell websites I do not want to be tracked
-sed -i 's/^.*browser.showQuitWarning.*/user_pref("browser.showQuitWarning", true);' "${file}" 2>/dev/null || echo 'user_pref("browser.showQuitWarning", true);' >> "${file}"                               # Stop Ctrl+Q from quitting without warning
-sed -i 's/^.*extensions.https_everywhere._observatory.popup_shown.*/user_pref("extensions.https_everywhere._observatory.popup_shown", true);' "${file}" 2>/dev/null || echo 'user_pref("extensions.https_everywhere._observatory.popup_shown", true);' >> "${file}"
-sed -i 's/^.network.security.ports.banned.override/user_pref("network.security.ports.banned.override", "1-65455");' "${file}" 2>/dev/null || echo 'user_pref("network.security.ports.banned.override", "1-65455");' >> "${file}"    # Remove "This address is restricted"
+sed -i 's/^.network.proxy.socks_remote_dns.*/user_pref("network.proxy.socks_remote_dns", true);' "${file}" 2>/dev/null \
+  || echo 'user_pref("network.proxy.socks_remote_dns", true);' >> "${file}"
+sed -i 's/^.browser.safebrowsing.enabled.*/user_pref("browser.safebrowsing.enabled", false);' "${file}" 2>/dev/null \
+  || echo 'user_pref("browser.safebrowsing.enabled", false);' >> "${file}"
+sed -i 's/^.browser.safebrowsing.malware.enabled.*/user_pref("browser.safebrowsing.malware.enabled", false);' "${file}" 2>/dev/null \
+  || echo 'user_pref("browser.safebrowsing.malware.enabled", false);' >> "${file}"
+sed -i 's/^.browser.safebrowsing.remoteLookups.enabled.*/user_pref("browser.safebrowsing.remoteLookups.enabled", false);' "${file}" 2>/dev/null \
+  || echo 'user_pref("browser.safebrowsing.remoteLookups.enabled", false);' >> "${file}"
+sed -i 's/^.*browser.startup.page.*/user_pref("browser.startup.page", 0);' "${file}" 2>/dev/null \
+  || echo 'user_pref("browser.startup.page", 0);' >> "${file}"
+sed -i 's/^.*privacy.donottrackheader.enabled.*/user_pref("privacy.donottrackheader.enabled", true);' "${file}" 2>/dev/null \
+  || echo 'user_pref("privacy.donottrackheader.enabled", true);' >> "${file}"
+sed -i 's/^.*browser.showQuitWarning.*/user_pref("browser.showQuitWarning", true);' "${file}" 2>/dev/null \
+  || echo 'user_pref("browser.showQuitWarning", true);' >> "${file}"
+sed -i 's/^.*extensions.https_everywhere._observatory.popup_shown.*/user_pref("extensions.https_everywhere._observatory.popup_shown", true);' "${file}" 2>/dev/null \
+  || echo 'user_pref("extensions.https_everywhere._observatory.popup_shown", true);' >> "${file}"
+sed -i 's/^.network.security.ports.banned.override/user_pref("network.security.ports.banned.override", "1-65455");' "${file}" 2>/dev/null \
+  || echo 'user_pref("network.security.ports.banned.override", "1-65455");' >> "${file}"
 #--- Replace bookmarks (base: http://pentest-bookmarks.googlecode.com)
-file=$(find ~/.mozilla/firefox/*.Parrot*/ -maxdepth 1 -type f -name 'bookmarks.html' -print -quit) && [ -e "${file}" ] && cp -n $file{,.bkup}   #/etc/iceweasel/profile/bookmarks.html
-timeout 300 curl --progress -k -L -f "http://pentest-bookmarks.googlecode.com/files/bookmarksv1.5.html" > /tmp/bookmarks_new.html || echo -e ' '${RED}'[!]'${RESET}" Issue downloading bookmarks_new.html" 1>&2      #***!!! hardcoded version! Need to manually check for updates
+file=$(find ~/.mozilla/firefox/*.default*/ -maxdepth 1 -type f -name 'bookmarks.html' -print -quit)
+[ -e "${file}" ] \
+  && cp -n $file{,.bkup}   #/etc/firefox-esr/profile/bookmarks.html
+timeout 300 curl --progress -k -L -f "http://pentest-bookmarks.googlecode.com/files/bookmarksv1.5.html" > /tmp/bookmarks_new.html \
+  || echo -e ' '${RED}'[!]'${RESET}" Issue downloading bookmarks_new.html" 1>&2      #***!!! hardcoded version! Need to manually check for updates
 #--- Configure bookmarks
-awk '!a[$0]++' /tmp/bookmarks_new.html | \egrep -v ">(Latest Headlines|Getting Started|Recently Bookmarked|Recent Tags|Mozilla Firefox|Help and Tutorials|Customize Firefox|Get Involved|About Us|Hacker Media|Bookmarks Toolbar|Most Visited)</" | \egrep -v "^    </DL><p>" | \egrep -v "^<DD>Add" > "${file}"
-sed -i 's#^</DL><p>#        </DL><p>\n    </DL><p>\n</DL><p>#' "${file}"                                                          # Fix import issues from pentest-bookmarks...
-sed -i 's#^    <DL><p>#    <DL><p>\n    <DT><A HREF="http://127.0.0.1/">localhost</A>#' "${file}"                                 # Add localhost to bookmark toolbar (before hackery folder)
-sed -i 's#^</DL><p>#    <DT><A HREF="https://127.0.0.1:8834/">Nessus</A>\n</DL><p>#' "${file}"                                    # Add Nessus UI bookmark toolbar
-[ "${openVAS}" != "false" ] && sed -i 's#^</DL><p>#    <DT><A HREF="https://127.0.0.1:9392/">OpenVAS</A>\n</DL><p>#' "${file}"     # Add OpenVAS UI to bookmark toolbar
-sed -i 's#^</DL><p>#    <DT><A HREF="http://127.0.0.1:3000/ui/panel">BeEF</A>\n</DL><p>#' "${file}"                               # Add BeEF UI to bookmark toolbar
-sed -i 's#^</DL><p>#    <DT><A HREF="http://127.0.0.1/rips/">RIPS</A>\n</DL><p>#' "${file}"                                       # Add RIPs to bookmark toolbar
-sed -i 's#^</DL><p>#    <DT><A HREF="https://paulschou.com/tools/xlate/">XLATE</A>\n</DL><p>#' "${file}"                          # Add XLATE to bookmark toolbar
-sed -i 's#^</DL><p>#    <DT><A HREF="https://hackvertor.co.uk/public">HackVertor</A>\n</DL><p>#' "${file}"                        # Add HackVertor to bookmark toolbar
-sed -i 's#^</DL><p>#    <DT><A HREF="http://www.irongeek.com/skiddypad.php">SkiddyPad</A>\n</DL><p>#' "${file}"                   # Add Skiddypad to bookmark toolbar
-sed -i 's#^</DL><p>#    <DT><A HREF="https://www.exploit-db.com/search/">Exploit-DB</A>\n</DL><p>#' "${file}"                     # Add Exploit-DB to bookmark toolbar
-sed -i 's#^</DL><p>#    <DT><A HREF="http://offset-db.com/">Offset-DB</A>\n</DL><p>#' "${file}"                                   # Add offset-db to bookmark toolbar
-#sed -i 's#^</DL><p>#    <DT><A HREF="http://shell-storm.org/shellcode/">Shelcodes</A>\n</DL><p>#' "${file}"                      # Add shellcode to bookmark toolbar
-#sed -i 's#^</DL><p>#    <DT><A HREF="http://ropshell.com/">ROP Shell</A>\n</DL><p>#' "${file}"                                   # Add ROP Shell to bookmark toolbar
-sed -i 's#^</DL><p>#    <DT><A HREF="https://ifconfig.io/">ifconfig</A>\n</DL><p>#' "${file}"                                     # Add ifconfig.io to bookmark toolbar
+awk '!a[$0]++' /tmp/bookmarks_new.html \
+  | \egrep -v ">(Latest Headlines|Getting Started|Recently Bookmarked|Recent Tags|Mozilla Firefox|Help and Tutorials|Customize Firefox|Get Involved|About Us|Hacker Media|Bookmarks Toolbar|Most Visited)</" \
+  | \egrep -v "^    </DL><p>" \
+  | \egrep -v "^<DD>Add" > "${file}"
+sed -i 's#^</DL><p>#        </DL><p>\n    </DL><p>\n</DL><p>#' "${file}"                                          # Fix import issues from pentest-bookmarks...
+sed -i 's#^    <DL><p>#    <DL><p>\n    <DT><A HREF="http://127.0.0.1/">localhost</A>#' "${file}"                 # Add localhost to bookmark toolbar (before hackery folder)
+sed -i 's#^</DL><p>#    <DT><A HREF="https://127.0.0.1:8834/">Nessus</A>\n</DL><p>#' "${file}"                    # Add Nessus UI bookmark toolbar
+[ "${openVAS}" != "false" ] \
+  && sed -i 's#^</DL><p>#    <DT><A HREF="https://127.0.0.1:9392/">OpenVAS</A>\n</DL><p>#' "${file}"              # Add OpenVAS UI to bookmark toolbar
+sed -i 's#^</DL><p>#    <DT><A HREF="http://127.0.0.1:3000/ui/panel">BeEF</A>\n</DL><p>#' "${file}"               # Add BeEF UI to bookmark toolbar
+sed -i 's#^</DL><p>#    <DT><A HREF="http://127.0.0.1/rips/">RIPS</A>\n</DL><p>#' "${file}"                       # Add RIPs to bookmark toolbar
+sed -i 's#^</DL><p>#    <DT><A HREF="https://paulschou.com/tools/xlate/">XLATE</A>\n</DL><p>#' "${file}"          # Add XLATE to bookmark toolbar
+sed -i 's#^</DL><p>#    <DT><A HREF="https://hackvertor.co.uk/public">HackVertor</A>\n</DL><p>#' "${file}"        # Add HackVertor to bookmark toolbar
+sed -i 's#^</DL><p>#    <DT><A HREF="http://www.irongeek.com/skiddypad.php">SkiddyPad</A>\n</DL><p>#' "${file}"   # Add Skiddypad to bookmark toolbar
+sed -i 's#^</DL><p>#    <DT><A HREF="https://www.exploit-db.com/search/">Exploit-DB</A>\n</DL><p>#' "${file}"     # Add Exploit-DB to bookmark toolbar
+sed -i 's#^</DL><p>#    <DT><A HREF="http://offset-db.com/">Offset-DB</A>\n</DL><p>#' "${file}"                   # Add Offset-DB to bookmark toolbar
+sed -i 's#^</DL><p>#    <DT><A HREF="http://shell-storm.org/shellcode/">Shelcodes</A>\n</DL><p>#' "${file}"       # Add Shelcodes to bookmark toolbar
+sed -i 's#^</DL><p>#    <DT><A HREF="http://ropshell.com/">ROP Shell</A>\n</DL><p>#' "${file}"                    # Add ROP Shell to bookmark toolbar
+sed -i 's#^</DL><p>#    <DT><A HREF="https://ifconfig.io/">ifconfig</A>\n</DL><p>#' "${file}"                     # Add ifconfig.io to bookmark toolbar
 sed -i 's#<HR>#<DT><H3 ADD_DATE="1303667175" LAST_MODIFIED="1303667175" PERSONAL_TOOLBAR_FOLDER="true">Bookmarks Toolbar</H3>\n<DD>Add bookmarks to this folder to see them displayed on the Bookmarks Toolbar#' "${file}"
 #--- Clear bookmark cache
-find ~/.mozilla/firefox/*.Parrot*/ -maxdepth 1 -mindepth 1 -type f -name places.sqlite -delete
-find ~/.mozilla/firefox/*.Parrot*/bookmarkbackups/ -type f -delete
-#--- Default for XFCE
+find ~/.mozilla/firefox/*.default*/ -maxdepth 1 -mindepth 1 -type f -name "places.sqlite" -delete
+find ~/.mozilla/firefox/*.default*/bookmarkbackups/ -type f -delete
+#--- Set firefox for XFCE's default
+mkdir -p ~/.config/xfce4/
 file=~/.config/xfce4/helpers.rc; [ -e "${file}" ] && cp -n $file{,.bkup}    #exo-preferred-applications   #xdg-mime default
-sed -i 's#^WebBrowser=.*#WebBrowser=iceweasel#' "${file}"
-grep -q '^WebBrowser=iceweasel' "${file}" 2>/dev/null || echo 'WebBrowser=iceweasel' >> "${file}"
-#--- Remove old temp files
-rm -f /tmp/bookmarks_new.html
+([[ -e "${file}" && "$(tail -c 1 ${file})" != "" ]]) && echo >> "${file}"
+sed -i 's#^WebBrowser=.*#WebBrowser=firefox#' "${file}" 2>/dev/null \
+  || echo -e 'WebBrowser=firefox' >> "${file}"
 
 
-##### Setup iceweasel's plugins
-echo -e "\n ${GREEN}[+]${RESET} Installing ${GREEN}iceweasel's plugins${RESET} ~ Useful addons"
-#--- Configure iceweasel
-export DISPLAY=:0.0   #[[ -z $SSH_CONNECTION ]] || export DISPLAY=:0.0
+##### Setup firefox's plugins
+(( STAGE++ )); echo -e "\n\n ${GREEN}[+]${RESET} (${STAGE}/${TOTAL}) Installing ${GREEN}firefox's plugins${RESET} ~ useful addons"
+#--- Configure firefox
+export DISPLAY=:0.0
 #--- Download extensions
-ffpath="$(find ~/.mozilla/firefox/*.Parrot*/ -maxdepth 0 -mindepth 0 -type d -name '*.Parrot*' -print -quit)/extensions"
-[ "${ffpath}" == "/extensions" ] && echo -e ' '${RED}'[!]'${RESET}" Couldn't find Firefox/Iceweasel folder" 1>&2
+ffpath="$(find ~/.mozilla/firefox/*.default*/ -maxdepth 0 -mindepth 0 -type d -name '*.default*' -print -quit)/extensions"
+[ "${ffpath}" == "/extensions" ] \
+  && echo -e ' '${RED}'[!]'${RESET}" Couldn't find Firefox folder" 1>&2
 mkdir -p "${ffpath}/"
-#curl --progress -k -L -f "https://github.com/mozmark/ringleader/blob/master/fx_pnh.xpi?raw=true"  || echo -e ' '${RED}'[!]'${RESET}" Issue downloading fx_pnh.xpi" 1>&2                                                                                                                                     # plug-n-hack
-#curl --progress -k -L -f "https://addons.mozilla.org/firefox/downloads/latest/284030/addon-284030-latest.xpi?src=dp-btn-primary" -o "$ffpath/{6bdc61ae-7b80-44a3-9476-e1d121ec2238}.xpi" || echo -e ' '${RED}'[!]'${RESET}" Issue downloading 'HTTPS Finder'" 1>&2                                         # HTTPS Finder
-timeout 300 curl --progress -k -L -f "https://addons.mozilla.org/firefox/downloads/latest/5817/addon-5817-latest.xpi?src=dp-btn-primary" -o "$ffpath/SQLiteManager@mrinalkant.blogspot.com.xpi" || echo -e ' '${RED}'[!]'${RESET}" Issue downloading 'SQLite Manager'" 1>&2                                 # SQLite Manager
-timeout 300 curl --progress -k -L -f "https://addons.mozilla.org/firefox/downloads/latest/1865/addon-1865-latest.xpi?src=dp-btn-primary" -o "$ffpath/{d10d0bf8-f5b5-c8b4-a8b2-2b9879e08c5d}.xpi" || echo -e ' '${RED}'[!]'${RESET}" Issue downloading 'Adblock Plus'" 1>&2                                  # Adblock Plus
-timeout 300 curl --progress -k -L -f "https://addons.mozilla.org/firefox/downloads/latest/92079/addon-92079-latest.xpi?src=dp-btn-primary" -o "$ffpath/{bb6bc1bb-f824-4702-90cd-35e2fb24f25d}.xpi" || echo -e ' '${RED}'[!]'${RESET}" Issue downloading 'Cookies Manager+'" 1>&2                            # Cookies Manager+
-timeout 300 curl --progress -k -L -f "https://addons.mozilla.org/firefox/downloads/latest/1843/addon-1843-latest.xpi?src=dp-btn-primary" -o "$ffpath/firebug@software.joehewitt.com.xpi" || echo -e ' '${RED}'[!]'${RESET}" Issue downloading 'Firebug'" 1>&2                                               # Firebug
-timeout 300 curl --progress -k -L -f "https://addons.mozilla.org/firefox/downloads/latest/15023/addon-15023-latest.xpi?src=dp-btn-primary" -o "$ffpath/foxyproxy-basic@eric.h.jung.xpi" || echo -e ' '${RED}'[!]'${RESET}" Issue downloading 'FoxyProxy Basic'" 1>&2                                        # FoxyProxy Basic
-timeout 300 curl --progress -k -L -f "https://addons.mozilla.org/firefox/downloads/latest/429678/addon-429678-latest.xpi?src=dp-btn-primary" -o "$ffpath/useragentoverrider@qixinglu.com.xpi" || echo -e ' '${RED}'[!]'${RESET}" Issue downloading 'User Agent Overrider'" 1>&2                             # User Agent Overrider
-timeout 300 curl --progress -k -L -f "https://www.eff.org/files/https-everywhere-latest.xpi" -o "$ffpath/https-everywhere@eff.org.xpi" || echo -e ' '${RED}'[!]'${RESET}" Issue downloading 'HTTPS Everywhere'" 1>&2                                                                                        # HTTPS Everywhere
-timeout 300 curl --progress -k -L -f "https://addons.mozilla.org/firefox/downloads/latest/3829/addon-3829-latest.xpi?src=dp-btn-primary" -o "$ffpath/{8f8fe09b-0bd3-4470-bc1b-8cad42b8203a}.xpi" || echo -e ' '${RED}'[!]'${RESET}" Issue downloading 'Live HTTP Headers'" 1>&2                             # Live HTTP Headers
-timeout 300 curl --progress -k -L -f "https://addons.mozilla.org/firefox/downloads/latest/966/addon-966-latest.xpi?src=dp-btn-primary" -o "$ffpath/{9c51bd27-6ed8-4000-a2bf-36cb95c0c947}.xpi" || echo -e ' '${RED}'[!]'${RESET}" Issue downloading 'Tamper Data'" 1>&2                                     # Tamper Data
-timeout 300 curl --progress -k -L -f "https://addons.mozilla.org/firefox/downloads/latest/300254/addon-300254-latest.xpi?src=dp-btn-primary" -o "$ffpath/check-compatibility@dactyl.googlecode.com.xpi" || echo -e ' '${RED}'[!]'${RESET}" Issue downloading 'Disable Add-on Compatibility Checks'" 1>&2    # Disable Add-on Compatibility Checks
-timeout 300 curl --progress -k -L -f "https://addons.mozilla.org/firefox/downloads/latest/3899/addon-3899-latest.xpi?src=dp-btn-primary" -o "$ffpath/{F5DDF39C-9293-4d5e-9AA8-E04E6DD5E9B4}.xpi" || echo -e ' '${RED}'[!]'${RESET}" Issue downloading 'HackBar'" 1>&2                                       # HackBar
-timeout 300 curl --progress -k -L -f "https://addons.mozilla.org/firefox/downloads/latest/607454/addon-607454-latest.xpi?src=dp-btn-primary" -o "$ffpath/{ec8030f7-c20a-464f-9b0e-13a3a9e97384}.xpi" || echo -e ' '${RED}'[!]'${RESET}" Issue downloading 'uBlock'" 1>&2                                    # uBlock
+#--- plug-n-hack
+#curl --progress -k -L -f "https://github.com/mozmark/ringleader/blob/master/fx_pnh.xpi?raw=true????????????????"  \
+#  || echo -e ' '${RED}'[!]'${RESET}" Issue downloading 'plug-n-hack' 1>&2
+#--- HttpFox
+#curl --progress -k -L -f "https://addons.mozilla.org/en-GB/firefox/addon/httpfox/??????????????"  \
+#  || echo -e ' '${RED}'[!]'${RESET}" Issue downloading 'HttpFox' 1>&2
+#--- SQLite Manager
+echo -n '[1/11]'; timeout 300 curl --progress -k -L -f "https://addons.mozilla.org/firefox/downloads/latest/5817/addon-5817-latest.xpi?src=dp-btn-primary" \
+  -o "${ffpath}/SQLiteManager@mrinalkant.blogspot.com.xpi" \
+    || echo -e ' '${RED}'[!]'${RESET}" Issue downloading 'SQLite Manager'" 1>&2
+#--- Cookies Manager+
+echo -n '[2/11]'; timeout 300 curl --progress -k -L -f "https://addons.mozilla.org/firefox/downloads/latest/92079/addon-92079-latest.xpi?src=dp-btn-primary" \
+  -o "${ffpath}/{bb6bc1bb-f824-4702-90cd-35e2fb24f25d}.xpi" \
+    || echo -e ' '${RED}'[!]'${RESET}" Issue downloading 'Cookies Manager+'" 1>&2
+#--- Firebug
+echo -n '[3/11]'; timeout 300 curl --progress -k -L -f "https://addons.mozilla.org/firefox/downloads/latest/1843/addon-1843-latest.xpi?src=dp-btn-primary" \
+  -o "${ffpath}/firebug@software.joehewitt.com.xpi" \
+    || echo -e ' '${RED}'[!]'${RESET}" Issue downloading 'Firebug'" 1>&2
+#--- FoxyProxy Basic
+echo -n '[4/11]'; timeout 300 curl --progress -k -L -f "https://addons.mozilla.org/firefox/downloads/latest/15023/addon-15023-latest.xpi?src=dp-btn-primary" \
+  -o "${ffpath}/foxyproxy-basic@eric.h.jung.xpi" \
+    || echo -e ' '${RED}'[!]'${RESET}" Issue downloading 'FoxyProxy Basic'" 1>&2
+#--- User Agent Overrider
+echo -n '[5/11]'; timeout 300 curl --progress -k -L -f "https://addons.mozilla.org/firefox/downloads/latest/429678/addon-429678-latest.xpi?src=dp-btn-primary" \
+  -o "${ffpath}/useragentoverrider@qixinglu.com.xpi" \
+    || echo -e ' '${RED}'[!]'${RESET}" Issue downloading 'User Agent Overrider'" 1>&2
+#--- HTTPS Everywhere
+echo -n '[6/11]'; timeout 300 curl --progress -k -L -f "https://www.eff.org/files/https-everywhere-latest.xpi" \
+  -o "${ffpath}/https-everywhere@eff.org.xpi" \
+    || echo -e ' '${RED}'[!]'${RESET}" Issue downloading 'HTTPS Everywhere'" 1>&2
+#--- Live HTTP Headers
+echo -n '[7/11]'; timeout 300 curl --progress -k -L -f "https://addons.mozilla.org/firefox/downloads/latest/3829/addon-3829-latest.xpi?src=dp-btn-primary" \
+  -o "${ffpath}/{8f8fe09b-0bd3-4470-bc1b-8cad42b8203a}.xpi" \
+    || echo -e ' '${RED}'[!]'${RESET}" Issue downloading 'Live HTTP Headers'" 1>&2
+#---Tamper Data
+echo -n '[8/11]'; timeout 300 curl --progress -k -L -f "https://addons.mozilla.org/firefox/downloads/latest/966/addon-966-latest.xpi?src=dp-btn-primary" \
+  -o "${ffpath}/{9c51bd27-6ed8-4000-a2bf-36cb95c0c947}.xpi" \
+    || echo -e ' '${RED}'[!]'${RESET}" Issue downloading 'Tamper Data'" 1>&2
+#--- Disable Add-on Compatibility Checks
+echo -n '[9/11]'; timeout 300 curl --progress -k -L -f "https://addons.mozilla.org/firefox/downloads/latest/300254/addon-300254-latest.xpi?src=dp-btn-primary" \
+  -o "${ffpath}/check-compatibility@dactyl.googlecode.com.xpi" \
+    || echo -e ' '${RED}'[!]'${RESET}" Issue downloading 'Disable Add-on Compatibility Checks'" 1>&2
+#--- Disable HackBar
+echo -n '[10/11]'; timeout 300 curl --progress -k -L -f "https://addons.mozilla.org/firefox/downloads/latest/3899/addon-3899-latest.xpi?src=dp-btn-primary" \
+  -o "${ffpath}/{F5DDF39C-9293-4d5e-9AA8-E04E6DD5E9B4}.xpi" \
+    || echo -e ' '${RED}'[!]'${RESET}" Issue downloading 'HackBar'" 1>&2
+#--- uBlock
+echo -n '[11/11]'; timeout 300 curl --progress -k -L -f "https://addons.mozilla.org/firefox/downloads/latest/607454/addon-607454-latest.xpi?src=dp-btn-primary" \
+  -o "${ffpath}/{ec8030f7-c20a-464f-9b0e-13a3a9e97384}.xpi" \
+    || echo -e ' '${RED}'[!]'${RESET}" Issue downloading 'uBlock'" 1>&2
 #--- Installing extensions
 for FILE in $(find "${ffpath}" -maxdepth 1 -type f -name '*.xpi'); do
   d="$(basename "${FILE}" .xpi)"
@@ -1407,50 +1421,47 @@ for FILE in $(find "${ffpath}" -maxdepth 1 -type f -name '*.xpi'); do
   unzip -q -o -d "${ffpath}/${d}/" "${FILE}"
   rm -f "${FILE}"
 done
-#--- Enable Iceweasel's addons/plugins/extensions
-timeout 15 iceweasel >/dev/null 2>&1   #iceweasel & sleep 15s; killall -q -w iceweasel >/dev/null
+#--- Enable Firefox's addons/plugins/extensions
+timeout 15 firefox >/dev/null 2>&1
+timeout 5 killall -9 -q -w firefox-esr >/dev/null
 sleep 3s
-file=$(find ~/.mozilla/firefox/*.Parrot*/ -maxdepth 1 -type f -name 'extensions.sqlite' -print -quit)   #&& [ -e "${file}" ] && cp -n $file{,.bkup}
-if [ ! -e "${file}" ] || [ -z "${file}" ]; then
-  #echo -e ' '${RED}'[!]'${RESET}" Something went wrong enabling Iceweasel's extensions via method #1. Trying method #2..." 1>&2
-  false
-else
-  echo -e " ${YELLOW}[i]${RESET} Enabled ${YELLOW}Iceweasel's extensions${RESET} (via method #1!)"
-  apt-get install -y -qq sqlite3 || echo -e ' '${RED}'[!] Issue with apt-get'${RESET} 1>&2
-  rm -f /tmp/iceweasel.sql; touch /tmp/iceweasel.sql
-  echo "UPDATE 'main'.'addon' SET 'active' = 1, 'userDisabled' = 0;" > /tmp/iceweasel.sql    # Force them all!
-  sqlite3 "${file}" < /tmp/iceweasel.sql      #fuser extensions.sqlite
+#--- Method #1 (Works on older versions)
+file=$(find ~/.mozilla/firefox/*.default*/ -maxdepth 1 -type f -name 'extensions.sqlite' -print -quit)   #&& [ -e "${file}" ] && cp -n $file{,.bkup}
+if [[ -e "${file}" ]] || [[ -n "${file}" ]]; then
+  echo -e " ${YELLOW}[i]${RESET} Enabled ${YELLOW}Firefox's extensions${RESET} (via method #1 - extensions.sqlite)"
+  apt -y -qq install sqlite3 \
+    || echo -e ' '${RED}'[!] Issue with apt install'${RESET} 1>&2
+  rm -f /tmp/firefox.sql
+  touch /tmp/firefox.sql
+  echo "UPDATE 'main'.'addon' SET 'active' = 1, 'userDisabled' = 0;" > /tmp/firefox.sql    # Force them all!
+  sqlite3 "${file}" < /tmp/firefox.sql      #fuser extensions.sqlite
 fi
-file=$(find ~/.mozilla/firefox/*.Parrot*/ -maxdepth 1 -type f -name 'extensions.json' -print -quit)   #&& [ -e "${file}" ] && cp -n $file{,.bkup}
-if [ ! -e "${file}" ] || [ -z "${file}" ]; then
-  #echo -e ' '${RED}'[!]'${RESET}" Something went wrong enabling Iceweasel's extensions via method #2. Did method #1 also fail?" 1>&2
-  false
-else
-  echo -e " ${YELLOW}[i]${RESET} Enabled ${YELLOW}Iceweasel's extensions${RESET} (via method #2!)"
+#--- Method #2 (Newer versions)
+file=$(find ~/.mozilla/firefox/*.default*/ -maxdepth 1 -type f -name 'extensions.json' -print -quit)   #&& [ -e "${file}" ] && cp -n $file{,.bkup}
+if [[ -e "${file}" ]] || [[ -n "${file}" ]]; then
+  echo -e " ${YELLOW}[i]${RESET} Enabled ${YELLOW}Firefox's extensions${RESET} (via method #2 - extensions.json)"
   sed -i 's/"active":false,/"active":true,/g' "${file}"                # Force them all!
   sed -i 's/"userDisabled":true,/"userDisabled":false,/g' "${file}"    # Force them all!
 fi
-file=$(find ~/.mozilla/firefox/*.Parrot*/ -maxdepth 1 -type f -name 'prefs.js' -print -quit)   #&& [ -e "${file}" ] && cp -n $file{,.bkup}
-[ ! -z "${file}" ] && sed -i '/extensions.installCache/d' "${file}"
-timeout 5 iceweasel >/dev/null 2>&1   # For extensions that just work without restarting
+#--- Remove cache
+file=$(find ~/.mozilla/firefox/*.default*/ -maxdepth 1 -type f -name 'prefs.js' -print -quit)   #&& [ -e "${file}" ] && cp -n $file{,.bkup}
+[ -n "${file}" ] \
+  && sed -i '/extensions.installCache/d' "${file}"
+#--- For extensions that just work without restarting
+timeout 15 firefox >/dev/null 2>&1
+timeout 5 killall -9 -q -w firefox-esr >/dev/null
 sleep 3s
-timeout 5 iceweasel >/dev/null 2>&1   # ...for (most) extensions, as they need iceweasel to restart
+#--- For (most) extensions, as they need firefox to restart
+timeout 15 firefox >/dev/null 2>&1
+timeout 5 killall -9 -q -w firefox-esr >/dev/null
 sleep 5s
-#--- Configure HackBar
-file=$(find ~/.mozilla/firefox/*.Parrot*/ -maxdepth 1 -type f -name 'xulstore.json' -print -quit)   #&& [ -e "${file}" ] && cp -n $file{,.bkup}
-if [ -e "${file}" ]; then
-  sed -i 's/"hackBarToolbar":{"collapsed":".*"},/"hackBarToolbar":{"collapsed":"true"},/g' "${file}"                                   # Hide the bar on startup
-  grep -q "hackBarToolbar" "${file}" 2>/dev/null || sed -i 's/"nav-bar"/"hackBarToolbar":{"collapsed":"true"},"nav-bar"/g' "${file}"   # Hide the bar on startup
-fi
+#--- Wipe session (due to force close)
+find ~/.mozilla/firefox/*.default*/ -maxdepth 1 -type f -name 'sessionstore.*' -delete
 #--- Configure foxyproxy
-file=$(find ~/.mozilla/firefox/*.Parrot*/ -maxdepth 1 -type f -name 'foxyproxy.xml' -print -quit)   #&& [ -e "${file}" ] && cp -n $file{,.bkup}
-if [ -z "${file}" ]; then
-  echo -e ' '${RED}'[!]'${RESET}' Something went wrong with the FoxyProxy iceweasel extension (did any extensions install?). Skipping...' 1>&2
-elif [ -e "${file}" ]; then
-  grep -q 'localhost:8080' "${file}" 2>/dev/null || sed -i 's#<proxy name="Default"#<proxy name="localhost:8080" id="1145138293" notes="e.g. Burp, w3af" fromSubscription="false" enabled="true" mode="manual" selectedTabIndex="0" lastresort="false" animatedIcons="true" includeInCycle="false" color="\#07753E" proxyDNS="true" noInternalIPs="false" autoconfMode="pac" clearCacheBeforeUse="true" disableCache="true" clearCookiesBeforeUse="false" rejectCookies="false"><matches/><autoconf url="" loadNotification="true" errorNotification="true" autoReload="false" reloadFreqMins="60" disableOnBadPAC="true"/><autoconf url="http://wpad/wpad.dat" loadNotification="true" errorNotification="true" autoReload="false" reloadFreqMins="60" disableOnBadPAC="true"/><manualconf host="127.0.0.1" port="8080" socksversion="5" isSocks="false" username="" password="" domain=""/></proxy><proxy name="Default"#' "${file}"          # localhost:8080
-  grep -q 'localhost:8081' "${file}" 2>/dev/null || sed -i 's#<proxy name="Default"#<proxy name="localhost:8081 (socket5)" id="212586674" notes="e.g. SSH" fromSubscription="false" enabled="true" mode="manual" selectedTabIndex="0" lastresort="false" animatedIcons="true" includeInCycle="false" color="\#917504" proxyDNS="true" noInternalIPs="false" autoconfMode="pac" clearCacheBeforeUse="true" disableCache="true" clearCookiesBeforeUse="false" rejectCookies="false"><matches/><autoconf url="" loadNotification="true" errorNotification="true" autoReload="false" reloadFreqMins="60" disableOnBadPAC="true"/><autoconf url="http://wpad/wpad.dat" loadNotification="true" errorNotification="true" autoReload="false" reloadFreqMins="60" disableOnBadPAC="true"/><manualconf host="127.0.0.1" port="8081" socksversion="5" isSocks="true" username="" password="" domain=""/></proxy><proxy name="Default"#' "${file}"         # localhost:8081 (socket5)
-  grep -q '"No Caching"' "${file}" 2>/dev/null   || sed -i 's#<proxy name="Default"#<proxy name="No Caching" id="3884644610" notes="" fromSubscription="false" enabled="true" mode="system" selectedTabIndex="0" lastresort="false" animatedIcons="true" includeInCycle="false" color="\#990DA6" proxyDNS="true" noInternalIPs="false" autoconfMode="pac" clearCacheBeforeUse="true" disableCache="true" clearCookiesBeforeUse="false" rejectCookies="false"><matches/><autoconf url="" loadNotification="true" errorNotification="true" autoReload="false" reloadFreqMins="60" disableOnBadPAC="true"/><autoconf url="http://wpad/wpad.dat" loadNotification="true" errorNotification="true" autoReload="false" reloadFreqMins="60" disableOnBadPAC="true"/><manualconf host="" port="" socksversion="5" isSocks="false" username="" password="" domain=""/></proxy><proxy name="Default"#' "${file}"                                          # No caching
-else
+file=$(find ~/.mozilla/firefox/*.default*/ -maxdepth 1 -type f -name 'foxyproxy.xml' -print -quit)   #&& [ -e "${file}" ] && cp -n $file{,.bkup}
+if [[ -z "${file}" ]]; then
+  echo -e ' '${RED}'[!]'${RESET}' Something went wrong with the FoxyProxy firefox extension (did any extensions install?). Skipping...' 1>&2
+else     # Create new
   echo -ne '<?xml version="1.0" encoding="UTF-8"?>\n<foxyproxy mode="disabled" selectedTabIndex="0" toolbaricon="true" toolsMenu="true" contextMenu="false" advancedMenus="false" previousMode="disabled" resetIconColors="true" useStatusBarPrefix="true" excludePatternsFromCycling="false" excludeDisabledFromCycling="false" ignoreProxyScheme="false" apiDisabled="false" proxyForVersionCheck=""><random includeDirect="false" includeDisabled="false"/><statusbar icon="true" text="false" left="options" middle="cycle" right="contextmenu" width="0"/><toolbar left="options" middle="cycle" right="contextmenu"/><logg enabled="false" maxSize="500" noURLs="false" header="&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;\n&lt;!DOCTYPE html PUBLIC &quot;-//W3C//DTD XHTML 1.0 Strict//EN&quot; &quot;http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd&quot;&gt;\n&lt;html xmlns=&quot;http://www.w3.org/1999/xhtml&quot;&gt;&lt;head&gt;&lt;title&gt;&lt;/title&gt;&lt;link rel=&quot;icon&quot; href=&quot;http://getfoxyproxy.org/favicon.ico&quot;/&gt;&lt;link rel=&quot;shortcut icon&quot; href=&quot;http://getfoxyproxy.org/favicon.ico&quot;/&gt;&lt;link rel=&quot;stylesheet&quot; href=&quot;http://getfoxyproxy.org/styles/log.css&quot; type=&quot;text/css&quot;/&gt;&lt;/head&gt;&lt;body&gt;&lt;table class=&quot;log-table&quot;&gt;&lt;thead&gt;&lt;tr&gt;&lt;td class=&quot;heading&quot;&gt;${timestamp-heading}&lt;/td&gt;&lt;td class=&quot;heading&quot;&gt;${url-heading}&lt;/td&gt;&lt;td class=&quot;heading&quot;&gt;${proxy-name-heading}&lt;/td&gt;&lt;td class=&quot;heading&quot;&gt;${proxy-notes-heading}&lt;/td&gt;&lt;td class=&quot;heading&quot;&gt;${pattern-name-heading}&lt;/td&gt;&lt;td class=&quot;heading&quot;&gt;${pattern-heading}&lt;/td&gt;&lt;td class=&quot;heading&quot;&gt;${pattern-case-heading}&lt;/td&gt;&lt;td class=&quot;heading&quot;&gt;${pattern-type-heading}&lt;/td&gt;&lt;td class=&quot;heading&quot;&gt;${pattern-color-heading}&lt;/td&gt;&lt;td class=&quot;heading&quot;&gt;${pac-result-heading}&lt;/td&gt;&lt;td class=&quot;heading&quot;&gt;${error-msg-heading}&lt;/td&gt;&lt;/tr&gt;&lt;/thead&gt;&lt;tfoot&gt;&lt;tr&gt;&lt;td/&gt;&lt;/tr&gt;&lt;/tfoot&gt;&lt;tbody&gt;" row="&lt;tr&gt;&lt;td class=&quot;timestamp&quot;&gt;${timestamp}&lt;/td&gt;&lt;td class=&quot;url&quot;&gt;&lt;a href=&quot;${url}&quot;&gt;${url}&lt;/a&gt;&lt;/td&gt;&lt;td class=&quot;proxy-name&quot;&gt;${proxy-name}&lt;/td&gt;&lt;td class=&quot;proxy-notes&quot;&gt;${proxy-notes}&lt;/td&gt;&lt;td class=&quot;pattern-name&quot;&gt;${pattern-name}&lt;/td&gt;&lt;td class=&quot;pattern&quot;&gt;${pattern}&lt;/td&gt;&lt;td class=&quot;pattern-case&quot;&gt;${pattern-case}&lt;/td&gt;&lt;td class=&quot;pattern-type&quot;&gt;${pattern-type}&lt;/td&gt;&lt;td class=&quot;pattern-color&quot;&gt;${pattern-color}&lt;/td&gt;&lt;td class=&quot;pac-result&quot;&gt;${pac-result}&lt;/td&gt;&lt;td class=&quot;error-msg&quot;&gt;${error-msg}&lt;/td&gt;&lt;/tr&gt;" footer="&lt;/tbody&gt;&lt;/table&gt;&lt;/body&gt;&lt;/html&gt;"/><warnings/><autoadd enabled="false" temp="false" reload="true" notify="true" notifyWhenCanceled="true" prompt="true"><match enabled="true" name="Dynamic AutoAdd Pattern" pattern="*://${3}${6}/*" isRegEx="false" isBlackList="false" isMultiLine="false" caseSensitive="false" fromSubscription="false"/><match enabled="true" name="" pattern="*You are not authorized to view this page*" isRegEx="false" isBlackList="false" isMultiLine="true" caseSensitive="false" fromSubscription="false"/></autoadd><quickadd enabled="false" temp="false" reload="true" notify="true" notifyWhenCanceled="true" prompt="true"><match enabled="true" name="Dynamic QuickAdd Pattern" pattern="*://${3}${6}/*" isRegEx="false" isBlackList="false" isMultiLine="false" caseSensitive="false" fromSubscription="false"/></quickadd><defaultPrefs origPrefetch="null"/><proxies>' > "${file}"
   echo -ne '<proxy name="localhost:8080" id="1145138293" notes="e.g. Burp, w3af" fromSubscription="false" enabled="true" mode="manual" selectedTabIndex="0" lastresort="false" animatedIcons="true" includeInCycle="false" color="#07753E" proxyDNS="true" noInternalIPs="false" autoconfMode="pac" clearCacheBeforeUse="true" disableCache="true" clearCookiesBeforeUse="false" rejectCookies="false"><matches/><autoconf url="" loadNotification="true" errorNotification="true" autoReload="false" reloadFreqMins="60" disableOnBadPAC="true"/><autoconf url="http://wpad/wpad.dat" loadNotification="true" errorNotification="true" autoReload="false" reloadFreqMins="60" disableOnBadPAC="true"/><manualconf host="127.0.0.1" port="8080" socksversion="5" isSocks="false" username="" password="" domain=""/></proxy>' >> "${file}"
   echo -ne '<proxy name="localhost:8081 (socket5)" id="212586674" notes="e.g. SSH" fromSubscription="false" enabled="true" mode="manual" selectedTabIndex="0" lastresort="false" animatedIcons="true" includeInCycle="false" color="#917504" proxyDNS="true" noInternalIPs="false" autoconfMode="pac" clearCacheBeforeUse="true" disableCache="true" clearCookiesBeforeUse="false" rejectCookies="false"><matches/><autoconf url="" loadNotification="true" errorNotification="true" autoReload="false" reloadFreqMins="60" disableOnBadPAC="true"/><autoconf url="http://wpad/wpad.dat" loadNotification="true" errorNotification="true" autoReload="false" reloadFreqMins="60" disableOnBadPAC="true"/><manualconf host="127.0.0.1" port="8081" socksversion="5" isSocks="true" username="" password="" domain=""/></proxy>' >> "${file}"
@@ -1458,14 +1469,11 @@ else
   echo -ne '<proxy name="Default" id="3377581719" notes="" fromSubscription="false" enabled="true" mode="direct" selectedTabIndex="0" lastresort="true" animatedIcons="false" includeInCycle="true" color="#0055E5" proxyDNS="true" noInternalIPs="false" autoconfMode="pac" clearCacheBeforeUse="false" disableCache="false" clearCookiesBeforeUse="false" rejectCookies="false"><matches><match enabled="true" name="All" pattern="*" isRegEx="false" isBlackList="false" isMultiLine="false" caseSensitive="false" fromSubscription="false"/></matches><autoconf url="" loadNotification="true" errorNotification="true" autoReload="false" reloadFreqMins="60" disableOnBadPAC="true"/><autoconf url="http://wpad/wpad.dat" loadNotification="true" errorNotification="true" autoReload="false" reloadFreqMins="60" disableOnBadPAC="true"/><manualconf host="" port="" socksversion="5" isSocks="false" username="" password=""/></proxy>' >> "${file}"
   echo -e '</proxies></foxyproxy>' >> "${file}"
 fi
-#--- Wipe session (due to force close)
-#find ~/.mozilla/firefox/*.Parrot*/ -maxdepth 1 -type f -name 'sessionstore.*' -delete
-#--- Remove old temp files
-rm -f /tmp/iceweasel.sql
+
 
 
 ##### Install conky
-echo -e "\n ${GREEN}[+]${RESET} Installing ${GREEN}conky${RESET} ~ GUI desktop monitor"
+(( STAGE++ )); echo -e "\n\n ${GREEN}[+]${RESET} (${STAGE}/${TOTAL}) Installing ${GREEN}conky${RESET} ~ GUI desktop monitor"
 apt-get -y -qq install conky || echo -e ' '${RED}'[!] Issue with apt-get'${RESET} 1>&2
 #--- Configure conky
 file=~/.conkyrc; [ -e "${file}" ] && cp -n $file{,.bkup}
@@ -1577,13 +1585,18 @@ X-GNOME-Autostart-enabled=true
 Type=Application
 Comment=
 EOF
-#--- Run now
-#bash /usr/local/bin/start-conky
+#--- Add keyboard shortcut (CTRL+r) to run the conky refresh script
+file=~/.config/xfce4/xfconf/xfce-perchannel-xml/xfce4-keyboard-shortcuts.xml   #; [ -e "${file}" ] && cp -n $file{,.bkup}
+if [ -e "${file}" ]; then
+  grep -q '<property name="&lt;Primary&gt;r" type="string" value="/usr/local/bin/start-conky"/>' "${file}" \
+    || sed -i 's#<property name="\&lt;Alt\&gt;F2" type="string" value="xfrun4"/>#<property name="\&lt;Alt\&gt;F2" type="string" value="xfrun4"/>\n      <property name="\&lt;Primary\&gt;r" type="string" value="/usr/local/bin/start-conky"/>#' "${file}"
+fi
 
 
 ##### Install metasploit ~ http://docs.kali.org/general-use/starting-metasploit-framework-in-kali
-echo -e "\n ${GREEN}[+]${RESET} Installing ${GREEN}metasploit${RESET} ~ exploit framework"
-apt-get -y -qq install metasploit-framework 2>/dev/null || echo -e ' '${RED}'[!] Issue with apt-get'${RESET} 1>&2
+(( STAGE++ )); echo -e "\n\n ${GREEN}[+]${RESET} (${STAGE}/${TOTAL}) Installing ${GREEN}metasploit${RESET} ~ exploit framework"
+apt -y -qq install metasploit-framework \
+  || echo -e ' '${RED}'[!] Issue with apt install'${RESET} 1>&2
 mkdir -p ~/.msf4/modules/{auxiliary,exploits,payloads,post}/
 #--- ASCII art
 #export GOCOW=1   # Always a cow logo ;)   Others: THISISHALLOWEEN (Halloween), APRILFOOLSPONIES (My Little Pony)
@@ -1591,88 +1604,126 @@ mkdir -p ~/.msf4/modules/{auxiliary,exploits,payloads,post}/
 #([[ -e "${file}" && "$(tail -c 1 ${file})" != "" ]]) && echo >> "${file}"
 #grep -q '^GOCOW' "${file}" 2>/dev/null || echo 'GOCOW=1' >> "${file}"
 #--- Fix any port issues
-file=$(find /etc/postgresql/*/main/ -maxdepth 1 -type f -name postgresql.conf -print -quit); [ -e "${file}" ] && cp -n $file{,.bkup}
+file=$(find /etc/postgresql/*/main/ -maxdepth 1 -type f -name postgresql.conf -print -quit);
+[ -e "${file}" ] && cp -n $file{,.bkup}
 sed -i 's/port = .* #/port = 5432 /' "${file}"
+#--- Fix permissions - 'could not translate host name "localhost", service "5432" to address: Name or service not known'
+chmod 0644 /etc/hosts
 #--- Start services
 systemctl stop postgresql
-systemctl start postgresql   #systemctl restart postgresql
-msfdb init
+systemctl start postgresql
+msfdb reinit
 sleep 5s
-#--- Setup alias
-file=~/.bash_aliases; [ -e "${file}" ] && cp -n $file{,.bkup}   #/etc/bash.bash_aliasesa
-grep -q '^## metasploit' "${file}" 2>/dev/null || echo -e '## metasploit\nalias msfc="systemctl start postgresql; msfdb start; msfconsole -q \"$@\""\nalias msfconsole="systemctl start postgresql; msfdb start; msfconsole \"$@\""\n' >> "${file}"
-#--- Apply new alias
-if [[ "${SHELL}" == "/bin/zsh" ]]; then source ~/.zshrc else source "${file}"; fi
 #--- Autorun Metasploit commands each startup
-mkdir -p ~/.msf4/modules/
 file=~/.msf4/msf_autorunscript.rc; [ -e "${file}" ] && cp -n $file{,.bkup}
-[ -e "${file}" ] || cat <<EOF > "${file}"
+if [[ -f "${file}" ]]; then
+  echo -e ' '${RED}'[!]'${RESET}" ${file} detected. Skipping..." 1>&2
+else
+  cat <<EOF > "${file}"
 #run post/windows/escalate/getsystem
 #run migrate -f -k
 #run migrate -n "explorer.exe" -k    # Can trigger AV alerts by touching explorer.exe...
 #run post/windows/manage/smart_migrate
 #run post/windows/gather/smart_hashdump
 EOF
+fi
 file=~/.msf4/msfconsole.rc; [ -e "${file}" ] && cp -n $file{,.bkup}
-#load sounds verbose=true
-#load auto_add_route
-#load alias
-#alias dir/ls    del/rm  auto handler   https://github.com/rapid7/metasploit-framework/tree/master/plugins // https://github.com/rapid7/metasploit-framework/issues/5107
-[ -e "${file}" ] || cat <<EOF > "${file}"
+if [[ -f "${file}" ]]; then
+  echo -e ' '${RED}'[!]'${RESET}" ${file} detected. Skipping..." 1>&2
+else
+  cat <<EOF > "${file}"
+load auto_add_route
+load alias
+alias del rm
+alias handler use exploit/multi/handler
+load sounds
 setg TimestampOutput true
 setg VERBOSE true
-load sounds
-#use exploit/multi/handler
-#set AutoRunScript 'multi_console_command -rc "~/.msf4/msf_autorunscript.rc"'
 setg ExitOnSession false
 setg EnableStageEncoding true
-#set PAYLOAD windows/meterpreter/reverse_https
-#set LHOST 0.0.0.0
+setg LHOST 0.0.0.0
 setg LPORT 443
 EOF
-#--- First time run
-#echo -e 'sleep 10\ndb_status\n#db_rebuild_cache\n#sleep 310\nexit' > /tmp/msf.rc && msfconsole -r /tmp/msf.rc
-echo -e "\n ${GREEN}[+]${RESET} ${GREEN}Starting Metasploit for the first time${RESET} ~ this ${BOLD}will take a ~350 seconds${RESET}"
-msfconsole -q -x 'version;db_status;sleep 310;exit'   #db_rebuild_cache;
-
-#--- Aliases to speed up msfvenom (create static output)
+#use exploit/multi/handler
+#setg AutoRunScript 'multi_console_command -rc "~/.msf4/msf_autorunscript.rc"'
+#set PAYLOAD windows/meterpreter/reverse_https
+fi
+#--- Aliases time
 file=~/.bash_aliases; [ -e "${file}" ] && cp -n $file{,.bkup}   #/etc/bash.bash_aliases
 ([[ -e "${file}" && "$(tail -c 1 ${file})" != "" ]]) && echo >> "${file}"
-grep -q "^alias msfvenom-list-all" "${file}" 2>/dev/null || echo "alias msfvenom-list-all='cat ~/.msf4/msfvenom/all'" >> "${file}"
-grep -q "^alias msfvenom-list-nops" "${file}" 2>/dev/null || echo "alias msfvenom-list-nops='cat ~/.msf4/msfvenom/nops'" >> "${file}"
-grep -q "^alias msfvenom-list-payloads" "${file}" 2>/dev/null || echo "alias msfvenom-list-payloads='cat ~/.msf4/msfvenom/payloads'" >> "${file}"
-grep -q "^alias msfvenom-list-encoders" "${file}" 2>/dev/null || echo "alias msfvenom-list-encoders='cat ~/.msf4/msfvenom/encoders'" >> "${file}"
-grep -q "^alias msfvenom-list-formats" "${file}" 2>/dev/null || echo "alias msfvenom-list-formats='cat ~/.msf4/msfvenom/formats'" >> "${file}"
-grep -q "^alias msfvenom-list-generate" "${file}" 2>/dev/null || echo "alias msfvenom-list-generate='_msfvenom-list-generate'" >> "${file}"
-grep -q "^function _msfvenom-list-generate" "${file}" 2>/dev/null || echo -e "function _msfvenom-list-generate {\n  mkdir -p ~/.msf4/msfvenom/\n  msfvenom --list > ~/.msf4/msfvenom/all\n  msfvenom --list nops > ~/.msf4/msfvenom/nops\n  msfvenom --list payloads > ~/.msf4/msfvenom/payloads\n  msfvenom --list encoders > ~/.msf4/msfvenom/encoders\n  msfvenom --help-formats 2> ~/.msf4/msfvenom/formats\n}" >> "${file}"
+#--- Aliases for console
+grep -q '^alias msfc=' "${file}" 2>/dev/null \
+  || echo -e 'alias msfc="systemctl start postgresql; msfdb start; msfconsole -q \"\$@\""' >> "${file}"
+grep -q '^alias msfconsole=' "${file}" 2>/dev/null \
+  || echo -e 'alias msfconsole="systemctl start postgresql; msfdb start; msfconsole \"\$@\""\n' >> "${file}"
+#--- Aliases to speed up msfvenom (create static output)
+grep -q "^alias msfvenom-list-all" "${file}" 2>/dev/null \
+  || echo "alias msfvenom-list-all='cat ~/.msf4/msfvenom/all'" >> "${file}"
+grep -q "^alias msfvenom-list-nops" "${file}" 2>/dev/null \
+  || echo "alias msfvenom-list-nops='cat ~/.msf4/msfvenom/nops'" >> "${file}"
+grep -q "^alias msfvenom-list-payloads" "${file}" 2>/dev/null \
+  || echo "alias msfvenom-list-payloads='cat ~/.msf4/msfvenom/payloads'" >> "${file}"
+grep -q "^alias msfvenom-list-encoders" "${file}" 2>/dev/null \
+  || echo "alias msfvenom-list-encoders='cat ~/.msf4/msfvenom/encoders'" >> "${file}"
+grep -q "^alias msfvenom-list-formats" "${file}" 2>/dev/null \
+  || echo "alias msfvenom-list-formats='cat ~/.msf4/msfvenom/formats'" >> "${file}"
+grep -q "^alias msfvenom-list-generate" "${file}" 2>/dev/null \
+  || echo "alias msfvenom-list-generate='_msfvenom-list-generate'" >> "${file}"
+grep -q "^function _msfvenom-list-generate" "${file}" 2>/dev/null \
+  || cat <<EOF >> "${file}" \
+    || echo -e ' '${RED}'[!] Issue with writing file'${RESET} 1>&2
+function _msfvenom-list-generate {
+  mkdir -p ~/.msf4/msfvenom/
+  msfvenom --list > ~/.msf4/msfvenom/all
+  msfvenom --list nops > ~/.msf4/msfvenom/nops
+  msfvenom --list payloads > ~/.msf4/msfvenom/payloads
+  msfvenom --list encoders > ~/.msf4/msfvenom/encoders
+  msfvenom --help-formats 2> ~/.msf4/msfvenom/formats
+}
+EOF
 #--- Apply new aliases
-if [[ "${SHELL}" == "/bin/zsh" ]]; then source ~/.zshrc else source "${file}"; fi
-#--- Generate
-msfvenom-list-generate ; _msfvenom-list-generate
-#--- Remove old temp files
-rm -f /tmp/msf.rc
+source "${file}" || source ~/.zshrc
+#--- Generate (Can't call alias)
+mkdir -p ~/.msf4/msfvenom/
+msfvenom --list > ~/.msf4/msfvenom/all
+msfvenom --list nops > ~/.msf4/msfvenom/nops
+msfvenom --list payloads > ~/.msf4/msfvenom/payloads
+msfvenom --list encoders > ~/.msf4/msfvenom/encoders
+msfvenom --help-formats 2> ~/.msf4/msfvenom/formats
+#--- First time run with Metasploit
+(( STAGE++ )); echo -e " ${GREEN}[+]${RESET} (${STAGE}/${TOTAL}) ${GREEN}Starting Metasploit for the first time${RESET} ~ this ${BOLD}will take a ~350 seconds${RESET} (~6 mintues)"
+echo "Started at: $(date)"
+systemctl start postgresql
+msfdb start
+msfconsole -q -x 'version;db_status;sleep 310;exit'
 
 
-##### Install Metasploit Framework (GIT)
-echo -e "\n ${GREEN}[+]${RESET} Installing ${GREEN}Metasploit${RESET} (GIT) ~ exploit framework"
-apt-get -y -qq install git libsqlite3-dev libpq-dev libpcap-dev || echo -e ' '${RED}'[!] Issue with apt-get'${RESET} 1>&2
-git clone -q https://github.com/rapid7/metasploit-framework.git /opt/metasploit-framework-git/ || echo -e ' '${RED}'[!] Issue when git cloning'${RESET} 1>&2
-pushd /opt/metasploit-framework-git/ >/dev/null; bundle install; popd >/dev/null
-ln -sf /opt/metasploit-framework-git/msfconsole /usr/local/bin/msfconsole-git; ln -sf /opt/metasploit-framework-git/msfupdate /usr/local/bin/msfupdate-git
+##### Configuring armitage
+(( STAGE++ )); echo -e "\n\n ${GREEN}[+]${RESET} (${STAGE}/${TOTAL}) Configuring ${GREEN}armitage${RESET} ~ GUI Metasploit UI"
+export MSF_DATABASE_CONFIG=/usr/share/metasploit-framework/config/database.yml
+for file in /etc/bash.bashrc ~/.zshrc; do     #~/.bashrc
+  [ ! -e "${file}" ] && continue
+  [ -e "${file}" ] && cp -n $file{,.bkup}
+  ([[ -e "${file}" && "$(tail -c 1 ${file})" != "" ]]) && echo >> "${file}"
+  grep -q 'MSF_DATABASE_CONFIG' "${file}" 2>/dev/null \
+    || echo -e 'MSF_DATABASE_CONFIG=/usr/share/metasploit-framework/config/database.yml\n' >> "${file}"
+done
+#--- Test
+#msfrpcd -U msf -P test -f -S -a 127.0.0.1
 
 ##### Install exe2hex
-echo -e "\n ${GREEN}[+]${RESET} Installing ${GREEN}exe2hex${RESET} ~ Inline file transfer"
+(( STAGE++ )); echo -e "\n\n ${GREEN}[+]${RESET} (${STAGE}/${TOTAL})  Installing ${GREEN}exe2hex${RESET} ~ Inline file transfer"
 timeout 300 curl --progress -k -L -f "https://raw.githubusercontent.com/g0tmi1k/exe2hex/master/exe2hex.py" > /usr/local/bin/exe2hex || echo -e ' '${RED}'[!]'${RESET}" Issue downloading exe2hex" 1>&2
 chmod +x /usr/local/bin/exe2hex
 
 
 ##### Install MPC
-echo -e "\n ${GREEN}[+]${RESET} Installing ${GREEN}MPC${RESET} ~ Msfvenom Payload Creator"
+(( STAGE++ )); echo -e "\n\n ${GREEN}[+]${RESET} (${STAGE}/${TOTAL})  Installing ${GREEN}MPC${RESET} ~ Msfvenom Payload Creator"
 timeout 300 curl --progress -k -L -f "https://raw.githubusercontent.com/g0tmi1k/mpc/master/mpc.sh" > /usr/local/bin/mpc || echo -e ' '${RED}'[!]'${RESET}" Issue downloading mpc" 1>&2
 chmod +x /usr/local/bin/mpc
 
 ##### Install Geany
-echo -e "\n ${GREEN}[+]${RESET} Installing ${GREEN}Geany${RESET} ~ GUI text editor"
+(( STAGE++ )); echo -e "\n\n ${GREEN}[+]${RESET} (${STAGE}/${TOTAL})  Installing ${GREEN}Geany${RESET} ~ GUI text editor"
 export DISPLAY=:0.0   #[[ -z $SSH_CONNECTION ]] || export DISPLAY=:0.0
 apt-get -y -qq install geany || echo -e ' '${RED}'[!] Issue with apt-get'${RESET} 1>&2
 #--- Add to panel (GNOME)
@@ -1743,16 +1794,19 @@ backup_dir=~/backups/geany
 EOF
 
 
-###### Install atom
-echo -e "\n ${GREEN}[+]${RESET} Installing ${GREEN}atom${RESET} ~ text editor"
-timeout 300 curl --progress -k -L -f "https://github.com/atom/atom/releases/download/v1.6.2/atom-amd64.deb" > /tmp/atom.deb || echo -e ' '${RED}'[!]'${RESET}" Issue downloading atom.deb" 1>&2   #***!!! hardcoded version! Need to manually check for updates
-dpkg -i /tmp/atom.deb
-##--- Create config file
-mkdir -p ~/.atom/
-if [[ -f ~/.atom/config.cson ]]; then
-  echo -e ' '${RED}'[!]'${RESET}" Atom config detected. Skipping..." 1>&2
-else
-  cat <<EOF > ~/.atom/config.cson
+##### Install atom
+(( STAGE++ )); echo -e "\n\n ${GREEN}[+]${RESET} (${STAGE}/${TOTAL}) Installing ${GREEN}atom${RESET} ~ GUI text editor"
+timeout 300 curl --progress -k -L -f "https://atom.io/download/deb" > /tmp/atom.deb \
+  || echo -e ' '${RED}'[!]'${RESET}" Issue downloading atom.deb" 1>&2
+if [ -e /tmp/atom.deb ]; then
+  dpkg -i /tmp/atom.deb
+  #--- Create config file
+  mkdir -p ~/.atom/
+  file=~/.atom/config.cson
+  if [[ -f "${file}" ]]; then
+    echo -e ' '${RED}'[!]'${RESET}" ${file} detected. Skipping..." 1>&2
+  else
+    cat <<EOF > "${file}"
 "*":
   welcome:
     showOnStartup: false
@@ -1761,11 +1815,19 @@ else
       "metrics"
     ]
 EOF
+  fi
+  #--- Add to panel (GNOME)
+  export DISPLAY=:0.0
+  [[ $(which gnome-shell) ]] \
+    && gsettings set org.gnome.shell favorite-apps "$(gsettings get org.gnome.shell favorite-apps | sed "s/'org.gnome.gedit.desktop'/'atom.desktop'/")"
+  #--- Add to panel (XFCE)
+  ln -sf /usr/share/applications/atom.desktop ~/.config/xfce4/panel/launcher-8/textedit.desktop
 fi
 
 
+
 ##### Install PyCharm 
-echo -e "\n ${GREEN}[+]${RESET} Installing ${GREEN}PyCharm ${RESET} ~ Python IDE"
+(( STAGE++ )); echo -e "\n\n ${GREEN}[+]${RESET} (${STAGE}/${TOTAL}) Installing ${GREEN}PyCharm ${RESET} ~ Python IDE"
 wget -qO /tmp/pycharms-professional.tar.gz "https://download.jetbrains.com/python/pycharm-professional-2016.1.1.tar.gz" #Hard-coded
 tar -zxf /tmp/pycharms-professional.tar.gz -C /tmp/
 mv -f /tmp/pycharm-2016.1.1/ /usr/share/pycharms #Hard-coded
@@ -1773,12 +1835,12 @@ ln -sf /usr/share/pycharms/bin/pycharm.sh /usr/local/bin/pycharms
 
 
 ##### Install wdiff
-echo -e "\n ${GREEN}[+]${RESET} Installing ${GREEN}wdiff${RESET} ~ Compares two files word by word"
+(( STAGE++ )); echo -e "\n\n ${GREEN}[+]${RESET} (${STAGE}/${TOTAL}) Installing ${GREEN}wdiff${RESET} ~ Compares two files word by word"
 apt-get -y -qq install wdiff wdiff-doc || echo -e ' '${RED}'[!] Issue with apt-get'${RESET} 1>&2
 
 
 ##### Install Meld
-echo -e "\n ${GREEN}[+]${RESET} Installing ${GREEN}Meld${RESET} ~ GUI text compare"
+(( STAGE++ )); echo -e "\n\n ${GREEN}[+]${RESET} (${STAGE}/${TOTAL})  Installing ${GREEN}Meld${RESET} ~ GUI text compare"
 apt-get -y -qq install meld || echo -e ' '${RED}'[!] Issue with apt-get'${RESET} 1>&2
 #--- Configure meld
 gconftool-2 -t bool -s /apps/meld/show_line_numbers true
@@ -1786,29 +1848,35 @@ gconftool-2 -t bool -s /apps/meld/show_whitespace true
 gconftool-2 -t bool -s /apps/meld/use_syntax_highlighting true
 gconftool-2 -t int -s /apps/meld/edit_wrap_lines 2
 
+##### Install vbindiff
+(( STAGE++ )); echo -e "\n\n ${GREEN}[+]${RESET} (${STAGE}/${TOTAL}) Installing ${GREEN}vbindiff${RESET} ~ visually compare binary files"
+apt -y -qq install vbindiff \
+  || echo -e ' '${RED}'[!] Issue with apt install'${RESET} 1>&2
+
 ##### Install OpenVAS
-if [ "${openVAS}" != "false" ]; then
-  echo -e "\n ${GREEN}[+]${RESET} Installing ${GREEN}OpenVAS${RESET} ~ vulnerability scanner"
-  apt-get -y -qq install openvas || echo -e ' '${RED}'[!] Issue with apt-get'${RESET} 1>&2
+if [[ "${openVAS}" != "false" ]]; then
+  (( STAGE++ )); echo -e "\n\n ${GREEN}[+]${RESET} (${STAGE}/${TOTAL}) Installing ${GREEN}OpenVAS${RESET} ~ vulnerability scanner"
+  apt -y -qq install openvas \
+    || echo -e ' '${RED}'[!] Issue with apt install'${RESET} 1>&2
   openvas-setup
   #--- Bug fix (target credentials creation)
   mkdir -p /var/lib/openvas/gnupg/
   #--- Bug fix (keys)
-  #curl --progress -k -L -f "http://www.openvas.org/OpenVAS_TI.asc" | gpg --import -   # || echo -e ' '${RED}'[!]'${RESET}" Issue downloading OpenVAS_TI.asc" 1>&2
-  #--- Bug fix (Timeout - https://bugs.kali.org/view.php?id=2340)
-  #file=/etc/init.d/openvas-manager;   #[ -e "${file}" ] && cp -n $file{,.bkup}
-  #sed -i 's/^DODTIME=.*/DODTIME=25/' ${file}
+  curl --progress -k -L -f "http://www.openvas.org/OpenVAS_TI.asc" | gpg --import - \
+    || echo -e ' '${RED}'[!]'${RESET}" Issue downloading OpenVAS_TI.asc" 1>&2
   #--- Make sure all services are correct
-  #openvas-start   #systemctl restart openvas-manager restart; systemctl restart openvas-scanner; systemctl restart greenbone-security-assistant
+  openvas-start
   #--- User control
   username="root"
   password="toor"
-  (openvasmd --get-users | grep -q ^admin$) && echo -n 'admin user: ' && openvasmd --delete-user=admin
-  (openvasmd --get-users | grep -q "^${username}$") || (echo -n "${username} user: "; openvasmd --create-user="${username}"; openvasmd --user="${username}" --new-password="${password}" >/dev/null)   # You will want to alter it to something (much) more secure!
+  (openvasmd --get-users | grep -q ^admin$) \
+    && echo -n 'admin user: ' \
+    && openvasmd --delete-user=admin
+  (openvasmd --get-users | grep -q "^${username}$") \
+    || (echo -n "${username} user: "; openvasmd --create-user="${username}"; openvasmd --user="${username}" --new-password="${password}" >/dev/null)
   echo -e " ${YELLOW}[i]${RESET} OpenVAS username: ${username}"
-  echo -e " ${YELLOW}[i]${RESET} OpenVAS password: ${password}   ***${BOLD}CHANGE THIS ASAP${RESET}***.   Run: # openvasmd --user=root --new-password='<NEW_PASSWORD>'"
-  #--- Check
-  openvas-start
+  echo -e " ${YELLOW}[i]${RESET} OpenVAS password: ${password}   ***${BOLD}CHANGE THIS ASAP${RESET}***"
+  echo -e " ${YELLOW}[i]${RESET} Run: # openvasmd --user=root --new-password='<NEW_PASSWORD>'"
   sleep 3s
   openvas-check-setup
   #--- Remove from start up
@@ -1817,14 +1885,16 @@ if [ "${openVAS}" != "false" ]; then
   systemctl disable greenbone-security-assistant
   #--- Setup alias
   file=~/.bash_aliases; [ -e "${file}" ] && cp -n $file{,.bkup}   #/etc/bash.bash_aliases
-  grep -q '^## openvas' "${file}" 2>/dev/null || echo -e '## openvas\nalias openvas="openvas-stop; openvas-start; sleep 3s; xdg-open https://127.0.0.1:9392/ >/dev/null 2>&1"\n' >> "${file}"
+  grep -q '^## openvas' "${file}" 2>/dev/null \
+    || echo -e '## openvas\nalias openvas="openvas-stop; openvas-start; sleep 3s; xdg-open https://127.0.0.1:9392/ >/dev/null 2>&1"\n' >> "${file}"
+  source "${file}" || source ~/.zshrc
 else
-  echo -e "\n ${YELLOW}[i]${RESET} ${YELLOW}Skipping OpenVAS${RESET} (missing: '$0 ${BOLD}--openvas${RESET}')..." 1>&2
+  echo -e "\n\n ${YELLOW}[i]${RESET} ${YELLOW}Skipping OpenVAS${RESET} (missing: '$0 ${BOLD}--openvas${RESET}')..." 1>&2
 fi
 
 
 ##### Install vFeed
-echo -e "\n ${GREEN}[+]${RESET} Installing ${GREEN}vFeed${RESET} ~ vulnerability database"
+(( STAGE++ )); echo -e "\n\n ${GREEN}[+]${RESET} (${STAGE}/${TOTAL}) Installing ${GREEN}vFeed${RESET} ~ vulnerability database"
 apt-get -y -qq install vfeed || echo -e ' '${RED}'[!] Issue with apt-get'${RESET} 1>&2
 
 
@@ -1888,7 +1958,7 @@ if [ "${burpFree}" != "true" ]; then
 fi
 
 ##### Configure python console - all users
-echo -e "\n ${GREEN}[+]${RESET} Configuring ${GREEN}python console${RESET} ~ tab complete & history support"
+(( STAGE++ )); echo -e "\n\n ${GREEN}[+]${RESET} (${STAGE}/${TOTAL}) Configuring ${GREEN}python console${RESET} ~ tab complete & history support"
 export PYTHONSTARTUP=$HOME/.pythonstartup
 file=/etc/bash.bashrc; [ -e "${file}" ] && cp -n $file{,.bkup}   #~/.bashrc
 grep -q PYTHONSTARTUP "${file}" || echo 'export PYTHONSTARTUP=$HOME/.pythonstartup' >> "${file}"
@@ -1915,40 +1985,27 @@ if [[ "${SHELL}" == "/bin/zsh" ]]; then source ~/.zshrc else source "${file}"; f
 
 
 ##### Install virtualenvwrapper
-echo -e "\n ${GREEN}[+]${RESET} Installing ${GREEN}virtualenvwrapper${RESET} ~ virtual environment wrapper"
+(( STAGE++ )); echo -e "\n\n ${GREEN}[+]${RESET} (${STAGE}/${TOTAL})Installing ${GREEN}virtualenvwrapper${RESET} ~ virtual environment wrapper"
 apt-get -y -qq install virtualenvwrapper || echo -e ' '${RED}'[!] Issue with apt-get'${RESET} 1>&2
 
 
 ##### Install go
-echo -e "\n ${GREEN}[+]${RESET} Installing ${GREEN}go${RESET} ~ programming language"
+(( STAGE++ )); echo -e "\n\n ${GREEN}[+]${RESET} (${STAGE}/${TOTAL}) Installing ${GREEN}go${RESET} ~ programming language"
 apt-get -y -qq install golang || echo -e ' '${RED}'[!] Issue with apt-get'${RESET} 1>&2
 
 
 ##### Install gitg
-echo -e "\n ${GREEN}[+]${RESET} Installing ${GREEN}gitg${RESET} ~ GUI git client"
+(( STAGE++ )); echo -e "\n\n ${GREEN}[+]${RESET} (${STAGE}/${TOTAL}) Installing ${GREEN}gitg${RESET} ~ GUI git client"
 apt-get -y -qq install gitg || echo -e ' '${RED}'[!] Issue with apt-get'${RESET} 1>&2
 
 
 ##### Install sparta (https://bugs.kali.org/view.php?id=2021)
-echo -e "\n ${GREEN}[+]${RESET} Installing ${GREEN}sparta${RESET} ~ GUI automatic wrapper"
+(( STAGE++ )); echo -e "\n\n ${GREEN}[+]${RESET} (${STAGE}/${TOTAL}) Installing ${GREEN}sparta${RESET} ~ GUI automatic wrapper"
 apt-get -y -qq install sparta || echo -e ' '${RED}'[!] Issue with apt-get'${RESET} 1>&2
-#apt-get -y -qq install git || echo -e ' '${RED}'[!] Issue with apt-get'${RESET} 1>&2
-#git clone -q https://github.com/secforce/sparta.git /opt/sparta-git/ || echo -e ' '${RED}'[!] Issue when git cloning'${RESET} 1>&2
-#pushd /opt/sparta-git/ >/dev/null
-#git pull -q
-#popd >/dev/null
-##--- Add to path
-#file=/usr/local/bin/sparta-git
-#cat <<EOF > "${file}" || echo -e ' '${RED}'[!] Issue with writing file'${RESET} 1>&2
-##!/bin/bash
-#
-#cd /opt/sparta-git/ && python sparta.py "\$@"
-#EOF
-#chmod +x "${file}"
 
 
 ##### Install wireshark
-echo -e "\n ${GREEN}[+]${RESET} Installing ${GREEN}Wireshark${RESET} ~ GUI network protocol analyzer"
+(( STAGE++ )); echo -e "\n\n ${GREEN}[+]${RESET} (${STAGE}/${TOTAL}) Installing ${GREEN}Wireshark${RESET} ~ GUI network protocol analyzer"
 #--- Hide running as root warning
 mkdir -p ~/.wireshark/
 file=~/.wireshark/recent_common;   #[ -e "${file}" ] && cp -n $file{,.bkup}
@@ -1959,20 +2016,12 @@ sed -i 's/^disable_lua = .*/disable_lua = true/' "${file}"
 
 
 ##### Install silver searcher
-echo -e "\n ${GREEN}[+]${RESET} Installing ${GREEN}silver searcher${RESET} ~ code searching"
+(( STAGE++ )); echo -e "\n\n ${GREEN}[+]${RESET} (${STAGE}/${TOTAL}) Installing ${GREEN}silver searcher${RESET} ~ code searching"
 apt-get -y -qq install silversearcher-ag || echo -e ' '${RED}'[!] Issue with apt-get'${RESET} 1>&2
-#apt-get -y -qq install git automake pkg-config libpcre3-dev zlib1g-dev liblzma-dev || echo -e ' '${RED}'[!] Issue with apt-get'${RESET} 1>&2
-#git clone -q https://github.com/ggreer/the_silver_searcher.git /usr/local/src/the_silver_searcher || echo -e ' '${RED}'[!] Issue with apt-get'${RESET} 1>&2
-#pushd /usr/local/src/the_silver_searcher/ >/dev/null
-#git pull -q
-#bash ./build.sh
-#make -s clean; make -s install
-#popd >/dev/null
-#ag <name>
 
 
 ##### Install rips
-echo -e "\n ${GREEN}[+]${RESET} Installing ${GREEN}rips${RESET} ~ source code scanner"
+(( STAGE++ )); echo -e "\n\n ${GREEN}[+]${RESET} (${STAGE}/${TOTAL}) Installing ${GREEN}rips${RESET} ~ source code scanner"
 apt-get -y -qq install apache2 php5 git || echo -e ' '${RED}'[!] Issue with apt-get'${RESET} 1>&2
 git clone -q https://github.com/ripsscanner/rips.git /opt/rips-git/ || echo -e ' '${RED}'[!] Issue when git cloning'${RESET} 1>&2
 pushd /opt/rips-git/ >/dev/null
@@ -1995,7 +2044,7 @@ systemctl restart apache2
 
 
 ##### Install graudit
-echo -e "\n ${GREEN}[+]${RESET} Installing ${GREEN}graudit${RESET} ~ source code auditing"
+(( STAGE++ )); echo -e "\n\n ${GREEN}[+]${RESET} (${STAGE}/${TOTAL}) Installing ${GREEN}graudit${RESET} ~ source code auditing"
 apt-get -y -qq install git || echo -e ' '${RED}'[!] Issue with apt-get'${RESET} 1>&2
 git clone -q https://github.com/wireghoul/graudit.git /opt/graudit-git/ || echo -e ' '${RED}'[!] Issue when git cloning'${RESET} 1>&2
 #--- Add to path
@@ -2006,51 +2055,50 @@ cd /opt/graudit-git/ && bash graudit.sh "\$@"
 EOF
 chmod +x "${file}"
 
+##### Install libreoffice
+(( STAGE++ )); echo -e "\n\n ${GREEN}[+]${RESET} (${STAGE}/${TOTAL}) Installing ${GREEN}LibreOffice${RESET} ~ GUI office suite"
+apt -y -qq install libreoffice \
+  || echo -e ' '${RED}'[!] Issue with apt install'${RESET} 1>&2
 
 ##### Install cherrytree
-echo -e "\n ${GREEN}[+]${RESET} Installing ${GREEN}cherrytree${RESET} ~ GUI note taking"
+(( STAGE++ )); echo -e "\n\n ${GREEN}[+]${RESET} (${STAGE}/${TOTAL}) Installing ${GREEN}cherrytree${RESET} ~ GUI note taking"
 apt-get -y -qq install cherrytree || echo -e ' '${RED}'[!] Issue with apt-get'${RESET} 1>&2
 
 
 ##### Install ipcalc & sipcalc
-echo -e "\n ${GREEN}[+]${RESET} Installing ${GREEN}ipcalc${RESET} & ${GREEN}sipcalc${RESET} ~ CLI subnet calculators"
+(( STAGE++ )); echo -e "\n\n ${GREEN}[+]${RESET} (${STAGE}/${TOTAL}) Installing ${GREEN}ipcalc${RESET} & ${GREEN}sipcalc${RESET} ~ CLI subnet calculators"
 apt-get -y -qq install ipcalc sipcalc || echo -e ' '${RED}'[!] Issue with apt-get'${RESET} 1>&2
 
 
 ##### Install recordmydesktop
-echo -e "\n ${GREEN}[+]${RESET} Installing ${GREEN}RecordMyDesktop${RESET} ~ GUI video screen capture"
+(( STAGE++ )); echo -e "\n\n ${GREEN}[+]${RESET} (${STAGE}/${TOTAL}) Installing ${GREEN}RecordMyDesktop${RESET} ~ GUI video screen capture"
 apt-get -y -qq install recordmydesktop || echo -e ' '${RED}'[!] Issue with apt-get'${RESET} 1>&2
 #--- Installing GUI front end
 apt-get -y -qq install gtk-recordmydesktop || echo -e ' '${RED}'[!] Issue with apt-get'${RESET} 1>&2
 
 
 ##### Install asciinema
-echo -e "\n ${GREEN}[+]${RESET} Installing ${GREEN}asciinema${RESET} ~ CLI terminal recorder"
+(( STAGE++ )); echo -e "\n\n ${GREEN}[+]${RESET} (${STAGE}/${TOTAL}) Installing ${GREEN}asciinema${RESET} ~ CLI terminal recorder"
 curl -s -L https://asciinema.org/install | sh
 
 
 ##### Install shutter
-echo -e "\n ${GREEN}[+]${RESET} Installing ${GREEN}shutter${RESET} ~ GUI static screen capture"
+(( STAGE++ )); echo -e "\n\n ${GREEN}[+]${RESET} (${STAGE}/${TOTAL}) Installing ${GREEN}shutter${RESET} ~ GUI static screen capture"
 apt-get -y -qq install shutter || echo -e ' '${RED}'[!] Issue with apt-get'${RESET} 1>&2
 
 
-##### Install gdebi
-echo -e "\n ${GREEN}[+]${RESET} Installing ${GREEN}gdebi${RESET} ~ GUI package installer"
-apt-get -y -qq install gdebi || echo -e ' '${RED}'[!] Issue with apt-get'${RESET} 1>&2
-
-
 ##### Install psmisc ~ allows for 'killall command' to be used
-echo -e "\n ${GREEN}[+]${RESET} Installing ${GREEN}psmisc${RESET} ~ suite to help with running processes"
+(( STAGE++ )); echo -e "\n\n ${GREEN}[+]${RESET} (${STAGE}/${TOTAL}) Installing ${GREEN}psmisc${RESET} ~ suite to help with running processes"
 apt-get -y -qq install psmisc || echo -e ' '${RED}'[!] Issue with apt-get'${RESET} 1>&2
 
 
 ###### Setup pipe viewer
-echo -e "\n ${GREEN}[+]${RESET} Installing ${GREEN}pipe viewer${RESET} ~ CLI progress bar"
+(( STAGE++ )); echo -e "\n\n ${GREEN}[+]${RESET} (${STAGE}/${TOTAL}) Installing ${GREEN}pipe viewer${RESET} ~ CLI progress bar"
 apt-get install -y -qq pv || echo -e ' '${RED}'[!] Issue with apt-get'${RESET} 1>&2
 
 
 ###### Setup pwgen
-echo -e "\n ${GREEN}[+]${RESET} Installing ${GREEN}pwgen${RESET} ~ password generator"
+(( STAGE++ )); echo -e "\n\n ${GREEN}[+]${RESET} (${STAGE}/${TOTAL}) Installing ${GREEN}pwgen${RESET} ~ password generator"
 apt-get install -y -qq pwgen || echo -e ' '${RED}'[!] Issue with apt-get'${RESET} 1>&2
 
 
@@ -2060,7 +2108,7 @@ apt-get -y -qq install htop || echo -e ' '${RED}'[!] Issue with apt-get'${RESET}
 
 
 ##### Install powertop
-echo -e "\n ${GREEN}[+]${RESET} Installing ${GREEN}powertop${RESET} ~ CLI power consumption viewer"
+(( STAGE++ )); echo -e "\n\n ${GREEN}[+]${RESET} (${STAGE}/${TOTAL}) Installing ${GREEN}powertop${RESET} ~ CLI power consumption viewer"
 apt-get -y -qq install powertop || echo -e ' '${RED}'[!] Issue with apt-get'${RESET} 1>&2
 
 
@@ -2070,12 +2118,12 @@ apt-get -y -qq install iotop || echo -e ' '${RED}'[!] Issue with apt-get'${RESET
 
 
 ##### Install ca-certificates
-echo -e "\n ${GREEN}[+]${RESET} Installing ${GREEN}ca-certificates${RESET} ~ HTTPS/SSL/TLS"
+(( STAGE++ )); echo -e "\n\n ${GREEN}[+]${RESET} (${STAGE}/${TOTAL}) Installing ${GREEN}ca-certificates${RESET} ~ HTTPS/SSL/TLS"
 apt-get -y -qq install ca-certificates || echo -e ' '${RED}'[!] Issue with apt-get'${RESET} 1>&2
 
 
 ##### Install testssl
-echo -e "\n ${GREEN}[+]${RESET} Installing ${GREEN}testssl${RESET} ~ Testing TLS/SSL encryption"
+(( STAGE++ )); echo -e "\n\n ${GREEN}[+]${RESET} (${STAGE}/${TOTAL}) Installing ${GREEN}testssl${RESET} ~ Testing TLS/SSL encryption"
 apt-get -y -qq install git || echo -e ' '${RED}'[!] Issue with apt-get'${RESET} 1>&2
 git clone -q https://github.com/drwetter/testssl.sh.git /opt/testssl-git/ || echo -e ' '${RED}'[!] Issue when git cloning'${RESET} 1>&2
 ln -sf /opt/testssl-git/testssl.sh /usr/local/bin/testssl-git
@@ -2083,21 +2131,21 @@ chmod +x /opt/testssl-git/testssl.sh
 
 
 ##### Install UACScript
-echo -e "\n ${GREEN}[+]${RESET} Installing ${GREEN}UACScript${RESET} ~ UAC Bypass for Windows 7"
+(( STAGE++ )); echo -e "\n\n ${GREEN}[+]${RESET} (${STAGE}/${TOTAL}) Installing ${GREEN}UACScript${RESET} ~ UAC Bypass for Windows 7"
 apt-get -y -qq install git windows-binaries || echo -e ' '${RED}'[!] Issue with apt-get'${RESET} 1>&2
 git clone -q https://github.com/Vozzie/uacscript.git /opt/uacscript-git/ || echo -e ' '${RED}'[!] Issue when git cloning'${RESET} 1>&2
 ln -sf /usr/share/windows-binaries/uac-win7 /opt/uacscript-git/
 
 
 ##### Install MiniReverse_Shell_With_Parameters
-echo -e "\n ${GREEN}[+]${RESET} Installing ${GREEN}MiniReverse_Shell_With_Parameters${RESET} ~ Generate shellcode for a reverse shell"
+(( STAGE++ )); echo -e "\n\n ${GREEN}[+]${RESET} (${STAGE}/${TOTAL}) Installing ${GREEN}MiniReverse_Shell_With_Parameters${RESET} ~ Generate shellcode for a reverse shell"
 apt-get -y -qq install git windows-binaries || echo -e ' '${RED}'[!] Issue with apt-get'${RESET} 1>&2
 git clone -q https://github.com/xillwillx/MiniReverse_Shell_With_Parameters.git /opt/minireverse-shell-with-parameters-git/ || echo -e ' '${RED}'[!] Issue when git cloning'${RESET} 1>&2
 ln -sf /usr/share/windows-binaries/MiniReverse /opt/minireverse-shell-with-parameters-git/
 
 
 ##### Install axel
-echo -e "\n ${GREEN}[+]${RESET} Installing ${GREEN}axel${RESET} ~ CLI download manager"
+(( STAGE++ )); echo -e "\n\n ${GREEN}[+]${RESET} (${STAGE}/${TOTAL}) Installing ${GREEN}axel${RESET} ~ CLI download manager"
 apt-get -y -qq install axel || echo -e ' '${RED}'[!] Issue with apt-get'${RESET} 1>&2
 #--- Setup alias
 file=~/.bash_aliases; [ -e "${file}" ] && cp -n $file{,.bkup}   #/etc/bash.bash_aliases
@@ -2108,37 +2156,53 @@ if [[ "${SHELL}" == "/bin/zsh" ]]; then source ~/.zshrc else source "${file}"; f
 
 
 ##### Install html2text
-echo -e "\n ${GREEN}[+]${RESET} Installing ${GREEN}html2text${RESET} ~ CLI html rendering"
+(( STAGE++ )); echo -e "\n\n ${GREEN}[+]${RESET} (${STAGE}/${TOTAL}) Installing ${GREEN}html2text${RESET} ~ CLI html rendering"
 apt-get -y -qq install html2text || echo -e ' '${RED}'[!] Issue with apt-get'${RESET} 1>&2
 
 
 ##### Install gparted
-echo -e "\n ${GREEN}[+]${RESET} Installing ${GREEN}GParted${RESET} ~ GUI partition manager"
+(( STAGE++ )); echo -e "\n\n ${GREEN}[+]${RESET} (${STAGE}/${TOTAL})Installing ${GREEN}GParted${RESET} ~ GUI partition manager"
 apt-get -y -qq install gparted || echo -e ' '${RED}'[!] Issue with apt-get'${RESET} 1>&2
 
 
 ##### Install daemonfs
-echo -e "\n ${GREEN}[+]${RESET} Installing ${GREEN}daemonfs${RESET} ~ GUI file monitor"
+(( STAGE++ )); echo -e "\n\n ${GREEN}[+]${RESET} (${STAGE}/${TOTAL}) Installing ${GREEN}daemonfs${RESET} ~ GUI file monitor"
 apt-get -y -qq install daemonfs || echo -e ' '${RED}'[!] Issue with apt-get'${RESET} 1>&2
 
 
-##### Install filezilla (geany gets installed later)
-echo -e "\n ${GREEN}[+]${RESET} Installing ${GREEN}FileZilla${RESET} ~ GUI file transfer"
+##### Install filezilla 
+(( STAGE++ )); echo -e "\n\n ${GREEN}[+]${RESET} (${STAGE}/${TOTAL}) Installing ${GREEN}FileZilla${RESET} ~ GUI file transfer"
 apt-get -y -qq install filezilla || echo -e ' '${RED}'[!] Issue with apt-get'${RESET} 1>&2
 #--- Configure filezilla
-export DISPLAY=:0.0   #[[ -z $SSH_CONNECTION ]] || export DISPLAY=:0.0
-timeout 5 filezilla >/dev/null 2>&1    #filezilla & sleep 5s; killall -q -w filezilla >/dev/null     # Start and kill. Files needed for first time run
+export DISPLAY=:0.0
+timeout 5 filezilla >/dev/null 2>&1     # Start and kill. Files needed for first time run
 mkdir -p ~/.config/filezilla/
 file=~/.config/filezilla/filezilla.xml; [ -e "${file}" ] && cp -n $file{,.bkup}
-sed -i 's#^.*"Default editor".*#\t<Setting name="Default editor">2/usr/bin/geany</Setting>#' "${file}"
-
+[ ! -e "${file}" ] && cat <<EOF> "${file}"
+<?xml version="1.0" encoding="UTF-8"?>
+<FileZilla3 version="3.15.0.2" platform="*nix">
+  <Settings>
+    <Setting name="Default editor">0</Setting>
+    <Setting name="Always use default editor">0</Setting>
+  </Settings>
+</FileZilla3>
+fi
+EOF
+sed -i 's#^.*"Default editor".*#\t<Setting name="Default editor">2/usr/bin/gedit</Setting>#' "${file}"
+[ -e /usr/bin/atom ] && sed -i 's#^.*"Default editor".*#\t<Setting name="Default editor">2/usr/bin/atom</Setting>#' "${file}"
+sed -i 's#^.*"Always use default editor".*#\t<Setting name="Always use default editor">1</Setting>#' "${file}"
 ##### Install lynx
 echo -e "\n ${GREEN}[+]${RESET} Installing ${GREEN}lynx${RESET} ~ CLI web browser"
 apt-get -y -qq install lynx || echo -e ' '${RED}'[!] Issue with apt-get'${RESET} 1>&2
 
+##### Install ncftp
+(( STAGE++ )); echo -e "\n\n ${GREEN}[+]${RESET} (${STAGE}/${TOTAL}) Installing ${GREEN}ncftp${RESET} ~ CLI FTP client"
+apt -y -qq install ncftp \
+  || echo -e ' '${RED}'[!] Issue with apt install'${RESET} 1>&2
+
 
 ##### Install p7zip
-echo -e "\n ${GREEN}[+]${RESET} Installing ${GREEN}p7zip${RESET} ~ CLI file extractor"
+(( STAGE++ )); echo -e "\n\n ${GREEN}[+]${RESET} (${STAGE}/${TOTAL}) Installing ${GREEN}p7zip${RESET} ~ CLI file extractor"
 apt-get -y -qq install p7zip-full || echo -e ' '${RED}'[!] Issue with apt-get'${RESET} 1>&2
 
 
@@ -2155,41 +2219,30 @@ apt-get -y -qq install unace unrar rar unzip zip p7zip p7zip-full p7zip-rar || e
 
 
 ##### Install VPN support
-echo -e "\n ${GREEN}[+]${RESET} Installing ${GREEN}VPN${RESET} support for Network-Manager"
+(( STAGE++ )); echo -e "\n\n ${GREEN}[+]${RESET} (${STAGE}/${TOTAL}) Installing ${GREEN}VPN${RESET} support for Network-Manager"
 #*** I know its messy...
 for FILE in network-manager-openvpn network-manager-pptp network-manager-vpnc network-manager-openconnect network-manager-iodine; do
   apt-get -y -qq install "${FILE}" || echo -e ' '${RED}'[!] Issue with apt-get'${RESET} 1>&2
 done
 
-##### Install flash
-#echo -e "\n ${GREEN}[+]${RESET} Installing ${GREEN}flash${RESET} ~ multimedia web plugin"
-#apt-get -y -qq install flashplugin-nonfree || echo -e ' '${RED}'[!] Issue with apt-get'${RESET} 1>&2
-#update-flashplugin-nonfree --install
-
-
-##### Install java
-#echo -e "\n ${GREEN}[+]${RESET} Installing ${GREEN}java${RESET} ~ web plugin"
-#*** Insert bash fu here for either open jdk vs oracle jdk
-#update-java-alternatives --jre -s java-1.7.0-openjdk-amd64
-
 
 ##### Install hashid
-echo -e "\n ${GREEN}[+]${RESET} Installing ${GREEN}hashid${RESET} ~ identify hash types"
+(( STAGE++ )); echo -e "\n\n ${GREEN}[+]${RESET} (${STAGE}/${TOTAL}) Installing ${GREEN}hashid${RESET} ~ identify hash types"
 apt-get -y -qq install hashid || echo -e ' '${RED}'[!] Issue with apt-get'${RESET} 1>&2
 
 
 ##### Install httprint
-echo -e "\n ${GREEN}[+]${RESET} Installing ${GREEN}httprint${RESET} ~ GUI web server fingerprint"
+(( STAGE++ )); echo -e "\n\n ${GREEN}[+]${RESET} (${STAGE}/${TOTAL}) Installing ${GREEN}httprint${RESET} ~ GUI web server fingerprint"
 apt-get -y -qq install httprint || echo -e ' '${RED}'[!] Issue with apt-get'${RESET} 1>&2
 
 
 ##### Install lbd
-echo -e "\n ${GREEN}[+]${RESET} Installing ${GREEN}lbd${RESET} ~ load balancing detector"
+(( STAGE++ )); echo -e "\n\n ${GREEN}[+]${RESET} (${STAGE}/${TOTAL}) Installing ${GREEN}lbd${RESET} ~ load balancing detector"
 apt-get -y -qq install lbd || echo -e ' '${RED}'[!] Issue with apt-get'${RESET} 1>&2
 
 
 ##### Install wafw00f
-echo -e "\n ${GREEN}[+]${RESET} Installing ${GREEN}wafw00f${RESET} ~ WAF detector"
+(( STAGE++ )); echo -e "\n\n ${GREEN}[+]${RESET} (${STAGE}/${TOTAL}) Installing ${GREEN}wafw00f${RESET} ~ WAF detector"
 apt-get -y -qq install git python python-pip || echo -e ' '${RED}'[!] Issue with apt-get'${RESET} 1>&2
 git clone -q https://github.com/sandrogauci/wafw00f.git /opt/wafw00f-git/ || echo -e ' '${RED}'[!] Issue when git cloning'${RESET} 1>&2
 pushd /opt/wafw00f-git/ >/dev/null
@@ -2198,13 +2251,8 @@ python setup.py install
 popd >/dev/null
 
 
-##### Install waffit
-#echo -e "\n ${GREEN}[+]${RESET} Installing ${GREEN}waffit${RESET} ~ WAF detector"
-#apt-get -y -qq install waffit || echo -e ' '${RED}'[!] Issue with apt-get'${RESET} 1>&2
-
-
 ##### Install aircrack-ng
-echo -e "\n ${GREEN}[+]${RESET} Installing ${GREEN}Aircrack-ng${RESET} ~ Wi-Fi cracking suite"
+(( STAGE++ )); echo -e "\n\n ${GREEN}[+]${RESET} (${STAGE}/${TOTAL}) Installing ${GREEN}Aircrack-ng${RESET} ~ Wi-Fi cracking suite"
 apt-get -y -qq install aircrack-ng curl || echo -e ' '${RED}'[!] Issue with apt-get'${RESET} 1>&2
 #--- Setup hardware database
 mkdir -p /etc/aircrack-ng/
@@ -2219,22 +2267,22 @@ grep -q '^## airodump-ng' "${file}" 2>/dev/null || echo -e '## airodump-ng \nali
 
 
 ##### Install reaver (Community Fork)
-echo -e "\n ${GREEN}[+]${RESET} Installing ${GREEN}reaver (community fork)${RESET} ~ WPS pin brute force + Pixie Attack"
+(( STAGE++ )); echo -e "\n\n ${GREEN}[+]${RESET} (${STAGE}/${TOTAL}) Installing ${GREEN}reaver (community fork)${RESET} ~ WPS pin brute force + Pixie Attack"
 apt-get -y -qq install reaver pixiewps || echo -e ' '${RED}'[!] Issue with apt-get'${RESET} 1>&2
 
 
 ##### Install bully
-echo -e "\n ${GREEN}[+]${RESET} Installing ${GREEN}bully${RESET} ~ WPS pin brute force"
+(( STAGE++ )); echo -e "\n\n ${GREEN}[+]${RESET} (${STAGE}/${TOTAL}) Installing ${GREEN}bully${RESET} ~ WPS pin brute force"
 apt-get -y -qq install bully || echo -e ' '${RED}'[!] Issue with apt-get'${RESET} 1>&2
 
 
 ##### Install wifite
-echo -e "\n ${GREEN}[+]${RESET} Installing ${GREEN}wifite${RESET} ~ automated Wi-Fi tool"
+(( STAGE++ )); echo -e "\n\n ${GREEN}[+]${RESET} (${STAGE}/${TOTAL}) Installing ${GREEN}wifite${RESET} ~ automated Wi-Fi tool"
 apt-get -y -qq install wifite || echo -e ' '${RED}'[!] Issue with apt-get'${RESET} 1>&2
 
 
 ##### Install vulscan script for nmap
-echo -e "\n ${GREEN}[+]${RESET} Installing ${GREEN}vulscan script for nmap${RESET} ~ vulnerability scanner add-on"
+(( STAGE++ )); echo -e "\n\n ${GREEN}[+]${RESET} (${STAGE}/${TOTAL}) Installing ${GREEN}vulscan script for nmap${RESET} ~ vulnerability scanner add-on"
 apt-get -y -qq install nmap curl || echo -e ' '${RED}'[!] Issue with apt-get'${RESET} 1>&2
 mkdir -p /usr/share/nmap/scripts/vulscan/
 timeout 300 curl --progress -k -L -f "http://www.computec.ch/projekte/vulscan/download/nmap_nse_vulscan-2.0.tar.gz" > /tmp/nmap_nse_vulscan.tar.gz || echo -e ' '${RED}'[!]'${RESET}" Issue downloading file" 1>&2      #***!!! hardcoded version! Need to manually check for updates
@@ -2247,12 +2295,12 @@ rm -f /tmp/nmap_nse_vulscan.tar*
 
 
 ##### Install unicornscan
-echo -e "\n ${GREEN}[+]${RESET} Installing ${GREEN}unicornscan${RESET} ~ fast port scanner"
+(( STAGE++ )); echo -e "\n\n ${GREEN}[+]${RESET} (${STAGE}/${TOTAL}) Installing ${GREEN}unicornscan${RESET} ~ fast port scanner"
 apt-get -y -qq install unicornscan || echo -e ' '${RED}'[!] Issue with apt-get'${RESET} 1>&2
 
 
 ##### Install onetwopunch
-echo -e "\n ${GREEN}[+]${RESET} Installing ${GREEN}onetwopunch${RESET} ~ unicornscan & nmap wrapper"
+(( STAGE++ )); echo -e "\n\n ${GREEN}[+]${RESET} (${STAGE}/${TOTAL}) Installing ${GREEN}onetwopunch${RESET} ~ unicornscan & nmap wrapper"
 apt-get -y -qq install git nmap unicornscan || echo -e ' '${RED}'[!] Issue with apt-get'${RESET} 1>&2
 git clone -q https://github.com/superkojiman/onetwopunch.git /opt/onetwopunch-git/ || echo -e ' '${RED}'[!] Issue when git cloning'${RESET} 1>&2
 pushd /opt/onetwopunch-git/ >/dev/null
@@ -2268,7 +2316,7 @@ chmod +x "${file}"
 
 
 ##### Install Gnmap-Parser (Fork)
-echo -e "\n ${GREEN}[+]${RESET} Installing ${GREEN}Gnmap-Parser (Fork)${RESET} ~ Parse Nmap exports into various plain-text formats"
+(( STAGE++ )); echo -e "\n\n ${GREEN}[+]${RESET} (${STAGE}/${TOTAL}) Installing ${GREEN}Gnmap-Parser (Fork)${RESET} ~ Parse Nmap exports into various plain-text formats"
 apt-get -y -qq install git || echo -e ' '${RED}'[!] Issue with apt-get'${RESET} 1>&2
 git clone -q https://github.com/nullmode/gnmap-parser.git /opt/gnmap-parser-git/ || echo -e ' '${RED}'[!] Issue when git cloning'${RESET} 1>&2
 ln -sf /opt/gnmap-parser-git/Gnmap-Parser.sh /usr/local/bin/gnmap-parser-git
@@ -2276,7 +2324,7 @@ chmod +x /opt/gnmap-parser-git/Gnmap-Parser.sh
 
 
 ##### Install udp-proto-scanner
-echo -e "\n ${GREEN}[+]${RESET} Installing ${GREEN}udp-proto-scanner${RESET} ~ common UDP port scanner"
+(( STAGE++ )); echo -e "\n\n ${GREEN}[+]${RESET} (${STAGE}/${TOTAL}) Installing ${GREEN}udp-proto-scanner${RESET} ~ common UDP port scanner"
 apt-get -y -qq install curl || echo -e ' '${RED}'[!] Issue with apt-get'${RESET} 1>&2
 #mkdir -p /usr/share/udp-proto-scanner/
 timeout 300 curl --progress -k -L -f "https://labs.portcullis.co.uk/download/udp-proto-scanner-1.1.tar.gz" -o /tmp/udp-proto-scanner.tar.gz || echo -e ' '${RED}'[!]'${RESET}" Issue downloading udp-proto-scanner.tar.gz" 1>&2
@@ -2294,18 +2342,18 @@ rm -f /tmp/udp-proto-scanner.tar*
 
 
 ##### Install clusterd
-echo -e "\n ${GREEN}[+]${RESET} Installing ${GREEN}clusterd${RESET} ~ clustered attack toolkit (JBoss, ColdFusion, WebLogic, Tomcat etc)"
+(( STAGE++ )); echo -e "\n\n ${GREEN}[+]${RESET} (${STAGE}/${TOTAL})Installing ${GREEN}clusterd${RESET} ~ clustered attack toolkit (JBoss, ColdFusion, WebLogic, Tomcat etc)"
 apt-get -y -qq install clusterd || echo -e ' '${RED}'[!] Issue with apt-get'${RESET} 1>&2
 
 
 ##### Install webhandler
-echo -e "\n ${GREEN}[+]${RESET} Installing ${GREEN}webhandler${RESET} ~ shell TTY handler"
+(( STAGE++ )); echo -e "\n\n ${GREEN}[+]${RESET} (${STAGE}/${TOTAL}) Installing ${GREEN}webhandler${RESET} ~ shell TTY handler"
 apt-get -y -qq install webhandler || echo -e ' '${RED}'[!] Issue with apt-get'${RESET} 1>&2
 ln -sf /usr/bin/webhandler /usr/local/bin/wh
 
 
 ##### Install azazel
-echo -e "\n ${GREEN}[+]${RESET} Installing ${GREEN}azazel${RESET} ~ Linux userland rootkit"
+(( STAGE++ )); echo -e "\n\n ${GREEN}[+]${RESET} (${STAGE}/${TOTAL}) Installing ${GREEN}azazel${RESET} ~ Linux userland rootkit"
 apt-get -y -qq install git || echo -e ' '${RED}'[!] Issue with apt-get'${RESET} 1>&2
 git clone -q https://github.com/chokepoint/azazel.git /opt/azazel-git/ || echo -e ' '${RED}'[!] Issue when git cloning'${RESET} 1>&2
 pushd /opt/azazel-git/ >/dev/null
@@ -2314,19 +2362,19 @@ popd >/dev/null
 
 
 ##### Install Babadook
-echo -e "\n ${GREEN}[+]${RESET} Installing ${GREEN}Babadook${RESET} ~ connection-less powershell backdoor"
+(( STAGE++ )); echo -e "\n\n ${GREEN}[+]${RESET} (${STAGE}/${TOTAL}) Installing ${GREEN}Babadook${RESET} ~ connection-less powershell backdoor"
 apt-get -y -qq install git || echo -e ' '${RED}'[!] Issue with apt-get'${RESET} 1>&2
 git clone -q https://github.com/jseidl/Babadook.git /opt/babadook-git/ || echo -e ' '${RED}'[!] Issue when git cloning'${RESET} 1>&2
 
 
 ##### Install pupy
-echo -e "\n ${GREEN}[+]${RESET} Installing ${GREEN}pupy${RESET} ~ Remote Administration Tool"
+(( STAGE++ )); echo -e "\n\n ${GREEN}[+]${RESET} (${STAGE}/${TOTAL})Installing ${GREEN}pupy${RESET} ~ Remote Administration Tool"
 apt-get -y -qq install git || echo -e ' '${RED}'[!] Issue with apt-get'${RESET} 1>&2
 git clone -q https://github.com/n1nj4sec/pupy.git /opt/pupy-git/ || echo -e ' '${RED}'[!] Issue when git cloning'${RESET} 1>&2
 
 
 ##### Install gobuster (https://bugs.kali.org/view.php?id=2438)
-echo -e "\n ${GREEN}[+]${RESET} Installing ${GREEN}gobuster${RESET} ~ Directory/File/DNS busting tool"
+(( STAGE++ )); echo -e "\n\n ${GREEN}[+]${RESET} (${STAGE}/${TOTAL}) Installing ${GREEN}gobuster${RESET} ~ Directory/File/DNS busting tool"
 apt-get -y -qq install git golang || echo -e ' '${RED}'[!] Issue with apt-get'${RESET} 1>&2
 git clone -q https://github.com/OJ/gobuster.git /opt/gobuster-git/ || echo -e ' '${RED}'[!] Issue when git cloning'${RESET} 1>&2
 pushd /opt/gobuster-git/ >/dev/null
@@ -2342,7 +2390,7 @@ chmod +x "${file}"
 
 
 ##### Install reGeorg
-echo -e "\n ${GREEN}[+]${RESET} Installing ${GREEN}reGeorg${RESET} ~ pivot via web shells"
+(( STAGE++ )); echo -e "\n\n ${GREEN}[+]${RESET} (${STAGE}/${TOTAL}) Installing ${GREEN}reGeorg${RESET} ~ pivot via web shells"
 git clone -q https://github.com/sensepost/reGeorg.git /opt/reGeorg-git || echo -e ' '${RED}'[!] Issue when git cloning'${RESET} 1>&2
 #--- Link to others
 apt-get -y -qq install webshells || echo -e ' '${RED}'[!] Issue with apt-get'${RESET} 1>&2
@@ -2350,7 +2398,7 @@ ln -sf /opt/reGeorg-git /usr/share/webshells/reGeorg
 
 
 ##### Install b374k (https://bugs.kali.org/view.php?id=1097)
-echo -e "\n ${GREEN}[+]${RESET} Installing ${GREEN}b374k${RESET} ~ (PHP) web shell"
+(( STAGE++ )); echo -e "\n\n ${GREEN}[+]${RESET} (${STAGE}/${TOTAL}) Installing ${GREEN}b374k${RESET} ~ (PHP) web shell"
 apt-get -y -qq install git php5-cli || echo -e ' '${RED}'[!] Issue with apt-get'${RESET} 1>&2
 git clone -q https://github.com/b374k/b374k.git /opt/b374k-git/ || echo -e ' '${RED}'[!] Issue when git cloning'${RESET} 1>&2
 pushd /opt/b374k-git/ >/dev/null
@@ -2363,21 +2411,21 @@ ln -sf /usr/share/b374k-git /usr/share/webshells/php/b374k
 
 
 ##### Install adminer
-echo -e "\n ${GREEN}[+]${RESET} Installing ${GREEN}adminer${RESET} ~ Database management in a single PHP file"
+(( STAGE++ )); echo -e "\n\n ${GREEN}[+]${RESET} (${STAGE}/${TOTAL}) Installing ${GREEN}adminer${RESET} ~ Database management in a single PHP file"
 apt-get -y -qq install git webshells || echo -e ' '${RED}'[!] Issue with apt-get'${RESET} 1>&2
 git clone -q https://github.com/vrana/adminer.git /opt/adminer-git/ || echo -e ' '${RED}'[!] Issue when git cloning'${RESET} 1>&2
 ln -sf /opt/adminer-git/ /usr/share/webshells/php/adminer
 
 
 ##### Install WeBaCoo
-echo -e "\n ${GREEN}[+]${RESET} Installing ${GREEN}WeBaCoo${RESET} ~ Web backdoor cookie"
+(( STAGE++ )); echo -e "\n\n ${GREEN}[+]${RESET} (${STAGE}/${TOTAL}) Installing ${GREEN}WeBaCoo${RESET} ~ Web backdoor cookie"
 apt-get -y -qq install git || echo -e ' '${RED}'[!] Issue with apt-get'${RESET} 1>&2
 git clone -q https://github.com/anestisb/WeBaCoo.git /opt/webacoo-git/ || echo -e ' '${RED}'[!] Issue when git cloning'${RESET} 1>&2
 ln -sf /opt/webacoo-git/ /usr/share/webshells/php/webacoo
 
 
 ##### Install cmdsql
-echo -e "\n ${GREEN}[+]${RESET} Installing ${GREEN}cmdsql${RESET} ~ (ASPX) web shell"
+(( STAGE++ )); echo -e "\n\n ${GREEN}[+]${RESET} (${STAGE}/${TOTAL}) Installing ${GREEN}cmdsql${RESET} ~ (ASPX) web shell"
 apt-get -y -qq install git || echo -e ' '${RED}'[!] Issue with apt-get'${RESET} 1>&2
 git clone -q https://github.com/NetSPI/cmdsql.git /opt/cmdsql-git/ || echo -e ' '${RED}'[!] Issue when git cloning'${RESET} 1>&2
 pushd /opt/b374k-git/ >/dev/null
@@ -2389,7 +2437,7 @@ ln -sf /usr/share/cmdsql-git /usr/share/webshells/aspx/cmdsql
 
 
 ##### Install JSP file browser
-echo -e "\n ${GREEN}[+]${RESET} Installing ${GREEN}JSP file browser${RESET} ~ (JSP) web shell"
+(( STAGE++ )); echo -e "\n\n ${GREEN}[+]${RESET} (${STAGE}/${TOTAL}) Installing ${GREEN}JSP file browser${RESET} ~ (JSP) web shell"
 apt-get -y -qq install curl || echo -e ' '${RED}'[!] Issue with apt-get'${RESET} 1>&2
 mkdir -p /usr/share/jsp-filebrowser/
 timeout 300 curl --progress -k -L -f "http://www.vonloesch.de/files/browser.zip" > /tmp/jsp.zip || echo -e ' '${RED}'[!]'${RESET}" Issue downloading jsp.zip" 1>&2    #***!!! hardcoded path!
@@ -2402,7 +2450,7 @@ rm -f /tmp/jsp.zip
 
 
 ##### Install htshells
-echo -e "\n ${GREEN}[+]${RESET} Installing ${GREEN}htShells${RESET} ~ (htdocs/apache) web shells"
+(( STAGE++ )); echo -e "\n\n ${GREEN}[+]${RESET} (${STAGE}/${TOTAL}) Installing ${GREEN}htShells${RESET} ~ (htdocs/apache) web shells"
 apt-get -y -qq install htshells || echo -e ' '${RED}'[!] Issue with apt-get'${RESET} 1>&2
 #--- Link to others
 apt-get -y -qq install webshells || echo -e ' '${RED}'[!] Issue with apt-get'${RESET} 1>&2
@@ -2410,7 +2458,7 @@ ln -sf /usr/share/htshells /usr/share/webshells/htshells
 
 
 ##### Install python-pty-shells
-echo -e "\n ${GREEN}[+]${RESET} Installing ${GREEN}python-pty-shells${RESET} ~ PTY shells"
+(( STAGE++ )); echo -e "\n\n ${GREEN}[+]${RESET} (${STAGE}/${TOTAL})Installing ${GREEN}python-pty-shells${RESET} ~ PTY shells"
 apt-get -y -qq install git || echo -e ' '${RED}'[!] Issue with apt-get'${RESET} 1>&2
 git clone -q https://github.com/infodox/python-pty-shells.git /opt/python-pty-shells-git/ || echo -e ' '${RED}'[!] Issue when git cloning'${RESET} 1>&2
 pushd /opt/python-pty-shells-git/ >/dev/null
@@ -2419,12 +2467,12 @@ popd >/dev/null
 
 
 ##### Install bridge-utils
-echo -e "\n ${GREEN}[+]${RESET} Installing ${GREEN}bridge-utils${RESET} ~ bridge network interfaces"
+(( STAGE++ )); echo -e "\n\n ${GREEN}[+]${RESET} (${STAGE}/${TOTAL}) Installing ${GREEN}bridge-utils${RESET} ~ bridge network interfaces"
 apt-get -y -qq install bridge-utils || echo -e ' '${RED}'[!] Issue with apt-get'${RESET} 1>&2
 
 
 ##### Install FruityWifi
-echo -e "\n ${GREEN}[+]${RESET} Installing ${GREEN}FruityWifi${RESET} ~ wireless network auditing tool"
+(( STAGE++ )); echo -e "\n\n ${GREEN}[+]${RESET} (${STAGE}/${TOTAL}) Installing ${GREEN}FruityWifi${RESET} ~ wireless network auditing tool"
 apt-get -y -qq install fruitywifi || echo -e ' '${RED}'[!] Issue with apt-get'${RESET} 1>&2
 # URL: https://localhost:8443
 if [[ -e /var/www/html/index.nginx-debian.html ]]; then
@@ -2433,7 +2481,7 @@ fi
 
 
 ##### Install WPA2-HalfHandshake-Crack
-echo -e "\n ${GREEN}[+]${RESET} Installing ${GREEN}WPA2-HalfHandshake-Crack${RESET} ~ rogue AP to do WPA2 handshakes without AP"
+(( STAGE++ )); echo -e "\n\n ${GREEN}[+]${RESET} (${STAGE}/${TOTAL}) Installing ${GREEN}WPA2-HalfHandshake-Crack${RESET} ~ rogue AP to do WPA2 handshakes without AP"
 apt-get -y -qq install git || echo -e ' '${RED}'[!] Issue with apt-get'${RESET} 1>&2
 git clone -q https://github.com/dxa4481/WPA2-HalfHandshake-Crack.git /opt/wpa2-halfhandshake-crack-git/ || echo -e ' '${RED}'[!] Issue when git cloning'${RESET} 1>&2
 pushd /opt/wpa2-halfhandshake-crack-git/ >/dev/null
@@ -2442,19 +2490,19 @@ popd >/dev/null
 
 
 ##### Install HT-WPS-Breaker
-echo -e "\n ${GREEN}[+]${RESET} Installing ${GREEN}HT-WPS-Breaker${RESET} ~ Auto WPS tool"
+(( STAGE++ )); echo -e "\n\n ${GREEN}[+]${RESET} (${STAGE}/${TOTAL}) Installing ${GREEN}HT-WPS-Breaker${RESET} ~ Auto WPS tool"
 apt-get -y -qq install git || echo -e ' '${RED}'[!] Issue with apt-get'${RESET} 1>&2
 git clone -q https://github.com/SilentGhostX/HT-WPS-Breaker.git /opt/ht-wps-breaker-git/ || echo -e ' '${RED}'[!] Issue when git cloning'${RESET} 1>&2
 
 
 ##### Install dot11decrypt
-echo -e "\n ${GREEN}[+]${RESET} Installing ${GREEN}dot11decrypt${RESET} ~ On-the-fly WEP/WPA2 decrypter"
+(( STAGE++ )); echo -e "\n\n ${GREEN}[+]${RESET} (${STAGE}/${TOTAL})Installing ${GREEN}dot11decrypt${RESET} ~ On-the-fly WEP/WPA2 decrypter"
 apt-get -y -qq install git || echo -e ' '${RED}'[!] Issue with apt-get'${RESET} 1>&2
 git clone -q https://github.com/mfontanini/dot11decrypt.git /opt/dot11decrypt-git/ || echo -e ' '${RED}'[!] Issue when git cloning'${RESET} 1>&2
 
 
 ##### Install mana toolkit
-echo -e "\n ${GREEN}[+]${RESET} Installing ${GREEN}MANA toolkit${RESET} ~ rogue AP to do MITM Wi-Fi"
+(( STAGE++ )); echo -e "\n\n ${GREEN}[+]${RESET} (${STAGE}/${TOTAL})Installing ${GREEN}MANA toolkit${RESET} ~ rogue AP to do MITM Wi-Fi"
 apt-get -y -qq install mana-toolkit || echo -e ' '${RED}'[!] Issue with apt-get'${RESET} 1>&2
 mkdir -p /usr/share/mana-toolkit/www/facebook/
 #--- Disable profile
@@ -2467,7 +2515,7 @@ grep -q '^## mana-toolkit' "${file}" 2>/dev/null || echo -e '## mana-toolkit\nal
 
 
 ##### Install wifiphisher
-echo -e "\n ${GREEN}[+]${RESET} Installing ${GREEN}wifiphisher${RESET} ~ automated Wi-Fi phishing"
+(( STAGE++ )); echo -e "\n\n ${GREEN}[+]${RESET} (${STAGE}/${TOTAL}) Installing ${GREEN}wifiphisher${RESET} ~ automated Wi-Fi phishing"
 apt-get -y -qq install git || echo -e ' '${RED}'[!] Issue with apt-get'${RESET} 1>&2
 git clone -q https://github.com/sophron/wifiphisher.git /opt/wifiphisher-git/ || echo -e ' '${RED}'[!] Issue when git cloning'${RESET} 1>&2
 pushd /opt/wifiphisher-git/ >/dev/null
@@ -2483,7 +2531,7 @@ chmod +x "${file}"
 
 
 ##### Install hostapd-wpe-extended
-echo -e "\n ${GREEN}[+]${RESET} Installing ${GREEN}hostapd-wpe-extended${RESET} ~ rogue AP for WPA-Enterprise"
+(( STAGE++ )); echo -e "\n\n ${GREEN}[+]${RESET} (${STAGE}/${TOTAL})Installing ${GREEN}hostapd-wpe-extended${RESET} ~ rogue AP for WPA-Enterprise"
 apt-get -y -qq install git || echo -e ' '${RED}'[!] Issue with apt-get'${RESET} 1>&2
 git clone -q https://github.com/NerdyProjects/hostapd-wpe-extended.git /opt/hostapd-wpe-extended-git/ || echo -e ' '${RED}'[!] Issue when git cloning'${RESET} 1>&2
 pushd /opt/hostapd-wpe-extended-git/ >/dev/null
@@ -2492,7 +2540,7 @@ popd >/dev/null
 
 
 ##### Install proxychains-ng (https://bugs.kali.org/view.php?id=2037)
-echo -e "\n ${GREEN}[+]${RESET} Installing ${GREEN}proxychains-ng${RESET} ~ proxifier"
+(( STAGE++ )); echo -e "\n\n ${GREEN}[+]${RESET} (${STAGE}/${TOTAL}) Installing ${GREEN}proxychains-ng${RESET} ~ proxifier"
 apt-get -y -qq install git gcc || echo -e ' '${RED}'[!] Issue with apt-get'${RESET} 1>&2
 git clone -q https://github.com/rofl0r/proxychains-ng.git /opt/proxychains-ng-git/ || echo -e ' '${RED}'[!] Issue when git cloning'${RESET} 1>&2
 pushd /opt/proxychains-ng-git/ >/dev/null
@@ -2506,37 +2554,37 @@ ln -sf /usr/bin/proxychains4 /usr/local/bin/proxychains-ng
 
 
 ##### Install httptunnel
-echo -e "\n ${GREEN}[+]${RESET} Installing ${GREEN}httptunnel${RESET} ~ tunnels data streams in HTTP requests"
+(( STAGE++ )); echo -e "\n\n ${GREEN}[+]${RESET} (${STAGE}/${TOTAL}) Installing ${GREEN}httptunnel${RESET} ~ tunnels data streams in HTTP requests"
 apt-get -y -qq install http-tunnel || echo -e ' '${RED}'[!] Issue with apt-get'${RESET} 1>&2
 
 
 ##### Install sshuttle
-echo -e "\n ${GREEN}[+]${RESET} Installing ${GREEN}sshuttle${RESET} ~ VPN over SSH"
+(( STAGE++ )); echo -e "\n\n ${GREEN}[+]${RESET} (${STAGE}/${TOTAL})Installing ${GREEN}sshuttle${RESET} ~ VPN over SSH"
 apt-get -y -qq install sshuttle || echo -e ' '${RED}'[!] Issue with apt-get'${RESET} 1>&2
 #--- Example
 #sshuttle --dns --remote root@123.9.9.9 0/0 -vv
 
 
 ##### Install pfi
-echo -e "\n ${GREEN}[+]${RESET} Installing ${GREEN}pfi${RESET} ~ Port Forwarding Interceptor"
+(( STAGE++ )); echo -e "\n\n ${GREEN}[+]${RESET} (${STAGE}/${TOTAL}) Installing ${GREEN}pfi${RESET} ~ Port Forwarding Interceptor"
 apt-get -y -qq install git || echo -e ' '${RED}'[!] Issue with apt-get'${RESET} 1>&2
 git clone -q https://github.com/s7ephen/pfi.git /opt/pfi-git/ || echo -e ' '${RED}'[!] Issue when git cloning'${RESET} 1>&2
 
 
 ##### Install icmpsh
-echo -e "\n ${GREEN}[+]${RESET} Installing ${GREEN}icmpsh${RESET} ~ reverse ICMP shell"
+(( STAGE++ )); echo -e "\n\n ${GREEN}[+]${RESET} (${STAGE}/${TOTAL}) Installing ${GREEN}icmpsh${RESET} ~ reverse ICMP shell"
 apt-get -y -qq install git || echo -e ' '${RED}'[!] Issue with apt-get'${RESET} 1>&2
 git clone -q https://github.com/inquisb/icmpsh.git /opt/icmpsh-git/ || echo -e ' '${RED}'[!] Issue when git cloning'${RESET} 1>&2
 
 
 ##### Install dnsftp
-echo -e "\n ${GREEN}[+]${RESET} Installing ${GREEN}dnsftp${RESET} ~ transfer files over DNS"
+(( STAGE++ )); echo -e "\n\n ${GREEN}[+]${RESET} (${STAGE}/${TOTAL}) Installing ${GREEN}dnsftp${RESET} ~ transfer files over DNS"
 apt-get -y -qq install git || echo -e ' '${RED}'[!] Issue with apt-get'${RESET} 1>&2
 git clone -q https://github.com/breenmachine/dnsftp.git /opt/dnsftp-git/ || echo -e ' '${RED}'[!] Issue when git cloning'${RESET} 1>&2
 
 
 ##### Install iodine
-echo -e "\n ${GREEN}[+]${RESET} Installing ${GREEN}iodine${RESET} ~ DNS tunneling (IP over DNS)"
+(( STAGE++ )); echo -e "\n\n ${GREEN}[+]${RESET} (${STAGE}/${TOTAL}) Installing ${GREEN}iodine${RESET} ~ DNS tunneling (IP over DNS)"
 apt-get -y -qq install iodine || echo -e ' '${RED}'[!] Issue with apt-get'${RESET} 1>&2
 #--- Example
 #iodined -f -P password1 10.0.0.1 dns.mydomain.com
@@ -2544,14 +2592,14 @@ apt-get -y -qq install iodine || echo -e ' '${RED}'[!] Issue with apt-get'${RESE
 
 
 ##### Install dns2tcp
-echo -e "\n ${GREEN}[+]${RESET} Installing ${GREEN}dns2tcp${RESET} ~ DNS tunneling (TCP over DNS)"
+(( STAGE++ )); echo -e "\n\n ${GREEN}[+]${RESET} (${STAGE}/${TOTAL}) Installing ${GREEN}dns2tcp${RESET} ~ DNS tunneling (TCP over DNS)"
 apt-get -y -qq install dns2tcp || echo -e ' '${RED}'[!] Issue with apt-get'${RESET} 1>&2
 #file=/etc/dns2tcpd.conf; [ -e "${file}" ] && cp -n $file{,.bkup}; echo -e "listen = 0.0.0.0\nport = 53\nuser = nobody\nchroot = /tmp\ndomain = dnstunnel.mydomain.com\nkey = password1\nressources = ssh:127.0.0.1:22" > "${file}"; dns2tcpd -F -d 1 -f /etc/dns2tcpd.conf
 #file=/etc/dns2tcpc.conf; [ -e "${file}" ] && cp -n $file{,.bkup}; echo -e "domain = dnstunnel.mydomain.com\nkey = password1\nresources = ssh\nlocal_port = 8000\ndebug_level=1" > "${file}"; dns2tcpc -f /etc/dns2tcpc.conf 178.62.206.227; ssh -C -D 8081 -p 8000 root@127.0.0.1
 
 
 ##### Install ptunnel
-echo -e "\n ${GREEN}[+]${RESET} Installing ${GREEN}ptunnel${RESET} ~ ICMP tunneling"
+(( STAGE++ )); echo -e "\n\n ${GREEN}[+]${RESET} (${STAGE}/${TOTAL}) Installing ${GREEN}ptunnel${RESET} ~ ICMP tunneling"
 apt-get -y -qq install ptunnel || echo -e ' '${RED}'[!] Issue with apt-get'${RESET} 1>&2
 #--- Example
 #ptunnel -x password1
@@ -2559,14 +2607,14 @@ apt-get -y -qq install ptunnel || echo -e ' '${RED}'[!] Issue with apt-get'${RES
 
 
 ##### Install stunnel
-echo -e "\n ${GREEN}[+]${RESET} Installing ${GREEN}stunnel${RESET} ~ SSL wrapper"
+(( STAGE++ )); echo -e "\n\n ${GREEN}[+]${RESET} (${STAGE}/${TOTAL}) Installing ${GREEN}stunnel${RESET} ~ SSL wrapper"
 apt-get -y -qq install stunnel || echo -e ' '${RED}'[!] Issue with apt-get'${RESET} 1>&2
 #--- Remove from start up
 systemctl disable stunnel4
 
 
 ##### Install zerofree
-echo -e "\n ${GREEN}[+]${RESET} Installing ${GREEN}zerofree${RESET} ~ CLI nulls free blocks on a HDD"
+(( STAGE++ )); echo -e "\n\n ${GREEN}[+]${RESET} (${STAGE}/${TOTAL}) Installing ${GREEN}zerofree${RESET} ~ CLI nulls free blocks on a HDD"
 apt-get -y -qq install zerofree || echo -e ' '${RED}'[!] Issue with apt-get'${RESET} 1>&2
 #--- Example
 #fdisk -l
@@ -2574,7 +2622,7 @@ apt-get -y -qq install zerofree || echo -e ' '${RED}'[!] Issue with apt-get'${RE
 
 
 ##### Install gcc & multilib
-echo -e "\n ${GREEN}[+]${RESET} Installing ${GREEN}gcc${RESET} & ${GREEN}multilibc${RESET} ~ compiling libraries"
+(( STAGE++ )); echo -e "\n\n ${GREEN}[+]${RESET} (${STAGE}/${TOTAL}) Installing ${GREEN}gcc${RESET} & ${GREEN}multilibc${RESET} ~ compiling libraries"
 #*** I know its messy...
 for FILE in cc gcc g++ gcc-multilib make automake libc6 libc6-dev libc6-amd64 libc6-dev-amd64 libc6-i386 libc6-dev-i386 libc6-i686 libc6-dev-i686 build-essential dpkg-dev; do
   apt-get -y -qq install "${FILE}" 2>/dev/null
@@ -2582,7 +2630,7 @@ done
 
 
 ##### Install MinGW ~ cross compiling suite
-echo -e "\n ${GREEN}[+]${RESET} Installing ${GREEN}MinGW${RESET} ~ cross compiling suite"
+(( STAGE++ )); echo -e "\n\n ${GREEN}[+]${RESET} (${STAGE}/${TOTAL}) Installing ${GREEN}MinGW${RESET} ~ cross compiling suite"
 #*** I know its messy...
 for FILE in mingw-w64 binutils-mingw-w64 gcc-mingw-w64 cmake   mingw-w64-dev mingw-w64-tools   gcc-mingw-w64-i686 gcc-mingw-w64-x86-64   mingw32; do
   apt-get -y -qq install "${FILE}" 2>/dev/null
@@ -2590,7 +2638,7 @@ done
 
 
 ##### Install WINE
-echo -e "\n ${GREEN}[+]${RESET} Installing ${GREEN}WINE${RESET} ~ run Windows programs on *nix"
+(( STAGE++ )); echo -e "\n\n ${GREEN}[+]${RESET} (${STAGE}/${TOTAL})Installing ${GREEN}WINE${RESET} ~ run Windows programs on *nix"
 apt-get -y -qq install wine winetricks || echo -e ' '${RED}'[!] Issue with apt-get'${RESET} 1>&2
 #--- Using x64?
 if [[ "$(uname -m)" == 'x86_64' ]]; then
@@ -2616,7 +2664,7 @@ echo -e 'application/x-ms-dos-executable=wine.desktop' >> "${file}"
 
 
 ##### Install MinGW (Windows) ~ cross compiling suite
-echo -e "\n ${GREEN}[+]${RESET} Installing ${GREEN}MinGW (Windows)${RESET} ~ cross compiling suite"
+(( STAGE++ )); echo -e "\n\n ${GREEN}[+]${RESET} (${STAGE}/${TOTAL}) Installing ${GREEN}MinGW (Windows)${RESET} ~ cross compiling suite"
 #curl --progress -k -L -f "http://sourceforge.net/projects/mingw/files/Installer/mingw-get-setup.exe/download" > /tmp/mingw-get-setup.exe || echo -e ' '${RED}'[!]'${RESET}" Issue downloading mingw-get-setup.exe" 1>&2                                                                #***!!! hardcoded path!
 timeout 300 curl --progress -k -L -f "http://sourceforge.net/projects/mingw/files/Installer/mingw-get/mingw-get-0.6.2-beta-20131004-1/mingw-get-0.6.2-mingw32-beta-20131004-1-bin.zip/download" > /tmp/mingw-get.zip || echo -e ' '${RED}'[!]'${RESET}" Issue downloading mingw-get.zip" 1>&2       #***!!! hardcoded path!
 mkdir -p ~/.wine/drive_c/MinGW/bin/
@@ -2631,16 +2679,27 @@ grep '^"PATH"=.*C:\\\\MinGW\\\\bin' ~/.wine/system.reg || sed -i '/^"PATH"=/ s_"
 
 
 ##### Downloading AccessChk.exe
-echo -e "\n ${GREEN}[+]${RESET} Downloading ${GREEN}AccessChk.exe${RESET} ~ Windows environment tester"
+(( STAGE++ )); echo -e "\n\n ${GREEN}[+]${RESET} (${STAGE}/${TOTAL}) Downloading ${GREEN}AccessChk.exe${RESET} ~ Windows environment tester"
 apt-get -y -qq install curl windows-binaries || echo -e ' '${RED}'[!] Issue with apt-get'${RESET} 1>&2
 timeout 300 curl --progress -k -L -f "https://web.archive.org/web/20080530012252/http://live.sysinternals.com/accesschk.exe" > /usr/share/windows-binaries/accesschk_v5.02.exe || echo -e ' '${RED}'[!]'${RESET}" Issue downloading accesschk_v5.02.exe" 1>&2   #***!!! hardcoded path!
 timeout 300 curl --progress -k -L -f "https://download.sysinternals.com/files/AccessChk.zip" > /usr/share/windows-binaries/AccessChk.zip || echo -e ' '${RED}'[!]'${RESET}" Issue downloading AccessChk.zip" 1>&2                                               #***!!! hardcoded path!
 unzip -q -o -d /usr/share/windows-binaries/ /usr/share/windows-binaries/AccessChk.zip
 rm -f /usr/share/windows-binaries/{AccessChk.zip,Eula.txt}
 
+##### Downloading PsExec.exe
+(( STAGE++ )); echo -e "\n\n ${GREEN}[+]${RESET} (${STAGE}/${TOTAL}) Downloading ${GREEN}PsExec.exe${RESET} ~ Pass The Hash 'phun'"
+apt -y -qq install curl windows-binaries unzip unrar \
+  || echo -e ' '${RED}'[!] Issue with apt install'${RESET} 1>&2
+echo -n '[1/2]'; timeout 300 curl --progress -k -L -f "https://download.sysinternals.com/files/PSTools.zip" > /tmp/pstools.zip \
+  || echo -e ' '${RED}'[!]'${RESET}" Issue downloading pstools.zip" 1>&2
+echo -n '[2/2]'; timeout 300 curl --progress -k -L -f "http://www.coresecurity.com/system/files/pshtoolkit_v1.4.rar" > /tmp/pshtoolkit.rar \
+  || echo -e ' '${RED}'[!]'${RESET}" Issue downloading pshtoolkit.rar" 1>&2  #***!!! hardcoded path!
+unzip -q -o -d /usr/share/windows-binaries/pstools/ /tmp/pstools.zip
+unrar x -y /tmp/pshtoolkit.rar /usr/share/windows-binaries/ >/dev/null
+
 
 ##### Install Python (Windows via WINE) *** WINE is too dated =(  (try again with debian 8 / kali 2.0)
-echo -e "\n ${GREEN}[+]${RESET} Installing ${GREEN}Python${RESET} ~ python on Windows"
+(( STAGE++ )); echo -e "\n\n ${GREEN}[+]${RESET} (${STAGE}/${TOTAL}) Installing ${GREEN}Python${RESET} ~ python on Windows"
 curl --progress -k -L -f "https://www.python.org/ftp/python/2.3/Python-2.3.exe" > /tmp/python.exe || echo -e ' '${RED}'[!]'${RESET}" Issue downloading python.exe" 1>&2                                                          #***!!! hardcoded path!
 wine /tmp/python.exe /s
 curl --progress -k -L -f "http://sourceforge.net/projects/pywin32/files/pywin32/Build%20218/pywin32-218.win32-py2.3.exe/download" > /tmp/pywin32.exe || echo -e ' '${RED}'[!]'${RESET}" Issue downloading pywin32.exe" 1>&2      #***!!! hardcoded path!
@@ -2655,21 +2714,16 @@ wine /tmp/pywin32.exe /s
 
 
 ##### Install veil framework
-echo -e "\n ${GREEN}[+]${RESET} Installing ${GREEN}veil-evasion framework${RESET} ~ bypassing anti-virus"
-#if [[ "$(uname -m)" == 'x86_64' ]]; then
-#  dpkg --add-architecture i386 && apt-get -qq update
-#  apt-get -y -qq install veil-evasion:i386 || echo -e ' '${RED}'[!] Issue with apt-get'${RESET} 1>&2
-#  echo -e ' '${RED}'[!]'${RESET}" veil-evasion has issues with x64. Skipping..." 1>&2   # (https://bugs.kali.org/view.php?id=2673)
-#else
-  apt-get -y -qq install veil-evasion || echo -e ' '${RED}'[!] Issue with apt-get'${RESET} 1>&2
-  bash /usr/share/veil-evasion/setup/setup.sh --silent
-  touch /etc/veil/settings.py
-  sed -i 's/TERMINAL_CLEAR=".*"/TERMINAL_CLEAR="false"/' /etc/veil/settings.py
-#fi
-
+(( STAGE++ )); echo -e "\n\n ${GREEN}[+]${RESET} (${STAGE}/${TOTAL}) Installing ${GREEN}veil-evasion framework${RESET} ~ bypassing anti-virus"
+apt -y -qq install veil-evasion \
+  || echo -e ' '${RED}'[!] Issue with apt install'${RESET} 1>&2
+#bash /usr/share/veil-evasion/setup/setup.sh --silent
+mkdir -p /var/lib/veil-evasion/go/bin/
+touch /etc/veil/settings.py
+sed -i 's/TERMINAL_CLEAR=".*"/TERMINAL_CLEAR="false"/' /etc/veil/settings.py
 
 ##### Install OP packers
-echo -e "\n ${GREEN}[+]${RESET} Installing ${GREEN}OP packers${RESET} ~ bypassing anti-virus"
+(( STAGE++ )); echo -e "\n\n ${GREEN}[+]${RESET} (${STAGE}/${TOTAL}) Installing ${GREEN}OP packers${RESET} ~ bypassing anti-virus"
 apt-get -y -qq install upx-ucl curl || echo -e ' '${RED}'[!] Issue with apt-get'${RESET}   #wget -q "http://upx.sourceforge.net/download/upx309w.zip" -P /usr/share/packers/ && unzip -q -o -d /usr/share/packers/ /usr/share/packers/upx309w.zip; rm -f /usr/share/packers/upx309w.zip
 mkdir -p /usr/share/packers/
 timeout 300 curl --progress -k -L -f "http://www.eskimo.com/~scottlu/win/cexe.exe" > /usr/share/packers/cexe.exe || echo -e ' '${RED}'[!]'${RESET}" Issue downloading cexe.exe" 1>&2                                                                                                             #***!!! hardcoded path!    #***!!! hardcoded version! Need to manually check for updates
@@ -2682,7 +2736,7 @@ rm -f /usr/share/packers/PEScrambler*.zip
 
 
 ##### Install hyperion
-echo -e "\n ${GREEN}[+]${RESET} Installing ${GREEN}hyperion${RESET} ~ bypassing anti-virus"
+(( STAGE++ )); echo -e "\n\n ${GREEN}[+]${RESET} (${STAGE}/${TOTAL}) Installing ${GREEN}hyperion${RESET} ~ bypassing anti-virus"
 apt-get -y -qq install unzip windows-binaries || echo -e ' '${RED}'[!] Issue with apt-get'${RESET} 1>&2
 unzip -q -o -d /usr/share/windows-binaries/ /usr/share/windows-binaries/Hyperion-1.0.zip                                                                                                    #***!!! hardcoded path!
 #rm -f /usr/share/windows-binaries/Hyperion-1.0.zip
@@ -2717,17 +2771,17 @@ chmod +x "${file}"
 
 
 ##### Install shellter
-echo -e "\n ${GREEN}[+]${RESET} Installing ${GREEN}shellter${RESET} ~ dynamic shellcode injector"
+(( STAGE++ )); echo -e "\n\n ${GREEN}[+]${RESET} (${STAGE}/${TOTAL}) Installing ${GREEN}shellter${RESET} ~ dynamic shellcode injector"
 apt-get -y -qq install shellter || echo -e ' '${RED}'[!] Issue with apt-get'${RESET} 1>&2
 
 
 ##### Install the backdoor factory
-echo -e "\n ${GREEN}[+]${RESET} Installing ${GREEN}Backdoor Factory${RESET} ~ bypassing anti-virus"
+(( STAGE++ )); echo -e "\n\n ${GREEN}[+]${RESET} (${STAGE}/${TOTAL}) Installing ${GREEN}Backdoor Factory${RESET} ~ bypassing anti-virus"
 apt-get -y -qq install backdoor-factory || echo -e ' '${RED}'[!] Issue with apt-get'${RESET} 1>&2
 
 
 ##### Install the Backdoor Factory Proxy (BDFProxy)
-echo -e "\n ${GREEN}[+]${RESET} Installing ${GREEN}Backdoor Factory Proxy (BDFProxy)${RESET} ~ patches binaries files during a MITM"
+(( STAGE++ )); echo -e "\n\n ${GREEN}[+]${RESET} (${STAGE}/${TOTAL}) Installing ${GREEN}Backdoor Factory Proxy (BDFProxy)${RESET} ~ patches binaries files during a MITM"
 apt-get -y -qq install git || echo -e ' '${RED}'[!] Issue with apt-get'${RESET} 1>&2
 git clone -q https://github.com/secretsquirrel/BDFProxy.git /opt/bdfproxy-git/ || echo -e ' '${RED}'[!] Issue when git cloning'${RESET} 1>&2
 pushd /opt/bdfproxy-git/ >/dev/null
@@ -2736,7 +2790,7 @@ popd >/dev/null
 
 
 ##### Install the BetterCap
-echo -e "\n ${GREEN}[+]${RESET} Installing ${GREEN}BetterCap${RESET} ~ MITM framework"
+(( STAGE++ )); echo -e "\n\n ${GREEN}[+]${RESET} (${STAGE}/${TOTAL}) Installing ${GREEN}BetterCap${RESET} ~ MITM framework"
 apt-get -y -qq install git ruby-dev libpcap-dev || echo -e ' '${RED}'[!] Issue with apt-get'${RESET} 1>&2
 git clone -q https://github.com/evilsocket/bettercap.git /opt/bettercap-git/ || echo -e ' '${RED}'[!] Issue when git cloning'${RESET} 1>&2
 pushd /opt/bettercap-git/ >/dev/null
@@ -2745,54 +2799,58 @@ gem build bettercap.gemspec
 gem install bettercap*.gem
 popd >/dev/null
 
+##### Install responder
+(( STAGE++ )); echo -e "\n\n ${GREEN}[+]${RESET} (${STAGE}/${TOTAL}) Installing ${GREEN}Responder${RESET} ~ rogue server"
+apt -y -qq install responder \
+  || echo -e ' '${RED}'[!] Issue with apt install'${RESET} 1>&2
+
 ##### Install FuzzDB
-echo -e "\n ${GREEN}[+]${RESET} Installing ${GREEN}FuzzDB${RESET} ~ multiple types of (word)lists (and similar things)"
+(( STAGE++ )); echo -e "\n\n ${GREEN}[+]${RESET} (${STAGE}/${TOTAL}) Installing ${GREEN}FuzzDB${RESET} ~ multiple types of (word)lists (and similar things)"
 svn -q checkout "http://fuzzdb.googlecode.com/svn/trunk/" /usr/share/wordlists/fuzzdb-svn/
 
 
 ##### Install seclist
-echo -e "\n ${GREEN}[+]${RESET} Installing ${GREEN}seclist${RESET} ~ multiple types of (word)lists (and similar things)"
+(( STAGE++ )); echo -e "\n\n ${GREEN}[+]${RESET} (${STAGE}/${TOTAL}) Installing ${GREEN}seclist${RESET} ~ multiple types of (word)lists (and similar things)"
 apt-get -y -qq install seclists || echo -e ' '${RED}'[!] Issue with apt-get'${RESET} 1>&2
 [ -e /usr/share/seclists ] && ln -sf /usr/share/seclists /usr/share/wordlists/seclists
 
 
 ##### Update wordlists
-echo -e "\n ${GREEN}[+]${RESET} Updating ${GREEN}wordlists${RESET} ~ collection of wordlists"
-apt-get -y -qq install curl || echo -e ' '${RED}'[!] Issue with apt-get'${RESET} 1>&2
+(( STAGE++ )); echo -e "\n\n ${GREEN}[+]${RESET} (${STAGE}/${TOTAL}) Updating ${GREEN}wordlists${RESET} ~ collection of wordlists"
+apt -y -qq install wordlists curl \
+  || echo -e ' '${RED}'[!] Issue with apt install'${RESET} 1>&2
 #--- Extract rockyou wordlist
-[ -e /usr/share/wordlists/rockyou.txt.gz ] && gzip -dc < /usr/share/wordlists/rockyou.txt.gz > /usr/share/wordlists/rockyou.txt   #gunzip rockyou.txt.gz
-#rm -f /usr/share/wordlists/rockyou.txt.gz
-#--- Extract sqlmap wordlist
-#unzip -o -d /usr/share/sqlmap/txt/ /usr/share/sqlmap/txt/wordlist.zip
+[ -e /usr/share/wordlists/rockyou.txt.gz ] \
+  && gzip -dc < /usr/share/wordlists/rockyou.txt.gz > /usr/share/wordlists/rockyou.txt
 #--- Add 10,000 Top/Worst/Common Passwords
 mkdir -p /usr/share/wordlists/
-(curl --progress -k -L -f "http://xato.net/files/10k most common.zip" > /tmp/10kcommon.zip 2>/dev/null || curl --progress -k -L -f "http://download.g0tmi1k.com/wordlists/common-10k_most_common.zip" > /tmp/10kcommon.zip 2>/dev/null) || echo -e ' '${RED}'[!]'${RESET}" Issue downloading 10kcommon.zip" 1>&2
+(curl --progress -k -L -f "http://xato.net/files/10k most common.zip" > /tmp/10kcommon.zip 2>/dev/null \
+  || curl --progress -k -L -f "http://download.g0tmi1k.com/wordlists/common-10k_most_common.zip" > /tmp/10kcommon.zip 2>/dev/null) \
+  || echo -e ' '${RED}'[!]'${RESET}" Issue downloading 10kcommon.zip" 1>&2
 unzip -q -o -d /usr/share/wordlists/ /tmp/10kcommon.zip 2>/dev/null   #***!!! hardcoded version! Need to manually check for updates
 mv -f /usr/share/wordlists/10k{\ most\ ,_most_}common.txt
 #--- Linking to more - folders
-[ -e /usr/share/dirb/wordlists ] && ln -sf /usr/share/dirb/wordlists /usr/share/wordlists/dirb
-#[ -e /usr/share/seclists ] && ln -sf /usr/share/seclists /usr/share/wordlists/seclists
-#--- Linking to more - files
-#ln -sf /usr/share/sqlmap/txt/wordlist.txt /usr/share/wordlists/sqlmap.txt
-##--- Not enough? Want more? Check below!
-##apt-cache search wordlist
-##find / \( -iname '*wordlist*' -or -iname '*passwords*' \) #-exec ls -l {} \;
-#--- Remove old temp files
-rm -f /tmp/10kcommon.zip
-
+[ -e /usr/share/dirb/wordlists ] \
+  && ln -sf /usr/share/dirb/wordlists /usr/share/wordlists/dirb
+#--- Extract sqlmap wordlist
+unzip -o -d /usr/share/sqlmap/txt/ /usr/share/sqlmap/txt/wordlist.zip
+ln -sf /usr/share/sqlmap/txt/wordlist.txt /usr/share/wordlists/sqlmap.txt
+#--- Not enough? Want more? Check below!
+#apt search wordlist
+#find / \( -iname '*wordlist*' -or -iname '*passwords*' \) #-exec ls -l {} \;
 
 ##### Install apt-file
-echo -e "\n ${GREEN}[+]${RESET} Installing ${GREEN}apt-file${RESET} ~ which package includes a specific file"
+(( STAGE++ )); echo -e "\n\n ${GREEN}[+]${RESET} (${STAGE}/${TOTAL}) Installing ${GREEN}apt-file${RESET} ~ which package includes a specific file"
 apt-get -y -qq install apt-file || echo -e ' '${RED}'[!] Issue with apt-get'${RESET} 1>&2
 apt-file update
 
 
 ##### Install apt-show-versions
-echo -e "\n ${GREEN}[+]${RESET} Installing ${GREEN}apt-show-versions${RESET} ~ which package version in repo"
+(( STAGE++ )); echo -e "\n\n ${GREEN}[+]${RESET} (${STAGE}/${TOTAL}) Installing ${GREEN}apt-show-versions${RESET} ~ which package version in repo"
 apt-get -y -qq install apt-show-versions || echo -e ' '${RED}'[!] Issue with apt-get'${RESET} 1>&2
 
 ##### Install Exploit-DB binaries
-echo -e "\n ${GREEN}[+]${RESET} Installing ${GREEN}Installing Exploit-DB binaries${RESET} ~ pre-compiled exploits"
+(( STAGE++ )); echo -e "\n\n ${GREEN}[+]${RESET} (${STAGE}/${TOTAL}) Installing ${GREEN}Installing Exploit-DB binaries${RESET} ~ pre-compiled exploits"
 apt-get -y -qq install git || echo -e ' '${RED}'[!] Issue with apt-get'${RESET} 1>&2
 git clone -q https://github.com/offensive-security/exploit-database-bin-sploits.git/ /opt/exploitdb-bin-git/
 pushd /opt/exploitdb-bin-git/ >/dev/null
@@ -2801,7 +2859,7 @@ popd >/dev/null
 
 
 ##### Install Babel scripts
-echo -e "\n ${GREEN}[+]${RESET} Installing ${GREEN}Babel scripts${RESET} ~ post exploitation scripts"
+(( STAGE++ )); echo -e "\n\n ${GREEN}[+]${RESET} (${STAGE}/${TOTAL})  Installing ${GREEN}Babel scripts${RESET} ~ post exploitation scripts"
 apt-get -y -qq install git || echo -e ' '${RED}'[!] Issue with apt-get'${RESET} 1>&2
 git clone -q https://github.com/attackdebris/babel-sf.git /opt/babel-sf-git/ || echo -e ' '${RED}'[!] Issue when git cloning'${RESET} 1>&2
 pushd /opt/babel-sf-git/ >/dev/null
@@ -2810,7 +2868,7 @@ popd >/dev/null
 
 
 ##### Install pwntools (https://bugs.kali.org/view.php?id=1236)
-echo -e "\n ${GREEN}[+]${RESET} Installing ${GREEN}pwntools${RESET} ~ handy CTF tools"
+(( STAGE++ )); echo -e "\n\n ${GREEN}[+]${RESET} (${STAGE}/${TOTAL})  Installing ${GREEN}pwntools${RESET} ~ handy CTF tools"
 apt-get -y -qq install git || echo -e ' '${RED}'[!] Issue with apt-get'${RESET} 1>&2
 git clone -q https://github.com/Gallopsled/pwntools.git /opt/pwntools-git/ || echo -e ' '${RED}'[!] Issue when git cloning'${RESET} 1>&2
 pushd /opt/pwntools-git/ >/dev/null
@@ -2819,7 +2877,7 @@ popd >/dev/null
 
 
 ##### Install nullsecurity tool suite
-echo -e "\n ${GREEN}[+]${RESET} Installing ${GREEN}nullsecurity tool suite${RESET} ~ collection of tools"
+(( STAGE++ )); echo -e "\n\n ${GREEN}[+]${RESET} (${STAGE}/${TOTAL})  Installing ${GREEN}nullsecurity tool suite${RESET} ~ collection of tools"
 apt-get -y -qq install git || echo -e ' '${RED}'[!] Issue with apt-get'${RESET} 1>&2
 git clone -q https://github.com/nullsecuritynet/tools.git /opt/nullsecuritynet-git/ || echo -e ' '${RED}'[!] Issue when git cloning'${RESET} 1>&2
 pushd /opt/nullsecuritynet-git/ >/dev/null
@@ -2828,7 +2886,7 @@ popd >/dev/null
 
 
 ##### Install gdb-peda (https://bugs.kali.org/view.php?id=2327)
-echo -e "\n ${GREEN}[+]${RESET} Installing ${GREEN}gdb-peda${RESET} ~ GDB exploit development assistance"
+(( STAGE++ )); echo -e "\n\n ${GREEN}[+]${RESET} (${STAGE}/${TOTAL})  Installing ${GREEN}gdb-peda${RESET} ~ GDB exploit development assistance"
 apt-get -y -qq install git gdb || echo -e ' '${RED}'[!] Issue with apt-get'${RESET} 1>&2
 git clone -q https://github.com/longld/peda.git /opt/gdb-peda-git/ || echo -e ' '${RED}'[!] Issue when git cloning'${RESET} 1>&2
 pushd /opt/gdb-peda-git/ >/dev/null
@@ -2837,7 +2895,7 @@ popd >/dev/null
 echo "source ~/peda/peda.py" >> ~/.gdbinit
 
 ##### Install ropeme (https://bugs.kali.org/view.php?id=2328)
-echo -e "\n ${GREEN}[+]${RESET} Installing ${GREEN}ropeme${RESET} ~ generate ROP gadgets and payload"
+(( STAGE++ )); echo -e "\n\n ${GREEN}[+]${RESET} (${STAGE}/${TOTAL}) Installing ${GREEN}ropeme${RESET} ~ generate ROP gadgets and payload"
 apt-get -y -qq install git python-distorm3 libdistorm64-1 libdistorm64-dev binutils || echo -e ' '${RED}'[!] Issue with apt-get'${RESET} 1>&2
 git clone -q https://github.com/packz/ropeme.git /opt/ropeme-git/ || echo -e ' '${RED}'[!] Issue when git cloning'${RESET} 1>&2
 pushd /opt/ropeme-git/ >/dev/null
@@ -2855,7 +2913,7 @@ chmod +x "${file}"
 
 
 ##### Install ropper (https://bugs.kali.org/view.php?id=2329)
-echo -e "\n ${GREEN}[+]${RESET} Installing ${GREEN}ropper${RESET} ~ generate ROP gadgets and payload"
+(( STAGE++ )); echo -e "\n\n ${GREEN}[+]${RESET} (${STAGE}/${TOTAL})  Installing ${GREEN}ropper${RESET} ~ generate ROP gadgets and payload"
 apt-get -y -qq install git python-capstone || echo -e ' '${RED}'[!] Issue with apt-get'${RESET} 1>&2
 git clone -q https://github.com/sashs/Ropper.git /opt/ropper-git/ || echo -e ' '${RED}'[!] Issue when git cloning'${RESET} 1>&2
 pushd /opt/ropper-git/ >/dev/null
@@ -2865,17 +2923,17 @@ popd >/dev/null
 
 
 ##### Install dissy
-echo -e "\n ${GREEN}[+]${RESET} Installing ${GREEN}dissy${RESET} ~ GUI objdump"
+(( STAGE++ )); echo -e "\n\n ${GREEN}[+]${RESET} (${STAGE}/${TOTAL})  Installing ${GREEN}dissy${RESET} ~ GUI objdump"
 apt-get -y -qq install dissy binutils || echo -e ' '${RED}'[!] Issue with apt-get'${RESET} 1>&2
 
 
 ##### Install shellnoob
-echo -e "\n ${GREEN}[+]${RESET} Installing ${GREEN}shellnoob${RESET} ~ shellcode writing toolkit"
+(( STAGE++ )); echo -e "\n\n ${GREEN}[+]${RESET} (${STAGE}/${TOTAL})  Installing ${GREEN}shellnoob${RESET} ~ shellcode writing toolkit"
 apt-get -y -qq install shellnoob || echo -e ' '${RED}'[!] Issue with apt-get'${RESET} 1>&2
 
 
 ##### Install checksec
-echo -e "\n ${GREEN}[+]${RESET} Installing ${GREEN}checksec${RESET} ~ check *nix OS for security features"
+(( STAGE++ )); echo -e "\n\n ${GREEN}[+]${RESET} (${STAGE}/${TOTAL})  Installing ${GREEN}checksec${RESET} ~ check *nix OS for security features"
 apt-get -y -qq install curl || echo -e ' '${RED}'[!] Issue with apt-get'${RESET} 1>&2
 mkdir -p /usr/share/checksec/
 file=/usr/share/checksec/checksec.sh
@@ -2884,7 +2942,7 @@ chmod +x "${file}"
 
 
 ##### Install shellconv
-echo -e "\n ${GREEN}[+]${RESET} Installing ${GREEN}shellconv${RESET} ~ shellcode disassembler"
+(( STAGE++ )); echo -e "\n\n ${GREEN}[+]${RESET} (${STAGE}/${TOTAL})  Installing ${GREEN}shellconv${RESET} ~ shellcode disassembler"
 apt-get -y -qq install git || echo -e ' '${RED}'[!] Issue with apt-get'${RESET} 1>&2
 git clone -q https://github.com/hasherezade/shellconv.git /opt/shellconv-git/ || echo -e ' '${RED}'[!] Issue when git cloning'${RESET} 1>&2
 pushd /opt/shellconv-git/ >/dev/null
@@ -2900,23 +2958,23 @@ chmod +x "${file}"
 
 
 ##### Install bless
-echo -e "\n ${GREEN}[+]${RESET} Installing ${GREEN}bless${RESET} ~ GUI hex editor"
+(( STAGE++ )); echo -e "\n\n ${GREEN}[+]${RESET} (${STAGE}/${TOTAL})  Installing ${GREEN}bless${RESET} ~ GUI hex editor"
 apt-get -y -qq install bless || echo -e ' '${RED}'[!] Issue with apt-get'${RESET} 1>&2
 
 
 ##### Install dhex
-echo -e "\n ${GREEN}[+]${RESET} Installing ${GREEN}dhex${RESET} ~ CLI hex compare"
+(( STAGE++ )); echo -e "\n\n ${GREEN}[+]${RESET} (${STAGE}/${TOTAL})  Installing ${GREEN}dhex${RESET} ~ CLI hex compare"
 apt-get -y -qq install dhex || echo -e ' '${RED}'[!] Issue with apt-get'${RESET} 1>&2
 
 
 ##### Install firmware-mod-kit
-echo -e "\n ${GREEN}[+]${RESET} Installing ${GREEN}firmware-mod-kit${RESET} ~ customize firmware"
+(( STAGE++ )); echo -e "\n\n ${GREEN}[+]${RESET} (${STAGE}/${TOTAL})  Installing ${GREEN}firmware-mod-kit${RESET} ~ customize firmware"
 apt-get -y -qq install firmware-mod-kit || echo -e ' '${RED}'[!] Issue with apt-get'${RESET} 1>&2
 
 
 if [[ "$(uname -m)" == "x86_64" ]]; then
   ##### Install lnav
-  echo -e "\n ${GREEN}[+]${RESET} Installing ${GREEN}lnav${RESET} (x64) ~ CLI log veiwer"
+  (( STAGE++ )); echo -e "\n\n ${GREEN}[+]${RESET} (${STAGE}/${TOTAL})  Installing ${GREEN}lnav${RESET} (x64) ~ CLI log veiwer"
 # apt-get -y -qq install git ncurses-dev libsqlite3-dev libgpm-dev || echo -e ' '${RED}'[!] Issue with apt-get'${RESET} 1>&2
 # git clone -q https://github.com/tstack/lnav.git /usr/local/src/tstack-git/
 # pushd /usr/local/src/tstack-git >/dev/null
@@ -2934,7 +2992,7 @@ fi
 
 
 ##### Install sqlmap (GIT)
-echo -e "\n ${GREEN}[+]${RESET} Installing ${GREEN}sqlmap${RESET} (GIT) ~ automatic SQL injection"
+(( STAGE++ )); echo -e "\n\n ${GREEN}[+]${RESET} (${STAGE}/${TOTAL})  Installing ${GREEN}sqlmap${RESET} (GIT) ~ automatic SQL injection"
 apt-get -y -qq install git || echo -e ' '${RED}'[!] Issue with apt-get'${RESET} 1>&2
 git clone -q https://github.com/sqlmapproject/sqlmap.git /opt/sqlmap-git/ || echo -e ' '${RED}'[!] Issue when git cloning'${RESET} 1>&2
 pushd /opt/sqlmap-git/ >/dev/null
@@ -2950,7 +3008,7 @@ chmod +x "${file}"
 
 
 ##### Install commix (https://bugs.kali.org/view.php?id=2201)
-echo -e "\n ${GREEN}[+]${RESET} Installing ${GREEN}commix${RESET} ~ automatic command injection"
+(( STAGE++ )); echo -e "\n\n ${GREEN}[+]${RESET} (${STAGE}/${TOTAL})  Installing ${GREEN}commix${RESET} ~ automatic command injection"
 apt-get -y -qq install git || echo -e ' '${RED}'[!] Issue with apt-get'${RESET} 1>&2
 git clone -q https://github.com/stasinopoulos/commix.git /opt/commix-git/ || echo -e ' '${RED}'[!] Issue when git cloning'${RESET} 1>&2
 pushd /opt/commix-git/ >/dev/null
@@ -2966,41 +3024,41 @@ chmod +x "${file}"
 
 
 ##### Install fimap
-echo -e "\n ${GREEN}[+]${RESET} Installing ${GREEN}fimap${RESET} ~ automatic LFI/RFI tool"
+(( STAGE++ )); echo -e "\n\n ${GREEN}[+]${RESET} (${STAGE}/${TOTAL})  Installing ${GREEN}fimap${RESET} ~ automatic LFI/RFI tool"
 apt-get -y -qq install fimap || echo -e ' '${RED}'[!] Issue with apt-get'${RESET} 1>&2
 
 
 ##### Install smbmap
-echo -e "\n ${GREEN}[+]${RESET} Installing ${GREEN}smbmap${RESET} ~ SMB enumeration tool"
+(( STAGE++ )); echo -e "\n\n ${GREEN}[+]${RESET} (${STAGE}/${TOTAL})  Installing ${GREEN}smbmap${RESET} ~ SMB enumeration tool"
 apt-get -y -qq install smbmap || echo -e ' '${RED}'[!] Issue with apt-get'${RESET} 1>&2
 
 
 ##### Install smbspider
-echo -e "\n ${GREEN}[+]${RESET} Installing ${GREEN}smbspider${RESET} ~ search network shares"
+(( STAGE++ )); echo -e "\n\n ${GREEN}[+]${RESET} (${STAGE}/${TOTAL})  Installing ${GREEN}smbspider${RESET} ~ search network shares"
 apt-get -y -qq install git || echo -e ' '${RED}'[!] Issue with apt-get'${RESET} 1>&2
 git clone -q https://github.com/T-S-A/smbspider.git /opt/smbspider-git/ || echo -e ' '${RED}'[!] Issue when git cloning'${RESET} 1>&2
 
 
 ##### Install CrackMapExec
-echo -e "\n ${GREEN}[+]${RESET} Installing ${GREEN}CrackMapExec${RESET} ~ Swiss army knife for Windows environments"
+(( STAGE++ )); echo -e "\n\n ${GREEN}[+]${RESET} (${STAGE}/${TOTAL})  Installing ${GREEN}CrackMapExec${RESET} ~ Swiss army knife for Windows environments"
 apt-get -y -qq install git || echo -e ' '${RED}'[!] Issue with apt-get'${RESET} 1>&2
 git clone -q https://github.com/byt3bl33d3r/CrackMapExec.git /opt/crackmapexec-git/ || echo -e ' '${RED}'[!] Issue when git cloning'${RESET} 1>&2
 
 
 ##### Install credcrack
-echo -e "\n ${GREEN}[+]${RESET} Installing ${GREEN}credcrack${RESET} ~ credential harvester via Samba"
+(( STAGE++ )); echo -e "\n\n ${GREEN}[+]${RESET} (${STAGE}/${TOTAL})  Installing ${GREEN}credcrack${RESET} ~ credential harvester via Samba"
 apt-get -y -qq install git || echo -e ' '${RED}'[!] Issue with apt-get'${RESET} 1>&2
 git clone -q https://github.com/gojhonny/CredCrack.git /opt/credcrack-git/ || echo -e ' '${RED}'[!] Issue when git cloning'${RESET} 1>&2
 
 
 ##### Install Empire
-echo -e "\n ${GREEN}[+]${RESET} Installing ${GREEN}Empire${RESET} ~ PowerShell post-exploitation"
+(( STAGE++ )); echo -e "\n\n ${GREEN}[+]${RESET} (${STAGE}/${TOTAL})  Installing ${GREEN}Empire${RESET} ~ PowerShell post-exploitation"
 apt-get -y -qq install git || echo -e ' '${RED}'[!] Issue with apt-get'${RESET} 1>&2
 git clone -q https://github.com/PowerShellEmpire/Empire.git /opt/empire-git/ || echo -e ' '${RED}'[!] Issue when git cloning'${RESET} 1>&2
 
 
 ##### Install wig (https://bugs.kali.org/view.php?id=1932)
-echo -e "\n ${GREEN}[+]${RESET} Installing ${GREEN}wig${RESET} ~ web application detection"
+(( STAGE++ )); echo -e "\n\n ${GREEN}[+]${RESET} (${STAGE}/${TOTAL}) Installing ${GREEN}wig${RESET} ~ web application detection"
 apt-get -y -qq install git || echo -e ' '${RED}'[!] Issue with apt-get'${RESET} 1>&2
 git clone -q https://github.com/jekyc/wig.git /opt/wig-git/ || echo -e ' '${RED}'[!] Issue when git cloning'${RESET} 1>&2
 pushd /opt/wig-git/ >/dev/null
@@ -3016,7 +3074,7 @@ chmod +x "${file}"
 
 
 ##### Install CMSmap
-echo -e "\n ${GREEN}[+]${RESET} Installing ${GREEN}CMSmap${RESET} ~ CMS detection"
+(( STAGE++ )); echo -e "\n\n ${GREEN}[+]${RESET} (${STAGE}/${TOTAL})  Installing ${GREEN}CMSmap${RESET} ~ CMS detection"
 apt-get -y -qq install git || echo -e ' '${RED}'[!] Issue with apt-get'${RESET} 1>&2
 git clone -q https://github.com/Dionach/CMSmap.git /opt/cmsmap-git/ || echo -e ' '${RED}'[!] Issue when git cloning'${RESET} 1>&2
 pushd /opt/cmsmap-git/ >/dev/null
@@ -3031,7 +3089,7 @@ EOF
 chmod +x "${file}"
 
 ##### Install droopescan
-echo -e "\n ${GREEN}[+]${RESET} Installing ${GREEN}DroopeScan${RESET} ~ Drupal vulnerability scanner"
+(( STAGE++ )); echo -e "\n\n ${GREEN}[+]${RESET} (${STAGE}/${TOTAL})  Installing ${GREEN}DroopeScan${RESET} ~ Drupal vulnerability scanner"
 apt-get -y -qq install git || echo -e ' '${RED}'[!] Issue with apt-get'${RESET} 1>&2
 git clone -q https://github.com/droope/droopescan.git /opt/droopescan-git/ || echo -e ' '${RED}'[!] Issue when git cloning'${RESET} 1>&2
 pushd /opt/droopescan-git/ >/dev/null
@@ -3047,7 +3105,7 @@ chmod +x "${file}"
 
 
 ##### Install wpscan (GIT)
-echo -e "\n ${GREEN}[+]${RESET} Installing ${GREEN}WPScan${RESET} (GIT) ~ WordPress vulnerability scanner"
+(( STAGE++ )); echo -e "\n\n ${GREEN}[+]${RESET} (${STAGE}/${TOTAL}) Installing ${GREEN}WPScan${RESET} (GIT) ~ WordPress vulnerability scanner"
 apt-get -y -qq install git || echo -e ' '${RED}'[!] Issue with apt-get'${RESET} 1>&2
 git clone -q https://github.com/wpscanteam/wpscan.git /opt/wpscan-git/ || echo -e ' '${RED}'[!] Issue when git cloning'${RESET} 1>&2
 pushd /opt/wpscan-git/ >/dev/null
@@ -3063,8 +3121,9 @@ chmod +x "${file}"
 
 
 ##### Install BeEF XSS
-echo -e "\n ${GREEN}[+]${RESET} Installing ${GREEN}BeEF XSS${RESET} ~ XSS framework"
-apt-get -y -qq install beef-xss || echo -e ' '${RED}'[!] Issue with apt-get'${RESET} 1>&2
+(( STAGE++ )); echo -e "\n\n ${GREEN}[+]${RESET} (${STAGE}/${TOTAL}) Installing ${GREEN}BeEF XSS${RESET} ~ XSS framework"
+apt -y -qq install beef-xss \
+  || echo -e ' '${RED}'[!] Issue with apt install'${RESET} 1>&2
 #--- Configure beef
 file=/usr/share/beef-xss/config.yaml; [ -e "${file}" ] && cp -n $file{,.bkup}
 username="root"
@@ -3072,19 +3131,14 @@ password="toor"
 sed -i 's/user:.*".*"/user:   "'${username}'"/' "${file}"
 sed -i 's/passwd:.*".*"/passwd:  "'${password}'"/'  "${file}"
 echo -e " ${YELLOW}[i]${RESET} BeEF username: ${username}"
-echo -e " ${YELLOW}[i]${RESET} BeEF password: ${password}   ***${BOLD}CHANGE THIS ASAP${RESET}***.   Edit: /usr/share/beef-xss/config.yaml"
-#--- Example hook
+echo -e " ${YELLOW}[i]${RESET} BeEF password: ${password}   ***${BOLD}CHANGE THIS ASAP${RESET}***"
+echo -e " ${YELLOW}[i]${RESET} Edit: /usr/share/beef-xss/config.yaml"
+#--- Example
 #<script src="http://192.168.155.175:3000/hook.js" type="text/javascript"></script>
 
 
-##### Install sonar.js
-echo -e "\n ${GREEN}[+]${RESET} Installing ${GREEN}sonar.js${RESET} ~ Internal network framework"
-apt-get -y -qq install git || echo -e ' '${RED}'[!] Issue with apt-get'${RESET} 1>&2
-git clone -q https://github.com/mandatoryprogrammer/sonar.js.git /opt/sonar-js-git/ || echo -e ' '${RED}'[!] Issue when git cloning'${RESET} 1>&2
-
-
 ##### Install patator (GIT)
-echo -e "\n ${GREEN}[+]${RESET} Installing ${GREEN}patator${RESET} (GIT) ~ brute force"
+(( STAGE++ )); echo -e "\n\n ${GREEN}[+]${RESET} (${STAGE}/${TOTAL}) Installing ${GREEN}patator${RESET} (GIT) ~ brute force"
 apt-get -y -qq install git || echo -e ' '${RED}'[!] Issue with apt-get'${RESET} 1>&2
 git clone -q https://github.com/lanjelot/patator.git /opt/patator-git/ || echo -e ' '${RED}'[!] Issue when git cloning'${RESET} 1>&2
 pushd /opt/patator-git/ >/dev/null
@@ -3100,7 +3154,7 @@ chmod +x "${file}"
 
 
 ##### Install crowbar
-echo -e "\n ${GREEN}[+]${RESET} Installing ${GREEN}crowbar${RESET} ~ brute force"
+(( STAGE++ )); echo -e "\n\n ${GREEN}[+]${RESET} (${STAGE}/${TOTAL}) Installing ${GREEN}crowbar${RESET} ~ brute force"
 apt-get -y -qq install git || echo -e ' '${RED}'[!] Issue with apt-get'${RESET} 1>&2
 git clone -q https://github.com/galkan/crowbar.git /opt/crowbar-git/ || echo -e ' '${RED}'[!] Issue when git cloning'${RESET} 1>&2
 pushd /opt/crowbar-git/ >/dev/null
@@ -3116,18 +3170,18 @@ chmod +x "${file}"
 
 
 ##### Install xprobe
-echo -e "\n ${GREEN}[+]${RESET} Installing ${GREEN}xprobe${RESET} ~ os fingerprinting"
+(( STAGE++ )); echo -e "\n\n ${GREEN}[+]${RESET} (${STAGE}/${TOTAL}) Installing ${GREEN}xprobe${RESET} ~ os fingerprinting"
 apt-get install -y -qq xprobe || echo -e ' '${RED}'[!] Issue with apt-get'${RESET} 1>&2
 
 
 ##### Install p0f
-echo -e "\n ${GREEN}[+]${RESET} Installing ${GREEN}p0f${RESET} ~ os fingerprinting"
+(( STAGE++ )); echo -e "\n\n ${GREEN}[+]${RESET} (${STAGE}/${TOTAL}) Installing ${GREEN}p0f${RESET} ~ os fingerprinting"
 apt-get install -y -qq p0f || echo -e ' '${RED}'[!] Issue with apt-get'${RESET} 1>&2
 #p0f -i eth0 -p & curl 192.168.0.1
 
 
 ##### Install nbtscan ~ http://unixwiz.net/tools/nbtscan.html vs http://inetcat.org/software/nbtscan.html (see http://sectools.org/tool/nbtscan/)
-echo -e "\n ${GREEN}[+]${RESET} Installing ${GREEN}nbtscan${RESET} (${GREEN}inetcat${RESET} & ${GREEN}unixwiz${RESET}) ~ netbios scanner"
+(( STAGE++ )); echo -e "\n\n ${GREEN}[+]${RESET} (${STAGE}/${TOTAL})Installing ${GREEN}nbtscan${RESET} (${GREEN}inetcat${RESET} & ${GREEN}unixwiz${RESET}) ~ netbios scanner"
 #--- inetcat - 1.5.x
 apt-get install -y -qq nbtscan || echo -e ' '${RED}'[!] Issue with apt-get'${RESET} 1>&2
 #nbtscan -r 192.168.0.1/24
@@ -3144,7 +3198,7 @@ ln -sf /usr/local/src/nbtscan-unixwiz/nbtscan /usr/local/bin/nbtscan-uw
 
 
 ##### Setup tftp client & server
-echo -e "\n ${GREEN}[+]${RESET} Setting up ${GREEN}tftp client${RESET} & ${GREEN}server${RESET} ~ file transfer methods"
+(( STAGE++ )); echo -e "\n\n ${GREEN}[+]${RESET} (${STAGE}/${TOTAL}) Setting up ${GREEN}tftp client${RESET} & ${GREEN}server${RESET} ~ file transfer methods"
 apt-get -y -qq install tftp   || echo -e ' '${RED}'[!] Issue with apt-get'${RESET}   # tftp client
 apt-get -y -qq install atftpd || echo -e ' '${RED}'[!] Issue with apt-get'${RESET}   # tftp server
 #--- Configure atftpd
@@ -3165,7 +3219,7 @@ systemctl disable atftpd
 
 
 ##### Install Pure-FTPd
-echo -e "\n ${GREEN}[+]${RESET} Installing ${GREEN}Pure-FTPd${RESET} ~ FTP server/file transfer method"
+(( STAGE++ )); echo -e "\n\n ${GREEN}[+]${RESET} (${STAGE}/${TOTAL}) Installing ${GREEN}Pure-FTPd${RESET} ~ FTP server/file transfer method"
 apt-get -y -qq install pure-ftpd || echo -e ' '${RED}'[!] Issue with apt-get'${RESET} 1>&2
 #--- Setup pure-ftpd
 mkdir -p /var/ftp/
@@ -3209,7 +3263,7 @@ systemctl disable pure-ftpd
 
 
 ##### Install samba
-echo -e "\n ${GREEN}[+]${RESET} Installing ${GREEN}samba${RESET} ~ file transfer method"
+(( STAGE++ )); echo -e "\n\n ${GREEN}[+]${RESET} (${STAGE}/${TOTAL})Installing ${GREEN}samba${RESET} ~ file transfer method"
 #--- Installing samba
 apt-get -y -qq install samba || echo -e ' '${RED}'[!] Issue with apt-get'${RESET} 1>&2
 apt-get -y -qq install cifs-utils || echo -e ' '${RED}'[!] Issue with apt-get'${RESET} 1>&2
@@ -3259,7 +3313,7 @@ grep -q '^## smb' "${file}" 2>/dev/null || echo -e '## smb\nalias sambaroot="cd 
 
 
 ##### Install apache2 & php5
-echo -e "\n ${GREEN}[+]${RESET} Installing ${GREEN}apache2${RESET} & ${GREEN}php5${RESET} ~ web server"
+(( STAGE++ )); echo -e "\n\n ${GREEN}[+]${RESET} (${STAGE}/${TOTAL}) Installing ${GREEN}apache2${RESET} & ${GREEN}php5${RESET} ~ web server"
 apt-get -y -qq install apache2
 touch /var/www/html/favicon.ico
 if [[ -e /var/www/html/index.html ]]; then
@@ -3275,7 +3329,7 @@ apt-get -y -qq install php5 php5-cli php5-curl
 
 
 ##### Install mysql
-echo -e "\n ${GREEN}[+]${RESET} Installing ${GREEN}MySQL${RESET} ~ database"
+(( STAGE++ )); echo -e "\n\n ${GREEN}[+]${RESET} (${STAGE}/${TOTAL}) Installing ${GREEN}MySQL${RESET} ~ database"
 apt-get -y -qq install mysql-server
 echo -e " ${YELLOW}[i]${RESET} MySQL username: root"
 echo -e " ${YELLOW}[i]${RESET} MySQL password: <blank>   ***${BOLD}CHANGE THIS ASAP${RESET}***"
@@ -3289,12 +3343,12 @@ EOF
 fi
 
 ##### Install rsh-client
-echo -e "\n ${GREEN}[+]${RESET} Installing ${GREEN}rsh-client${RESET} ~ remote shell connections"
+(( STAGE++ )); echo -e "\n\n ${GREEN}[+]${RESET} (${STAGE}/${TOTAL}) Installing ${GREEN}rsh-client${RESET} ~ remote shell connections"
 apt-get -y -qq install rsh-client || echo -e ' '${RED}'[!] Issue with apt-get'${RESET} 1>&2
 
 #--- Lair 1.0.1
 mkdir -p /opt/lair
-echo -e "\n ${GREEN}[+]${RESET} Installing ${GREEN}Lair v1.0.5 ${RESET} ~ Reporting framework"
+(( STAGE++ )); echo -e "\n\n ${GREEN}[+]${RESET} (${STAGE}/${TOTAL}) Installing ${GREEN}Lair v1.0.5 ${RESET} ~ Reporting framework"
 wget -qO /tmp/lair-v1.0.5-linux.7z https://github.com/lair-framework/lair/releases/download/v1.0.5/lair-v1.0.5-linux-x64.7z  || echo -e ' '${RED}'[!] Issue when lair'${RESET} 1>&2
 sleep 2s
 7z x /tmp/lair-v1.0.5-linux.7z -y  -o/opt/lair/
@@ -3306,11 +3360,11 @@ sleep 2s
 pip install /opt/lair/lairdrone-1.0.1.tar.gz || echo -e ' '${RED}'[!] Issue with Drones'${RESET} 1>&2
 
 ##### Install sshpass
-echo -e "\n ${GREEN}[+]${RESET} Installing ${GREEN}sshpass${RESET} ~ automating SSH connections"
+(( STAGE++ )); echo -e "\n\n ${GREEN}[+]${RESET} (${STAGE}/${TOTAL}) Installing ${GREEN}sshpass${RESET} ~ automating SSH connections"
 apt-get -y -qq install sshpass || echo -e ' '${RED}'[!] Issue with apt-get'${RESET} 1>&2
 
 ##### Install DBeaver
-echo -e "\n ${GREEN}[+]${RESET} Installing ${GREEN}DBeaver${RESET} ~ GUI DB manager"
+(( STAGE++ )); echo -e "\n\n ${GREEN}[+]${RESET} (${STAGE}/${TOTAL}) Installing ${GREEN}DBeaver${RESET} ~ GUI DB manager"
 apt-get -y -qq install curl || echo -e ' '${RED}'[!] Issue with apt-get'${RESET} 1>&2
 arch="i386"
 [[ "$(uname -m)" == "x86_64" ]] && arch="amd64"
@@ -3320,18 +3374,23 @@ dpkg -i /tmp/dbeaver.deb
 ln -sf /usr/share/dbeaver/dbeaver /usr/local/bin/dbeaver
 
 ##### Install ashttp
-echo -e "\n ${GREEN}[+]${RESET} Installing ${GREEN}ashttp${RESET} ~ Share your terminal via the web"
+(( STAGE++ )); echo -e "\n\n ${GREEN}[+]${RESET} (${STAGE}/${TOTAL}) Installing ${GREEN}ashttp${RESET} ~ Share your terminal via the web"
 apt-get -y -qq install git || echo -e ' '${RED}'[!] Issue with apt-get'${RESET} 1>&2
 git clone -q https://github.com/JulienPalard/ashttp.git /opt/ashttp-git/ || echo -e ' '${RED}'[!] Issue when git cloning'${RESET} 1>&2
 
 
 ##### Install gotty
-echo -e "\n ${GREEN}[+]${RESET} Installing ${GREEN}gotty${RESET} ~ Share your terminal via the web"
+(( STAGE++ )); echo -e "\n\n ${GREEN}[+]${RESET} (${STAGE}/${TOTAL})Installing ${GREEN}gotty${RESET} ~ Share your terminal via the web"
 apt-get -y -qq install git || echo -e ' '${RED}'[!] Issue with apt-get'${RESET} 1>&2
 git clone -q https://github.com/yudai/gotty.git /opt/gotty-git/ || echo -e ' '${RED}'[!] Issue when git cloning'${RESET} 1>&2
 
+##### Preparing a jail ~ http://allanfeid.com/content/creating-chroot-jail-ssh-access // http://www.cyberciti.biz/files/lighttpd/l2chroot.txt
+(( STAGE++ )); echo -e "\n\n ${GREEN}[+]${RESET} (${STAGE}/${TOTAL}) Preparing up a ${GREEN}jail${RESET} ~ testing environment"
+apt -y -qq install debootstrap curl \
+  || echo -e ' '${RED}'[!] Issue with apt install'${RESET} 1>&2
+
 ##### Setup SSH
-echo -e "\n ${GREEN}[+]${RESET} Setting up ${GREEN}SSH${RESET} ~ CLI access"
+(( STAGE++ )); echo -e "\n\n ${GREEN}[+]${RESET} (${STAGE}/${TOTAL})Setting up ${GREEN}SSH${RESET} ~ CLI access"
 apt-get -y -qq install openssh-server || echo -e ' '${RED}'[!] Issue with apt-get'${RESET} 1>&2
 #--- Wipe current keys
 rm -f /etc/ssh/ssh_host_*
@@ -3357,7 +3416,8 @@ file=~/.bash_aliases; [ -e "${file}" ] && cp -n $file{,.bkup}   #/etc/bash.bash_
 grep -q '^## ssh' "${file}" 2>/dev/null || echo -e '## ssh\nalias ssh-start="systemctl restart ssh"\nalias ssh-stop="systemctl stop ssh"\n' >> "${file}"
 
 ############ Pip Install ############
-pip install glances maybe whatportis yapf thefuck|| echo -e ' '${RED}'[!] Issue with pip'${RESET} 1>&2
+(( STAGE++ )); echo -e "\n\n ${GREEN}[+]${RESET} (${STAGE}/${TOTAL}) ${GREEN}PIP${RESET} Installs"
+pip install glances maybe whatportis yapf thefuck tmux2html|| echo -e ' '${RED}'[!] Issue with pip'${RESET} 1>&2
 
 ##### Custom insert point
 
@@ -3376,7 +3436,7 @@ pip install glances maybe whatportis yapf thefuck|| echo -e ' '${RED}'[!] Issue 
 #EOF
 #chmod +x "${file}"
 
-echo -e "\n ${GREEN}[+]${RESET} Installing ${GREEN}Windows Exploit Suggester${RESET} ~ A Windows Exploit Suggester"
+(( STAGE++ )); echo -e "\n\n ${GREEN}[+]${RESET} (${STAGE}/${TOTAL})  Installing ${GREEN}Windows Exploit Suggester${RESET} ~ A Windows Exploit Suggester"
 apt-get -y -qq install git || echo -e ' '${RED}'[!] Issue with apt-get'${RESET} 1>&2
 git clone -q https://github.com/GDSSecurity/Windows-Exploit-Suggester.git /opt/Windows-Exploit-Suggester-git/ || echo -e ' '${RED}'[!] Issue when git cloning'${RESET} 1>&2
 pushd /opt/Windows-Exploit-Suggester-git/ >/dev/null
@@ -3390,17 +3450,18 @@ cd /opt/Windows-Exploit-Suggester-git/ && python windows-exploit-suggester.py "\
 EOF
 chmod +x "${file}"
 
-echo -e "\n ${GREEN}[+]${RESET} Installing ${GREEN}PowerCat${RESET} ~ Netcat for Powershell "
+(( STAGE++ )); echo -e "\n\n ${GREEN}[+]${RESET} (${STAGE}/${TOTAL}) Installing ${GREEN}PowerCat${RESET} ~ Netcat for Powershell "
 apt-get -y -qq install git || echo -e ' '${RED}'[!] Issue with apt-get'${RESET} 1>&2
 git clone -q https://github.com/secabstraction/PowerCat.git /opt/powercat-git/ || echo -e ' '${RED}'[!] Issue when git cloning powercat'${RESET} 1>&2
 
-echo -e "\n ${GREEN}[+]${RESET} Installing ${GREEN}KeyBase${RESET} ~ Keys for everyone"
+(( STAGE++ )); echo -e "\n\n ${GREEN}[+]${RESET} (${STAGE}/${TOTAL})  Installing ${GREEN}KeyBase${RESET} ~ Keys for everyone"
 wget -qO keybase-latest-amd64.deb  https://dist.keybase.io/linux/deb/keybase-latest-amd64.deb && sudo dpkg -i keybase-latest-amd64.deb || echo -e ' '${RED}'[!] Issue downloading KeyBase'${RESET} 1>&2
 
-echo -e "\n ${GREEN}[+]${RESET} Installing ${GREEN}Docker${RESET} ~ Opensource application container engine"
+(( STAGE++ )); echo -e "\n\n ${GREEN}[+]${RESET} (${STAGE}/${TOTAL})  Installing ${GREEN}Docker${RESET} ~ Opensource application container engine"
 curl --progress -fskSL "https://raw.githubusercontent.com/Zumkato/Testing-Cheats-/master/PostInstall/Hackdocker.sh" | sh || echo -e ' '${RED}'[!]${RESET} Issue downloading Docker' 1>&2
 
 #---Docker images 
+(( STAGE++ )); echo -e "\n\n ${GREEN}[+]${RESET} (${STAGE}/${TOTAL})  Installing ${GREEN}Docker Images${RESET} ~ container "
 #fun to have 
 docker pull jess/hollywood || echo -e ' '${RED}'[!] Issue with hollywood docker image'${RESET} 1>&2
 sleep 3s
@@ -3421,27 +3482,27 @@ sleep 3s
 docker pull remnux/radare2 || echo -e ' '${RED}'[!] Issue with radare2 docker image'${RESET} 1>&2
 mkdir -p ~/radare2-workdir
 chmod a+xwr ~/radare2-workdir
-docker pull remnux/viper || echo -e ' '${RED}'[!] Issue with viper docker image'${RESET} 1>&2
 sleep 3s
+docker pull remnux/viper || echo -e ' '${RED}'[!] Issue with viper docker image'${RESET} 1>&2
 mkdir -p ~/viper-workdir
 chmod a+xwr ~/viper-workdir
 sleep 3s
-docker pull remnux/volatility
+docker pull remnux/volatility || echo -e ' '${RED}'[!] Issue with volatility docker image'${RESET} 1>&2
 mkdir -p ~/memdumps
 chmod a+xwr ~/memdumps
 sleep 3s
-docker pull remnux/maltrieve
+docker pull remnux/maltrieve || echo -e ' '${RED}'[!] Issue with maltrieve docker image'${RESET} 1>&2
 mkdir -p ~/archive
 chmod a+xwr ~/archive
 sleep 3s
-docker pull remnux/jsdetox
+docker pull remnux/jsdetox || echo -e ' '${RED}'[!] Issue with jsdetox docker image'${RESET} 1>&2
 ##---Misc docker images 
 #docker pull debian 
  
  
 
 ##### Clean the system
-echo -e "\n ${GREEN}[+]${RESET} ${GREEN}Cleaning${RESET} the system"
+(( STAGE++ )); echo -e "\n\n ${GREEN}[+]${RESET} (${STAGE}/${TOTAL}) ${GREEN}Cleaning${RESET} the system"
 #--- Clean package manager
 for FILE in clean autoremove; do apt-get -y -qq "${FILE}"; done         # Clean up - clean remove autoremove autoclean
 apt-get -y -qq purge $(dpkg -l | tail -n +6 | egrep -v '^(h|i)i' | awk '{print $2}')   # Purged packages

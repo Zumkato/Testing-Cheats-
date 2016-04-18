@@ -256,7 +256,7 @@ if [ -e "/etc/vmware-tools" ]; then
   echo -e "\n "${RED}'[!]'${RESET}" VMware Tools is ${RED}already installed${RESET}. Skipping..." 1>&2
 elif (dmidecode | grep -iq vmware); then
   ##### Install virtual machines tools ~ http://docs.kali.org/general-use/install-vmware-tools-kali-guest
-  echo -e "\n ${GREEN}[+]${RESET} Installing ${GREEN}virtual machine tools${RESET}"
+   (( STAGE++ )); echo -e "\n\n ${GREEN}[+]${RESET} (${STAGE}/${TOTAL}) Installing ${GREEN}virtual machine tools${RESET}"
   #--- VM -> Install VMware Tools.
   mkdir -p /mnt/cdrom/
   umount -f /mnt/cdrom 2>/dev/null

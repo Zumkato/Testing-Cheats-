@@ -444,6 +444,10 @@ apt-get -y -qq install alsa-utils || echo -e ' '${RED}'[!] Issue with apt-get'${
 amixer set Master unmute >/dev/null
 amixer set Master 50% >/dev/null
 
+##### Set audio level
+(( STAGE++ )); echo -e "\n\n ${GREEN}[+]${RESET} (${STAGE}/${TOTAL}) Setting ${GREEN}audio${RESET} levels"
+pactl set-sink-mute 0 0
+pactl set-sink-volume 0 25%
 
 ##### Configure GRUB
 echo -e "\n ${GREEN}[+]${RESET} Configuring ${GREEN}GRUB${RESET} ~ boot manager"
@@ -458,12 +462,14 @@ update-grub
 echo -e "\n ${GREEN}[+]${RESET} ${GREEN}Disabling GUI${RESET} login screen"
 #--- Disable GUI login screen
 systemctl set-default multi-user.target   # ...or: file=/etc/X11/default-display-manager; [ -e "${file}" ] && cp -n $file{,.bkup} ; echo /bin/true > "${file}"   # ...or: mv -f /etc/rc2.d/S19gdm3 /etc/rc2.d/K17gdm   # ...or: apt-get -y -qq install chkconfig; chkconfig gdm3 off
-#--- Enable auto (gui) login
-#file=/etc/gdm3/daemon.conf; [ -e "${file}" ] && cp -n $file{,.bkup}
-#sed -i 's/^.*AutomaticLoginEnable = .*/AutomaticLoginEnable = true/' "${file}"
-#sed -i 's/^.*AutomaticLogin = .*/AutomaticLogin = root/' "${file}"
-#--- Shortcut for when you want to start GUI
-[ -e /usr/sbin/gdm3 ] && ln -sf /usr/sbin/gdm3 /usr/bin/startx
+if [[ $(dmidecode | grep -i virtual) ]]; then
+  ###### Configure login screen
+  (( STAGE++ )); echo -e "\n\n ${GREEN}[+]${RESET} (${STAGE}/${TOTAL}) Configuring ${GREEN}login screen${RESET}"
+  #--- Enable auto (gui) login
+  file=/etc/gdm3/daemon.conf; [ -e "${file}" ] && cp -n $file{,.bkup}
+  sed -i 's/^.*AutomaticLoginEnable = .*/AutomaticLoginEnable = true/' "${file}"
+  sed -i 's/^.*AutomaticLogin = .*/AutomaticLogin = root/' "${file}"
+fi
 
 ###### Configure startup   ***
 #echo -e "\n ${GREEN}[+]${RESET} Configuring ${GREEN}startup${RESET} ~ randomize the hostname, eth0 & wlan0s MAC address"
@@ -501,111 +507,34 @@ rm -f /etc/network/if-pre-up.d/macchanger
 
 
 if [[ $(which gnome-shell) ]]; then
-##### Configure GNOME 3
-echo -e "\n ${GREEN}[+]${RESET} Configuring ${GREEN}GNOME 3${RESET} ~ desktop environment"
-export DISPLAY=:0.0   #[[ -z $SSH_CONNECTION ]] || export DISPLAY=:0.0
-#-- Gnome Extension - Frippery (https://extensions.gnome.org/extension/13/applications-menu/)   *** TaskBar has more features
-mkdir -p ~/.local/share/gnome-shell/extensions/
-timeout 300 curl --progress -k -L -f "http://frippery.org/extensions/gnome-shell-frippery-0.9.3.tgz" > /tmp/frippery.tgz || echo -e ' '${RED}'[!]'${RESET}" Issue downloading frippery.tgz" 1>&2
-tar -zxf /tmp/frippery.tgz -C ~/
-#-- Gnome Extension - TopIcons (https://extensions.gnome.org/extension/495/topicons/)   # Doesn't work with v3.10
-#mkdir -p ~/.local/share/gnome-shell/extensions/topIcons@adel.gadllah@gmail.com/
-#curl --progress -k -L -f "https://extensions.gnome.org/review/download/2236.shell-extension.zip" > /tmp/topIcons.zip || echo -e ' '${RED}'[!]'${RESET}" Issue downloading topIcons.zip" 1>&2
-#unzip -q -o /tmp/topIcons.zip -d ~/.local/share/gnome-shell/extensions/topIcons@adel.gadllah@gmail.com/
-#sed -i 's/"shell-version": \[$/"shell-version": \[ "3.10",/' ~/.local/share/gnome-shell/extensions/topIcons@adel.gadllah@gmail.com/metadata.json
-#-- Gnome Extension - icon-hider (https://github.com/ikalnitsky/gnome-shell-extension-icon-hider)
-mkdir -p "/usr/share/gnome-shell/extensions/"
-git clone -q https://github.com/ikalnitsky/gnome-shell-extension-icon-hider.git /usr/share/gnome-shell/extensions/icon-hider@kalnitsky.org/ || echo -e ' '${RED}'[!] Issue when git cloning'${RESET} 1>&2
-#-- Gnome Extension - Disable Screen Shield (https://extensions.gnome.org/extension/672/disable-screen-shield/)   # Doesn't work with v3.10
-#mkdir -p "/usr/share/gnome-shell/extensions/"
-#git clone -q https://github.com/lgpasquale/gnome-shell-extension-disable-screenshield.git /usr/share/gnome-shell/extensions/disable-screenshield@lgpasquale.com/ || echo -e ' '${RED}'[!] Issue when git cloning'${RESET} 1>&2
-#-- Gnome Extension - TaskBar (https://extensions.gnome.org/extension/584/taskbar/)
-mkdir -p "/usr/share/gnome-shell/extensions/"
-git clone -q https://github.com/zpydr/gnome-shell-extension-taskbar.git /usr/share/gnome-shell/extensions/TaskBar@zpydr/ || echo -e ' '${RED}'[!] Issue when git cloning'${RESET} 1>&2
-#--- Gnome Extensions (Enable)
-for EXTENSION in "alternate-tab@gnome-shell-extensions.gcampax.github.com" "drive-menu@gnome-shell-extensions.gcampax.github.com" "TaskBar@zpydr" "Bottom_Panel@rmy.pobox.com" "Panel_Favorites@rmy.pobox.com" "Move_Clock@rmy.pobox.com" "icon-hider@kalnitsky.org"; do
+  ##### Configure GNOME 3
+  (( STAGE++ )); echo -e "\n\n ${GREEN}[+]${RESET} (${STAGE}/${TOTAL}) Configuring ${GREEN}GNOME 3${RESET} ~ desktop environment"
+  export DISPLAY=:0.0
+  #-- Gnome Extension - Dash Dock (the toolbar with all the icons)
+  gsettings set org.gnome.shell.extensions.dash-to-dock extend-height true      # Set dock to use the full height
+  gsettings set org.gnome.shell.extensions.dash-to-dock dock-position 'RIGHT'   # Set dock to the right
+  gsettings set org.gnome.shell.extensions.dash-to-dock dock-fixed true         # Set dock to be always visible
+  gsettings set org.gnome.shell favorite-apps \
+    "['gnome-terminal.desktop', 'org.gnome.Nautilus.desktop', 'kali-wireshark.desktop', 'firefox-esr.desktop', 'kali-burpsuite.desktop', 'kali-msfconsole.desktop', 'gedit.desktop']"
+  #-- Gnome Extension - Alternate-tab (So it doesn't group the same windows up)
   GNOME_EXTENSIONS=$(gsettings get org.gnome.shell enabled-extensions | sed 's_^.\(.*\).$_\1_')
-  echo "${GNOME_EXTENSIONS}" | grep -q "${EXTENSION}" || gsettings set org.gnome.shell enabled-extensions "[${GNOME_EXTENSIONS}, '${EXTENSION}']"
-done
-#--- Gnome Extensions (Disable)
-for EXTENSION in "dash-to-dock@micxgx.gmail.com" "workspace-indicator@gnome-shell-extensions.gcampax.github.com"; do
-  GNOME_EXTENSIONS=$(gsettings get org.gnome.shell enabled-extensions | sed "s_^.\(.*\).\$_\1_; s_, '${EXTENSION}'__")
-  gsettings set org.gnome.shell enabled-extensions "[${GNOME_EXTENSIONS}]"
-done
-#--- Dash Dock (even though it should be disabled)
-dconf write /org/gnome/shell/extensions/dash-to-dock/dock-fixed true
-#--- TaskBar (Global)
-dconf write /org/gnome/shell/extensions/TaskBar/first-start false
-#--- TaskBar (without Frippery) ~ gsettings set org.gnome.shell enabled-extensions "[$( gsettings get org.gnome.shell enabled-extensions | sed "s_^.\(.*\).\$_\1_; s#, 'Bottom_Panel@rmy.pobox.com'##; s#, 'Panel_Favorites@rmy.pobox.com'##; s#, 'Move_Clock@rmy.pobox.com'##" )]"
-#dconf write /org/gnome/shell/extensions/TaskBar/bottom-panel true
-#dconf write /org/gnome/shell/extensions/TaskBar/display-favorites true
-#dconf write /org/gnome/shell/extensions/TaskBar/hide-default-application-menu true
-#dconf write /org/gnome/shell/extensions/TaskBar/display-showapps-button false
-#dconf write /org/gnome/shell/extensions/TaskBar/appearance-selection "'showappsbutton'"
-#dconf write /org/gnome/shell/extensions/TaskBar/overview true
-#dconf write /org/gnome/shell/extensions/TaskBar/position-appview-button 2
-#dconf write /org/gnome/shell/extensions/TaskBar/position-desktop-button 0
-#dconf write /org/gnome/shell/extensions/TaskBar/position-favorites 3
-#dconf write /org/gnome/shell/extensions/TaskBar/position-max-right 4
-#dconf write /org/gnome/shell/extensions/TaskBar/position-tasks 4
-#dconf write /org/gnome/shell/extensions/TaskBar/position-workspace-button 1
-#dconf write /org/gnome/shell/extensions/TaskBar/separator-two true
-#dconf write /org/gnome/shell/extensions/TaskBar/separator-three true
-#dconf write /org/gnome/shell/extensions/TaskBar/separator-four true
-#dconf write /org/gnome/shell/extensions/TaskBar/separator-five true
-#dconf write /org/gnome/shell/extensions/TaskBar/separator-six true
-#dconf write /org/gnome/shell/extensions/TaskBar/separator-three-bottom true
-#dconf write /org/gnome/shell/extensions/TaskBar/separator-five-bottom true
-#dconf write /org/gnome/shell/extensions/TaskBar/appview-button-icon "'/usr/share/gnome-shell/extensions/TaskBar@zpydr/images/appview-button-default.svg'"
-#dconf write /org/gnome/shell/extensions/TaskBar/desktop-button-icon "'/usr/share/gnome-shell/extensions/TaskBar@zpydr/images/desktop-button-default.png'"
-#dconf write /org/gnome/shell/extensions/TaskBar/tray-button-icon "'/usr/share/gnome-shell/extensions/TaskBar@zpydr/images/bottom-panel-tray-button.svg'"
-#--- TaskBar (with Frippery)
-dconf write /org/gnome/shell/extensions/TaskBar/hide-default-application-menu true
-dconf write /org/gnome/shell/extensions/TaskBar/bottom-panel false
-dconf write /org/gnome/shell/extensions/TaskBar/display-favorites false
-dconf write /org/gnome/shell/extensions/TaskBar/display-desktop-button false
-dconf write /org/gnome/shell/extensions/TaskBar/display-showapps-button false
-dconf write /org/gnome/shell/extensions/TaskBar/display-tasks false
-dconf write /org/gnome/shell/extensions/TaskBar/display-workspace-button false
-dconf write /org/gnome/shell/extensions/TaskBar/overview false
-dconf write /org/gnome/shell/extensions/TaskBar/separator-two false
-dconf write /org/gnome/shell/extensions/TaskBar/separator-three false
-dconf write /org/gnome/shell/extensions/TaskBar/separator-four false
-dconf write /org/gnome/shell/extensions/TaskBar/separator-five false
-dconf write /org/gnome/shell/extensions/TaskBar/separator-six false
-#--- Workspaces
-gsettings set org.gnome.shell.overrides dynamic-workspaces false
-gsettings set org.gnome.desktop.wm.preferences num-workspaces 5
-#--- Top bar
-gsettings set org.gnome.desktop.interface clock-show-date true                           # Show date next to time
-#--- Dock settings
-gsettings set org.gnome.shell.extensions.dash-to-dock extend-height true                 # Set dock to use the full height
-gsettings set org.gnome.shell.extensions.dash-to-dock dock-position 'RIGHT'              # Set dock to the right
-gsettings set org.gnome.shell.extensions.dash-to-dock dock-fixed true                    # Set dock to be always visible
-gsettings set org.gnome.shell favorite-apps "['gnome-terminal.desktop', 'org.gnome.Nautilus.desktop', 'iceweasel.desktop', 'geany.desktop']"
-#--- Keyboard shortcuts
-(dmidecode | grep -iq virtual) && gsettings set org.gnome.mutter overlay-key "Super_R"   # Change 'super' key to right side (rather than left key)
-#--- Disable tracker service (But enables it in XFCE)
-gsettings set org.freedesktop.Tracker.Miner.Files crawling-interval -2
-gsettings set org.freedesktop.Tracker.Miner.Files enable-monitors false
-tracker-control -r
-#mkdir -p ~/.config/autostart/
-#cp -f /etc/xdg/autostart/tracker* ~/.config/autostart
-#sed -i 's/X-GNOME-Autostart-enabled=.*/X-GNOME-Autostart-enabled=false/' ~/.config/autostart/tracker*
-#--- Smaller title bar
-gsettings set org.gnome.desktop.wm.preferences titlebar-font "'Droid Bold 10'"
-gsettings set org.gnome.desktop.wm.preferences titlebar-uses-system-font false
-#--- Hide desktop icon
-dconf write /org/gnome/nautilus/desktop/computer-icon-visible false
-#--- Cosmetics - Change wallpaper & login (happens later)
-#cp -f /path/to/file.png /usr/share/images/desktop-base/kali-grub.png                      # Change grub boot
-#dconf write /org/gnome/desktop/screensaver/picture-uri "'file:///path/to/file.png'"       # Change lock wallpaper (before swipe)
-#cp -f /path/to/file.png /usr/share/gnome-shell/theme/KaliLogin.png                        # Change login wallpaper (after swipe)
-#dconf write /org/gnome/desktop/background/picture-uri "'file:///path/to/file.png'"        # Change desktop wallpaper
-gsettings set org.gnome.desktop.session idle-delay 0                                       # Disable swipe on lockscreen
-#--- Restart GNOME panel to apply/take effect (need to restart xserver for effect)
-#timeout 30 killall -q -w gnome-panel >/dev/null && gnome-shell --replace&   # Still need to logoff!
-#reboot
+  echo "${GNOME_EXTENSIONS}" | grep -q "alternate-tab@gnome-shell-extensions.gcampax.github.com" \
+    || gsettings set org.gnome.shell enabled-extensions "[${GNOME_EXTENSIONS}, 'alternate-tab@gnome-shell-extensions.gcampax.github.com']"
+  #-- Gnome Extension - Drive Menu (Show USB devices in tray)
+  GNOME_EXTENSIONS=$(gsettings get org.gnome.shell enabled-extensions | sed 's_^.\(.*\).$_\1_')
+  echo "${GNOME_EXTENSIONS}" | grep -q "drive-menu@gnome-shell-extensions.gcampax.github.com" \
+    || gsettings set org.gnome.shell enabled-extensions "[${GNOME_EXTENSIONS}, 'drive-menu@gnome-shell-extensions.gcampax.github.com']"
+  #--- Workspaces
+  gsettings set org.gnome.shell.overrides dynamic-workspaces false                         # Static
+  gsettings set org.gnome.desktop.wm.preferences num-workspaces 5                          # Increase workspaces count to 5
+  #--- Top bar
+  gsettings set org.gnome.desktop.interface clock-show-date true                           # Show date next to time in the top tool bar
+  #--- Keyboard short-cuts
+  (dmidecode | grep -iq virtual) && gsettings set org.gnome.mutter overlay-key "Super_R"   # Change 'super' key to right side (rather than left key), if in a VM
+  #--- Hide desktop icon
+  dconf write /org/gnome/nautilus/desktop/computer-icon-visible false
+else
+  echo -e "\n\n ${YELLOW}[i]${RESET} ${YELLOW}Skipping GNOME${RESET}..." 1>&2
 fi
 
 ##### Install XFCE4
@@ -1960,6 +1889,10 @@ else
   echo -e "\n ${YELLOW}[i]${RESET} ${YELLOW}Skipping Burp Suite${RESET} (missing: '$0 ${BOLD}--burp${RESET}')..." 1>&2
 fi
 
+if [ "${burpFree}" != "true" ]; then
+  echo -e "\n\n ${YELLOW}[i]${RESET} ${YELLOW}Skipping Burp Suite${RESET} (missing: '$0 ${BOLD}--burp${RESET}')..." 1>&2
+  sleep 2s
+fi
 
 ##### Configure python console - all users
 echo -e "\n ${GREEN}[+]${RESET} Configuring ${GREEN}python console${RESET} ~ tab complete & history support"

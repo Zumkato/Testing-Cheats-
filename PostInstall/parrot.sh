@@ -115,7 +115,7 @@ while [[ "${#}" -gt 0 && ."${1}" == .-* ]]; do
     -full|--full )
       full=true;; 
 
-    *) echo -e ' '${RED}'[!]'${RESET}" Unknown option: ${RED}${x}${RESET}" 1>&2 && exit 1;;
+    *) echo -e ' '${RED}'[!]'${RESET}" Unknown option: ${RED}${opt}${RESET}" 1>&2 && exit 1;;
    esac
 done
 

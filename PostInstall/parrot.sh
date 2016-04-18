@@ -17,7 +17,7 @@
 #-Notes-------------------------------------------------------#
 #  Run as root, after a fresh/clean install of Parrot 2.x.    #
 #                             ---                             #
-#  You will need 25GB+ of HDD space.                          #
+#  You will need 30GB+ of HDD space.                          #
 #                             ---                             #
 #  Command line arguments:                                    #
 #    -burp     = Automates configuring Burp Suite             #
@@ -25,7 +25,7 @@
 #    -hold     = Disable updating certain packages (e.g. msf) #
 #    -openvas  = Installs & configures OpenVAS vuln scanner   #
 #    -osx      = Configures Apple keyboard layout             #
-#                                                             #
+#    -full     = Install full tools and features              #
 #                                                             #
 #    -keyboard <value> = Change the keyboard layout language  #
 #    -timezone <value> = Change the timezone location         #
@@ -39,7 +39,7 @@
 
 if [ 1 -eq 0 ]; then    # This is never true, thus it acts as block comments ;)
 ### One liner - Grab the latest version and execute! ###########################
-wget -qO parrot.sh https://raw.githubusercontent.com/Zumkato/Testing-Cheats-/master/PostInstall/parrot.sh && bash parrot.sh -dns -burp -openvas 
+wget -qO parrot.sh https://raw.githubusercontent.com/Zumkato/Testing-Cheats-/master/PostInstall/parrot.sh && bash parrot.sh -dns -full -openvas 
 ################################################################################
 ## Shorten URL: >->->   wget -qO- https://goo.gl/MdG1fG | bash   <-<-<
 ##  Alt Method: curl -s -L -k https://raw.githubusercontent.com/Zumkato/Testing-Cheats-/master/PostInstall/parrot.sh > parrot.sh | nohup bash
@@ -60,6 +60,7 @@ burpFree=false              # Disable configuring Burp Suite (for Burp Pro users
 hardenDNS=false             # Set static & lock DNS name server                         [ --dns ]
 freezeDEB=false             # Disable updating certain packages (e.g. Metasploit)       [ --hold ]
 openVAS=false               # Install & configure OpenVAS (not everyone wants it...)    [ --openvas ]
+full=false                  # Doesn't insall full toolset                               [--full]
 
 
 ##### (Optional) Enable debug mode?
@@ -110,6 +111,9 @@ while [[ "${#}" -gt 0 && ."${1}" == .-* ]]; do
        timezone="${1}"; shift;;
     -timezone=*|--timezone=* )
        timezone="${opt#*=}";;
+      
+    -full|--full )
+      full=true;; 
 
     *) echo -e ' '${RED}'[!]'${RESET}" Unknown option: ${RED}${x}${RESET}" 1>&2 && exit 1;;
    esac
@@ -407,7 +411,10 @@ if [ "${freezeDEB}" != "false" ]; then
   done
 fi
 
-
+if [ "${full}" != "false" ]; then
+  echo -e "\n ${GREEN}[+]${RESET} Installing ${GREEN}Parrot With all Tool and Features${RESET}"
+  apt-get -y --force-yes install parrot-interface parrot-tools parrot-interface-full parrot-tools-full
+fi
 
 
 ##### Update OS from network repositories

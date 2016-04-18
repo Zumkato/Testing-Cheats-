@@ -485,7 +485,7 @@ if [[ $(which gnome-shell) ]]; then
   gsettings set org.gnome.shell.extensions.dash-to-dock dock-position 'RIGHT'   # Set dock to the right
   gsettings set org.gnome.shell.extensions.dash-to-dock dock-fixed true         # Set dock to be always visible
   gsettings set org.gnome.shell favorite-apps \
-    "['gnome-terminal.desktop', 'org.gnome.Nautilus.desktop', 'kali-wireshark.desktop', 'firefox-esr.desktop', 'kali-burpsuite.desktop', 'kali-msfconsole.desktop', 'gedit.desktop']"
+    "['gnome-terminal.desktop', 'org.gnome.Nautilus.desktop', 'wireshark.desktop', 'firefox.desktop', 'burpsuite.desktop', 'msfconsole.desktop', 'gedit.desktop']"
   #-- Gnome Extension - Alternate-tab (So it doesn't group the same windows up)
   GNOME_EXTENSIONS=$(gsettings get org.gnome.shell enabled-extensions | sed 's_^.\(.*\).$_\1_')
   echo "${GNOME_EXTENSIONS}" | grep -q "alternate-tab@gnome-shell-extensions.gcampax.github.com" \
@@ -605,10 +605,10 @@ cat <<EOF > ~/.config/xfce4/xfconf/xfce-perchannel-xml/xfce4-keyboard-shortcuts.
 EOF
 #--- Desktop files
 ln -sf /usr/share/applications/exo-terminal-emulator.desktop ~/.config/xfce4/panel/launcher-2/exo-terminal-emulator.desktop
-ln -sf /usr/share/applications/kali-wireshark.desktop        ~/.config/xfce4/panel/launcher-4/kali-wireshark.desktop
+ln -sf /usr/share/applications/wireshark.desktop        ~/.config/xfce4/panel/launcher-4/wireshark.desktop
 ln -sf /usr/share/applications/firefox.desktop           ~/.config/xfce4/panel/launcher-5/firefox.desktop
-ln -sf /usr/share/applications/kali-burpsuite.desktop        ~/.config/xfce4/panel/launcher-6/kali-burpsuite.desktop
-ln -sf /usr/share/applications/kali-msfconsole.desktop       ~/.config/xfce4/panel/launcher-7/kali-msfconsole.desktop
+ln -sf /usr/share/applications/burpsuite.desktop        ~/.config/xfce4/panel/launcher-6/burpsuite.desktop
+ln -sf /usr/share/applications/msfconsole.desktop       ~/.config/xfce4/panel/launcher-7/msfconsole.desktop
 ln -sf /usr/share/applications/org.gnome.gedit.desktop       ~/.config/xfce4/panel/launcher-8/textedit.desktop
 ln -sf /usr/share/applications/xfce4-appfinder.desktop       ~/.config/xfce4/panel/launcher-9/xfce4-appfinder.desktop
 #--- XFCE settings
@@ -626,11 +626,11 @@ xfconf-query -n -c xfce4-panel -p /panels/panel-0/position-locked -t bool -s tru
 xfconf-query -n -c xfce4-panel -p /plugins/plugin-1 -t string -s applicationsmenu     # application menu
 xfconf-query -n -c xfce4-panel -p /plugins/plugin-2 -t string -s launcher             # terminal   ID: exo-terminal-emulator
 xfconf-query -n -c xfce4-panel -p /plugins/plugin-3 -t string -s places               # places
-xfconf-query -n -c xfce4-panel -p /plugins/plugin-4 -t string -s launcher             # wireshark  ID: kali-wireshark
-xfconf-query -n -c xfce4-panel -p /plugins/plugin-5 -t string -s launcher             # firefox    ID: firefox-esr
+xfconf-query -n -c xfce4-panel -p /plugins/plugin-4 -t string -s launcher             # wireshark  ID: wireshark
+xfconf-query -n -c xfce4-panel -p /plugins/plugin-5 -t string -s launcher             # firefox    ID: firefox
 [ "${burpFree}" != "false" ] \
-  && xfconf-query -n -c xfce4-panel -p /plugins/plugin-6 -t string -s launcher        # burpsuite  ID: kali-burpsuite
-xfconf-query -n -c xfce4-panel -p /plugins/plugin-7 -t string -s launcher             # msf        ID: kali-msfconsole
+  && xfconf-query -n -c xfce4-panel -p /plugins/plugin-6 -t string -s launcher        # burpsuite  ID: burpsuite
+xfconf-query -n -c xfce4-panel -p /plugins/plugin-7 -t string -s launcher             # msf        ID: msfconsole
 xfconf-query -n -c xfce4-panel -p /plugins/plugin-8 -t string -s launcher             # gedit      ID: org.gnome.gedit.desktop
 xfconf-query -n -c xfce4-panel -p /plugins/plugin-9 -t string -s launcher             # search     ID: xfce4-appfinder
 xfconf-query -n -c xfce4-panel -p /plugins/plugin-10 -t string -s tasklist
@@ -649,14 +649,14 @@ xfconf-query -n -c xfce4-panel -p /plugins/plugin-2/items -t string -s "exo-term
 #--- places
 xfconf-query -n -c xfce4-panel -p /plugins/plugin-3/mount-open-volumes -t bool -s true
 #--- wireshark
-xfconf-query -n -c xfce4-panel -p /plugins/plugin-4/items -t string -s "kali-wireshark.desktop" -a
+xfconf-query -n -c xfce4-panel -p /plugins/plugin-4/items -t string -s "wireshark.desktop" -a
 #--- firefox
 xfconf-query -n -c xfce4-panel -p /plugins/plugin-5/items -t string -s "firefox.desktop" -a
 #--- burp
 [ "${burpFree}" != "false" ] \
-  && xfconf-query -n -c xfce4-panel -p /plugins/plugin-6/items -t string -s "kali-burpsuite.desktop" -a
+  && xfconf-query -n -c xfce4-panel -p /plugins/plugin-6/items -t string -s "burpsuite.desktop" -a
 #--- metasploit
-xfconf-query -n -c xfce4-panel -p /plugins/plugin-7/items -t string -s "kali-msfconsole.desktop" -a
+xfconf-query -n -c xfce4-panel -p /plugins/plugin-7/items -t string -s "msfconsole.desktop" -a
 #--- gedit/atom
 xfconf-query -n -c xfce4-panel -p /plugins/plugin-8/items -t string -s "textedit.desktop" -a
 #--- search
@@ -685,7 +685,7 @@ xfconf-query -n -c xfwm4 -p /general/workspace_count -t int -s 3
 xfconf-query -n -c xsettings -p /Net/ThemeName -s "Kali-X"
 xfconf-query -n -c xsettings -p /Net/IconThemeName -s "Vibrancy-Kali"
 xfconf-query -n -c xsettings -p /Gtk/MenuImages -t bool -s true
-xfconf-query -n -c xfce4-panel -p /plugins/plugin-1/button-icon -t string -s "kali-menu"
+xfconf-query -n -c xfce4-panel -p /plugins/plugin-1/button-icon -t string -s "parrot-menu"
 #--- Window management
 xfconf-query -n -c xfwm4 -p /general/snap_to_border -t bool -s true
 xfconf-query -n -c xfwm4 -p /general/snap_to_windows -t bool -s true

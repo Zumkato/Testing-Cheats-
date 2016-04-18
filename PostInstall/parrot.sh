@@ -606,7 +606,7 @@ EOF
 #--- Desktop files
 ln -sf /usr/share/applications/exo-terminal-emulator.desktop ~/.config/xfce4/panel/launcher-2/exo-terminal-emulator.desktop
 ln -sf /usr/share/applications/kali-wireshark.desktop        ~/.config/xfce4/panel/launcher-4/kali-wireshark.desktop
-ln -sf /usr/share/applications/firefox-esr.desktop           ~/.config/xfce4/panel/launcher-5/firefox-esr.desktop
+ln -sf /usr/share/applications/firefox.desktop           ~/.config/xfce4/panel/launcher-5/firefox.desktop
 ln -sf /usr/share/applications/kali-burpsuite.desktop        ~/.config/xfce4/panel/launcher-6/kali-burpsuite.desktop
 ln -sf /usr/share/applications/kali-msfconsole.desktop       ~/.config/xfce4/panel/launcher-7/kali-msfconsole.desktop
 ln -sf /usr/share/applications/org.gnome.gedit.desktop       ~/.config/xfce4/panel/launcher-8/textedit.desktop
@@ -651,7 +651,7 @@ xfconf-query -n -c xfce4-panel -p /plugins/plugin-3/mount-open-volumes -t bool -
 #--- wireshark
 xfconf-query -n -c xfce4-panel -p /plugins/plugin-4/items -t string -s "kali-wireshark.desktop" -a
 #--- firefox
-xfconf-query -n -c xfce4-panel -p /plugins/plugin-5/items -t string -s "firefox-esr.desktop" -a
+xfconf-query -n -c xfce4-panel -p /plugins/plugin-5/items -t string -s "firefox.desktop" -a
 #--- burp
 [ "${burpFree}" != "false" ] \
   && xfconf-query -n -c xfce4-panel -p /plugins/plugin-6/items -t string -s "kali-burpsuite.desktop" -a
@@ -1289,15 +1289,23 @@ git config --global mergetool.prompt false
 
 ##### Setup firefox
 (( STAGE++ )); echo -e "\n\n ${GREEN}[+]${RESET} (${STAGE}/${TOTAL}) Installing ${GREEN}firefox${RESET} ~ GUI web browser"
-apt -y -qq install unzip curl firefox-esr \
-  || echo -e ' '${RED}'[!] Issue with apt install'${RESET} 1>&2
+apt-get -y remove iceweasel || echo -e ' '${RED}'[!] Issue with apt remove'${RESET} 1>&2
+echo -e "\ndeb http://packages.linuxmint.com debian import" |tee -a /etc/apt/sources.list > /dev/null 
+gpg --keyserver pgp.mit.edu --recv-keys 3EE67F3D0FF405B2 
+gpg --export 3EE67F3D0FF405B2 > 3EE67F3D0FF405B2.gpg
+apt-key add ./3EE67F3D0FF405B2.gpg 
+rm ./3EE67F3D0FF405B2.gpg 
+apt-get update
+apt-get -y -qq install firefox || echo -e ' '${RED}'[!] Issue with apt Install firfox'${RESET} 1>&2
+
+
 #--- Configure firefox
 export DISPLAY=:0.0
 timeout 15 firefox >/dev/null 2>&1                # Start and kill. Files needed for first time run
-timeout 5 killall -9 -q -w firefox-esr >/dev/null
+timeout 5 killall -9 -q -w firefox >/dev/null
 file=$(find ~/.mozilla/firefox/*.default*/ -maxdepth 1 -type f -name 'prefs.js' -print -quit)
 [ -e "${file}" ] \
-  && cp -n $file{,.bkup}   #/etc/firefox-esr/pref/*.js
+  && cp -n $file{,.bkup}   #/etc/firefox/pref/*.js
 ([[ -e "${file}" && "$(tail -c 1 ${file})" != "" ]]) && echo >> "${file}"
 sed -i 's/^.network.proxy.socks_remote_dns.*/user_pref("network.proxy.socks_remote_dns", true);' "${file}" 2>/dev/null \
   || echo 'user_pref("network.proxy.socks_remote_dns", true);' >> "${file}"
@@ -1320,7 +1328,7 @@ sed -i 's/^.network.security.ports.banned.override/user_pref("network.security.p
 #--- Replace bookmarks (base: http://pentest-bookmarks.googlecode.com)
 file=$(find ~/.mozilla/firefox/*.default*/ -maxdepth 1 -type f -name 'bookmarks.html' -print -quit)
 [ -e "${file}" ] \
-  && cp -n $file{,.bkup}   #/etc/firefox-esr/profile/bookmarks.html
+  && cp -n $file{,.bkup}   #/etc/firefox/profile/bookmarks.html
 timeout 300 curl --progress -k -L -f "http://pentest-bookmarks.googlecode.com/files/bookmarksv1.5.html" > /tmp/bookmarks_new.html \
   || echo -e ' '${RED}'[!]'${RESET}" Issue downloading bookmarks_new.html" 1>&2      #***!!! hardcoded version! Need to manually check for updates
 #--- Configure bookmarks
@@ -1423,7 +1431,7 @@ for FILE in $(find "${ffpath}" -maxdepth 1 -type f -name '*.xpi'); do
 done
 #--- Enable Firefox's addons/plugins/extensions
 timeout 15 firefox >/dev/null 2>&1
-timeout 5 killall -9 -q -w firefox-esr >/dev/null
+timeout 5 killall -9 -q -w firefox >/dev/null
 sleep 3s
 #--- Method #1 (Works on older versions)
 file=$(find ~/.mozilla/firefox/*.default*/ -maxdepth 1 -type f -name 'extensions.sqlite' -print -quit)   #&& [ -e "${file}" ] && cp -n $file{,.bkup}
@@ -1449,11 +1457,11 @@ file=$(find ~/.mozilla/firefox/*.default*/ -maxdepth 1 -type f -name 'prefs.js' 
   && sed -i '/extensions.installCache/d' "${file}"
 #--- For extensions that just work without restarting
 timeout 15 firefox >/dev/null 2>&1
-timeout 5 killall -9 -q -w firefox-esr >/dev/null
+timeout 5 killall -9 -q -w firefox >/dev/null
 sleep 3s
 #--- For (most) extensions, as they need firefox to restart
 timeout 15 firefox >/dev/null 2>&1
-timeout 5 killall -9 -q -w firefox-esr >/dev/null
+timeout 5 killall -9 -q -w firefox >/dev/null
 sleep 5s
 #--- Wipe session (due to force close)
 find ~/.mozilla/firefox/*.default*/ -maxdepth 1 -type f -name 'sessionstore.*' -delete
@@ -1469,7 +1477,6 @@ else     # Create new
   echo -ne '<proxy name="Default" id="3377581719" notes="" fromSubscription="false" enabled="true" mode="direct" selectedTabIndex="0" lastresort="true" animatedIcons="false" includeInCycle="true" color="#0055E5" proxyDNS="true" noInternalIPs="false" autoconfMode="pac" clearCacheBeforeUse="false" disableCache="false" clearCookiesBeforeUse="false" rejectCookies="false"><matches><match enabled="true" name="All" pattern="*" isRegEx="false" isBlackList="false" isMultiLine="false" caseSensitive="false" fromSubscription="false"/></matches><autoconf url="" loadNotification="true" errorNotification="true" autoReload="false" reloadFreqMins="60" disableOnBadPAC="true"/><autoconf url="http://wpad/wpad.dat" loadNotification="true" errorNotification="true" autoReload="false" reloadFreqMins="60" disableOnBadPAC="true"/><manualconf host="" port="" socksversion="5" isSocks="false" username="" password=""/></proxy>' >> "${file}"
   echo -e '</proxies></foxyproxy>' >> "${file}"
 fi
-
 
 
 ##### Install conky

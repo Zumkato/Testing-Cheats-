@@ -2646,16 +2646,20 @@ echo -e 'application/x-ms-dos-executable=wine.desktop' >> "${file}"
 
 ##### Install MinGW (Windows) ~ cross compiling suite
 (( STAGE++ )); echo -e "\n\n ${GREEN}[+]${RESET} (${STAGE}/${TOTAL}) Installing ${GREEN}MinGW (Windows)${RESET} ~ cross compiling suite"
-#curl --progress -k -L -f "http://sourceforge.net/projects/mingw/files/Installer/mingw-get-setup.exe/download" > /tmp/mingw-get-setup.exe || echo -e ' '${RED}'[!]'${RESET}" Issue downloading mingw-get-setup.exe" 1>&2                                                                #***!!! hardcoded path!
-timeout 300 curl --progress -k -L -f "http://sourceforge.net/projects/mingw/files/Installer/mingw-get/mingw-get-0.6.2-beta-20131004-1/mingw-get-0.6.2-mingw32-beta-20131004-1-bin.zip/download" > /tmp/mingw-get.zip || echo -e ' '${RED}'[!]'${RESET}" Issue downloading mingw-get.zip" 1>&2       #***!!! hardcoded path!
+apt -y -qq install wine curl unzip \
+  || echo -e ' '${RED}'[!] Issue with apt install'${RESET} 1>&2
+timeout 300 curl --progress -k -L -f "http://sourceforge.net/projects/mingw/files/Installer/mingw-get/mingw-get-0.6.2-beta-20131004-1/mingw-get-0.6.2-mingw32-beta-20131004-1-bin.zip/download" > /tmp/mingw-get.zip \
+  || echo -e ' '${RED}'[!]'${RESET}" Issue downloading mingw-get.zip" 1>&2       #***!!! hardcoded path!
 mkdir -p ~/.wine/drive_c/MinGW/bin/
 unzip -q -o -d ~/.wine/drive_c/MinGW/ /tmp/mingw-get.zip
 pushd ~/.wine/drive_c/MinGW/ >/dev/null
 for FILE in mingw32-base mingw32-gcc-g++ mingw32-gcc-objc; do   #msys-base
-  wine ./bin/mingw-get.exe install "${FILE}"
+  wine ./bin/mingw-get.exe install "${FILE}" 2>&1 | grep -v 'If something goes wrong, please rerun with\|for more detailed debugging output'
 done
 popd >/dev/null
-grep '^"PATH"=.*C:\\\\MinGW\\\\bin' ~/.wine/system.reg || sed -i '/^"PATH"=/ s_"$_;C:\\\\MinGW\\\\bin"_' ~/.wine/system.reg
+#--- Add to windows path
+grep -q '^"PATH"=.*C:\\\\MinGW\\\\bin' ~/.wine/system.reg \
+  || sed -i '/^"PATH"=/ s_"$_;C:\\\\MinGW\\\\bin"_' ~/.wine/system.reg
 #wine cmd /c "set path=\"%path%;C:\MinGW\bin\" && reg ADD \"HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Session Manager\Environment\" /v Path /t REG_EXPAND_SZ /d %path% /f"
 
 
@@ -2679,20 +2683,20 @@ unzip -q -o -d /usr/share/windows-binaries/pstools/ /tmp/pstools.zip
 unrar x -y /tmp/pshtoolkit.rar /usr/share/windows-binaries/ >/dev/null
 
 
-##### Install Python (Windows via WINE) *** WINE is too dated =(  (try again with debian 8 / kali 2.0)
-(( STAGE++ )); echo -e "\n\n ${GREEN}[+]${RESET} (${STAGE}/${TOTAL}) Installing ${GREEN}Python${RESET} ~ python on Windows"
-curl --progress -k -L -f "https://www.python.org/ftp/python/2.3/Python-2.3.exe" > /tmp/python.exe || echo -e ' '${RED}'[!]'${RESET}" Issue downloading python.exe" 1>&2                                                          #***!!! hardcoded path!
-wine /tmp/python.exe /s
-curl --progress -k -L -f "http://sourceforge.net/projects/pywin32/files/pywin32/Build%20218/pywin32-218.win32-py2.3.exe/download" > /tmp/pywin32.exe || echo -e ' '${RED}'[!]'${RESET}" Issue downloading pywin32.exe" 1>&2      #***!!! hardcoded path!
-wine /tmp/pywin32.exewin
-
-winetricks python26 -q
-
-curl --progress -k -L -f "https://www.python.org/ftp/python/2.7.9/python-2.7.9.msi" > /tmp/python.msi || echo -e ' '${RED}'[!]'${RESET}" Issue downloading python.msi" 1>&2                                                      #***!!! hardcoded path!
-wine msiexec /i /tmp/python.msi /qb
-curl --progress -k -L -f "http://sourceforge.net/projects/pywin32/files/pywin32/Build%20219/pywin32-219.win32-py2.7.exe/download" > /tmp/pywin32.exe || echo -e ' '${RED}'[!]'${RESET}" Issue downloading pywin32.exe" 1>&2      #***!!! hardcoded path!
-wine /tmp/pywin32.exe /s
-
+##### Install Python (Windows via WINE)
+(( STAGE++ )); echo -e "\n\n ${GREEN}[+]${RESET} (${STAGE}/${TOTAL}) Installing ${GREEN}Python (Windows)${RESET}"
+echo -n '[1/2]'; timeout 300 curl --progress -k -L -f "https://www.python.org/ftp/python/2.7.9/python-2.7.9.msi" > /tmp/python.msi \
+  || echo -e ' '${RED}'[!]'${RESET}" Issue downloading python.msi" 1>&2       #***!!! hardcoded path!
+echo -n '[2/2]'; timeout 300 curl --progress -k -L -f "http://sourceforge.net/projects/pywin32/files/pywin32/Build%20219/pywin32-219.win32-py2.7.exe/download" > /tmp/pywin32.exe \
+  || echo -e ' '${RED}'[!]'${RESET}" Issue downloading pywin32.exe" 1>&2      #***!!! hardcoded path!
+wine msiexec /i /tmp/python.msi /qb 2>&1 | grep -v 'If something goes wrong, please rerun with\|for more detailed debugging output'
+pushd /tmp/ >/dev/null
+rm -rf "PLATLIB/" "SCRIPTS/"
+unzip -q -o /tmp/pywin32.exe
+cp -rf PLATLIB/* ~/.wine/drive_c/Python27/Lib/site-packages/
+cp -rf SCRIPTS/* ~/.wine/drive_c/Python27/Scripts/
+rm -rf "PLATLIB/" "SCRIPTS/"
+popd >/dev/null
 
 ##### Install veil framework
 (( STAGE++ )); echo -e "\n\n ${GREEN}[+]${RESET} (${STAGE}/${TOTAL}) Installing ${GREEN}veil-evasion framework${RESET} ~ bypassing anti-virus"

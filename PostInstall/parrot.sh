@@ -1273,8 +1273,9 @@ gpg --keyserver pgp.mit.edu --recv-keys 3EE67F3D0FF405B2
 gpg --export 3EE67F3D0FF405B2 > 3EE67F3D0FF405B2.gpg
 apt-key add ./3EE67F3D0FF405B2.gpg 
 rm ./3EE67F3D0FF405B2.gpg 
+#rm -rd ~/.mozilla/
 apt-get update
-apt-get -y -qq install firefox || echo -e ' '${RED}'[!] Issue with apt Install firfox'${RESET} 1>&2
+apt-get -y install firefox || echo -e ' '${RED}'[!] Issue with apt Install firfox'${RESET} 1>&2
 
 
 #--- Configure firefox
@@ -1283,8 +1284,8 @@ timeout 15 firefox >/dev/null 2>&1                # Start and kill. Files needed
 timeout 5 killall -9 -q -w firefox >/dev/null
 file=$(find ~/.mozilla/firefox/*.default*/ -maxdepth 1 -type f -name 'prefs.js' -print -quit)
 [ -e "${file}" ] \
-  && cp -n $file{,.bkup}   #/etc/firefox/pref/*.js
-([[ -e "${file}" && "$(tail -c 1 ${file})" != "" ]]) && echo >> "${file}"
+#  && cp -n $file{,.bkup}   #/etc/firefox/pref/*.js
+([[ -e "${file}" && "$(tail -c 1 ${file})" != "" ]]) #&& echo >> "${file}"
 sed -i 's/^.network.proxy.socks_remote_dns.*/user_pref("network.proxy.socks_remote_dns", true);' "${file}" 2>/dev/null \
   || echo 'user_pref("network.proxy.socks_remote_dns", true);' >> "${file}"
 sed -i 's/^.browser.safebrowsing.enabled.*/user_pref("browser.safebrowsing.enabled", false);' "${file}" 2>/dev/null \
@@ -1304,9 +1305,12 @@ sed -i 's/^.*extensions.https_everywhere._observatory.popup_shown.*/user_pref("e
 sed -i 's/^.network.security.ports.banned.override/user_pref("network.security.ports.banned.override", "1-65455");' "${file}" 2>/dev/null \
   || echo 'user_pref("network.security.ports.banned.override", "1-65455");' >> "${file}"
 #--- Replace bookmarks (base: http://pentest-bookmarks.googlecode.com)
+cd ~/.mozilla/firefox/*.default*/  
+echo "" > bookmarks.html
+cd ~
 file=$(find ~/.mozilla/firefox/*.default*/ -maxdepth 1 -type f -name 'bookmarks.html' -print -quit)
 [ -e "${file}" ] \
-  && cp -n $file{,.bkup}   #/etc/firefox/profile/bookmarks.html
+ # && cp -n $file{,.bkup}   #/etc/firefox/profile/bookmarks.html
 timeout 300 curl --progress -k -L -f "http://pentest-bookmarks.googlecode.com/files/bookmarksv1.5.html" > /tmp/bookmarks_new.html \
   || echo -e ' '${RED}'[!]'${RESET}" Issue downloading bookmarks_new.html" 1>&2      #***!!! hardcoded version! Need to manually check for updates
 #--- Configure bookmarks
@@ -1335,7 +1339,7 @@ find ~/.mozilla/firefox/*.default*/ -maxdepth 1 -mindepth 1 -type f -name "place
 find ~/.mozilla/firefox/*.default*/bookmarkbackups/ -type f -delete
 #--- Set firefox for XFCE's default
 mkdir -p ~/.config/xfce4/
-file=~/.config/xfce4/helpers.rc; [ -e "${file}" ] && cp -n $file{,.bkup}    #exo-preferred-applications   #xdg-mime default
+file=~/.config/xfce4/helpers.rc; [ -e "${file}" ] #&& cp -n $file{,.bkup}    #exo-preferred-applications   #xdg-mime default
 ([[ -e "${file}" && "$(tail -c 1 ${file})" != "" ]]) && echo >> "${file}"
 sed -i 's#^WebBrowser=.*#WebBrowser=firefox#' "${file}" 2>/dev/null \
   || echo -e 'WebBrowser=firefox' >> "${file}"

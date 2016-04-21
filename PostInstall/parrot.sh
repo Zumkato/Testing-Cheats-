@@ -1273,7 +1273,7 @@ gpg --keyserver pgp.mit.edu --recv-keys 3EE67F3D0FF405B2
 gpg --export 3EE67F3D0FF405B2 > 3EE67F3D0FF405B2.gpg
 apt-key add ./3EE67F3D0FF405B2.gpg 
 rm ./3EE67F3D0FF405B2.gpg 
-#rm -rd ~/.mozilla/
+rm -rd ~/.mozilla/
 apt-get update
 apt-get -y install firefox || echo -e ' '${RED}'[!] Issue with apt Install firfox'${RESET} 1>&2
 

@@ -680,7 +680,7 @@ xfconf-query -n -c xfce4-panel -p /plugins/plugin-17/digital-format -t string -s
 #--- pager / workspace
 xfconf-query -n -c xfce4-panel -p /plugins/plugin-19/miniature-view -t bool -s true
 xfconf-query -n -c xfce4-panel -p /plugins/plugin-19/rows -t int -s 1
-xfconf-query -n -c xfwm4 -p /general/workspace_count -t int -s 3
+xfconf-query -n -c xfwm4 -p /general/workspace_count -t int -s 5
 #--- Theme options
 xfconf-query -n -c xsettings -p /Net/ThemeName -s "Kali-X"
 xfconf-query -n -c xsettings -p /Net/IconThemeName -s "Vibrancy-Kali"

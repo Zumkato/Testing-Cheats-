@@ -783,28 +783,6 @@ mkdir -p ~/.config/Thunar/
 file=~/.config/Thunar/thunarrc; [ -e "${file}" ] && cp -n $file{,.bkup}
 ([[ -e "${file}" && "$(tail -c 1 ${file})" != "" ]]) && echo >> "${file}"
 sed -i 's/LastShowHidden=.*/LastShowHidden=TRUE/' "${file}" 2>/dev/null || echo -e "[Configuration]\nLastShowHidden=TRUE" > ~/.config/Thunar/thunarrc;
-#--- XFCE fixes for GNOME Terminator (We do this later)
-#mkdir -p ~/.local/share/xfce4/helpers/
-#file=~/.local/share/xfce4/helpers/custom-TerminalEmulator.desktop; [ -e "${file}" ] && cp -n $file{,.bkup}
-#sed -i 's#^X-XFCE-CommandsWithParameter=.*#X-XFCE-CommandsWithParameter=/usr/bin/terminator --command="%s"#' "${file}" 2>/dev/null || cat <<EOF > "${file}"
-#[Desktop Entry]
-#NoDisplay=true
-#Version=1.0
-#Encoding=UTF-8
-#Type=X-XFCE-Helper
-#X-XFCE-Category=TerminalEmulator
-#X-XFCE-CommandsWithParameter=/usr/bin/terminator --command="%s"
-#Icon=terminator
-#Name=terminator
-#X-XFCE-Commands=/usr/bin/terminator
-#EOF
-#file=~/.config/xfce4/helpers.rc; [ -e "${file}" ] && cp -n $file{,.bkup}    #exo-preferred-applications   #xdg-mime default
-#sed -i 's#^TerminalEmulator=.*#TerminalEmulator=custom-TerminalEmulator#' "${file}"
-#grep -q '^TerminalEmulator=custom-TerminalEmulator' "${file}" 2>/dev/null || echo 'TerminalEmulator=custom-TerminalEmulator' >> "${file}"
-#--- XFCE fixes for Iceweasel (We do this later)
-#file=~/.config/xfce4/helpers.rc; [ -e "${file}" ] && cp -n $file{,.bkup}    #exo-preferred-applications   #xdg-mime default
-#sed -i 's#^WebBrowser=.*#WebBrowser=iceweasel#' "${file}"
-#grep -q '^WebBrowser=iceweasel' "${file}" 2>/dev/null || echo 'WebBrowser=iceweasel' >> "${file}"
 #--- Fix GNOME keyring issue
 file=/etc/xdg/autostart/gnome-keyring-pkcs11.desktop;   #[ -e "${file}" ] && cp -n $file{,.bkup}
 grep -q "XFCE" "${file}" || sed -i 's/^OnlyShowIn=*/OnlyShowIn=XFCE;/' "${file}"
@@ -1605,11 +1583,6 @@ fi
 apt -y -qq install metasploit-framework \
   || echo -e ' '${RED}'[!] Issue with apt install'${RESET} 1>&2
 mkdir -p ~/.msf4/modules/{auxiliary,exploits,payloads,post}/
-#--- ASCII art
-#export GOCOW=1   # Always a cow logo ;)   Others: THISISHALLOWEEN (Halloween), APRILFOOLSPONIES (My Little Pony)
-#file=~/.bashrc; [ -e "${file}" ] && cp -n $file{,.bkup}
-#([[ -e "${file}" && "$(tail -c 1 ${file})" != "" ]]) && echo >> "${file}"
-#grep -q '^GOCOW' "${file}" 2>/dev/null || echo 'GOCOW=1' >> "${file}"
 #--- Fix any port issues
 file=$(find /etc/postgresql/*/main/ -maxdepth 1 -type f -name postgresql.conf -print -quit);
 [ -e "${file}" ] && cp -n $file{,.bkup}
@@ -1832,7 +1805,6 @@ EOF
 fi
 
 
-
 ##### Install PyCharm 
 (( STAGE++ )); echo -e "\n\n ${GREEN}[+]${RESET} (${STAGE}/${TOTAL}) Installing ${GREEN}PyCharm ${RESET} ~ Python IDE"
 wget -qO /tmp/pycharms-professional.tar.gz "https://download.jetbrains.com/python/pycharm-professional-2016.1.1.tar.gz" #Hard-coded
@@ -1855,10 +1827,12 @@ gconftool-2 -t bool -s /apps/meld/show_whitespace true
 gconftool-2 -t bool -s /apps/meld/use_syntax_highlighting true
 gconftool-2 -t int -s /apps/meld/edit_wrap_lines 2
 
+
 ##### Install vbindiff
 (( STAGE++ )); echo -e "\n\n ${GREEN}[+]${RESET} (${STAGE}/${TOTAL}) Installing ${GREEN}vbindiff${RESET} ~ visually compare binary files"
 apt -y -qq install vbindiff \
   || echo -e ' '${RED}'[!] Issue with apt install'${RESET} 1>&2
+
 
 ##### Install OpenVAS
 if [[ "${openVAS}" != "false" ]]; then
@@ -1940,7 +1914,7 @@ EOF
     apt-get -y -qq install libnss3-tools || echo -e ' '${RED}'[!] Issue with apt-get'${RESET} 1>&2
     folder=$(find ~/.mozilla/firefox/ -maxdepth 1 -type d -name '*.default' -print -quit)
     certutil -A -n Burp -t "CT,c,c" -d "$folder" -i /tmp/burp.crt
-    timeout 15 iceweasel >/dev/null 2>&1
+    timeout 15 firefox >/dev/null 2>&1
     #mkdir -p /usr/share/ca-certificates/burp/
     #cp -f /tmp/burp.crt /usr/share/ca-certificates/burp/
     #dpkg-reconfigure ca-certificates

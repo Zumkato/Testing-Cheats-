@@ -211,7 +211,7 @@ timeout 300 curl --progress -k -L -f "https://status.github.com/api/status.json"
   apt-get -y -qq update
 	apt-get -y --force-yes install apt-parrot parrot-archive-keyring --no-install-recommends
 
-##### Enable default network repositories ~ http://docs.kali.org/general-use/kali-linux-sources-list-repositories
+##### Enable default network repositories
 (( STAGE++ )); echo -e "\n\n ${GREEN}[+]${RESET} (${STAGE}/${TOTAL}) Enabling default ParrotSec OS ${GREEN}network repositories${RESET} ~ ...if they were not selected during installation"
 
 #---Remove CDROM from repositories
@@ -235,7 +235,6 @@ if [[ "$?" -ne 0 ]]; then
   echo -e ' '${RED}'[!]'${RESET}" There was an ${RED}issue accessing network repositories${RESET}" 1>&2
   echo -e " ${YELLOW}[i]${RESET} Are the remote network repositories ${YELLOW}currently being sync'd${RESET}?"
   echo -e " ${YELLOW}[i]${RESET} YOUR local ${YELLOW}network repository information${RESET} (Geo-IP based):"
-  curl -sI http://http.kali.org/README
   exit 1
 fi
 
@@ -255,7 +254,7 @@ fi
 if [ -e "/etc/vmware-tools" ]; then
   echo -e "\n "${RED}'[!]'${RESET}" VMware Tools is ${RED}already installed${RESET}. Skipping..." 1>&2
 elif (dmidecode | grep -iq vmware); then
-  ##### Install virtual machines tools ~ http://docs.kali.org/general-use/install-vmware-tools-kali-guest
+  ##### Install virtual machines tools 
    (( STAGE++ )); echo -e "\n\n ${GREEN}[+]${RESET} (${STAGE}/${TOTAL}) Installing ${GREEN}virtual machine tools${RESET}"
   #--- VM -> Install VMware Tools.
   mkdir -p /mnt/cdrom/
@@ -284,7 +283,7 @@ elif (dmidecode | grep -iq vmware); then
 elif [ -e "/etc/init.d/vboxadd" ]; then
   echo -e "\n "${RED}'[!]'${RESET}" VirtualBox Guest Additions is ${RED}already installed${RESET}. Skipping..." 1>&2
 elif (dmidecode | grep -iq virtualbox); then
-  ##### (Optional) Installing Virtualbox Guest Additions.   Note: Need VirtualBox 4.2.xx+ (http://docs.kali.org/general-use/kali-linux-virtual-box-guest)
+  ##### (Optional) Installing Virtualbox Guest Additions.  
   echo -e "\n ${GREEN}[+]${RESET} (Optional) Installing ${GREEN}VirtualBox Guest Additions${RESET}"
   #--- Devices -> Install Guest Additions CD image...
   mkdir -p /mnt/cdrom/
@@ -1469,7 +1468,7 @@ file=~/.conkyrc; [ -e "${file}" ] && cp -n $file{,.bkup}
 [ -e "${file}" ] || cat <<EOF > "${file}"
 ## Useful: http://forums.opensuse.org/english/get-technical-help-here/how-faq-forums/unreviewed-how-faq/464737-easy-configuring-conky-conkyconf.html
 background yes
-#background no     # Kali rolling?
+#background no     
 font Monospace:size=8:weight=bold
 use_xft yes
 update_interval 2.0
@@ -1478,7 +1477,7 @@ own_window_type normal
 own_window_transparent yes
 own_window_class conky-semi
 own_window_argb_visual yes   # GNOME & XFCE yes, KDE no
-#own_window_argb_visual no    # Kali rolling?
+#own_window_argb_visual no    
 own_window_colour brown
 own_window_hints undecorated,below,sticky,skip_taskbar,skip_pager
 double_buffer yes
@@ -1582,7 +1581,7 @@ if [ -e "${file}" ]; then
 fi
 
 
-##### Install metasploit ~ http://docs.kali.org/general-use/starting-metasploit-framework-in-kali
+##### Install metasploit
 (( STAGE++ )); echo -e "\n\n ${GREEN}[+]${RESET} (${STAGE}/${TOTAL}) Installing ${GREEN}metasploit${RESET} ~ exploit framework"
 apt -y -qq install metasploit-framework \
   || echo -e ' '${RED}'[!] Issue with apt install'${RESET} 1>&2
@@ -1984,7 +1983,7 @@ apt-get -y -qq install golang || echo -e ' '${RED}'[!] Issue with apt-get'${RESE
 apt-get -y -qq install gitg || echo -e ' '${RED}'[!] Issue with apt-get'${RESET} 1>&2
 
 
-##### Install sparta (https://bugs.kali.org/view.php?id=2021)
+##### Install sparta 
 (( STAGE++ )); echo -e "\n\n ${GREEN}[+]${RESET} (${STAGE}/${TOTAL}) Installing ${GREEN}sparta${RESET} ~ GUI automatic wrapper"
 apt-get -y -qq install sparta || echo -e ' '${RED}'[!] Issue with apt-get'${RESET} 1>&2
 
@@ -2358,7 +2357,7 @@ apt-get -y -qq install git || echo -e ' '${RED}'[!] Issue with apt-get'${RESET} 
 git clone -q https://github.com/n1nj4sec/pupy.git /opt/pupy-git/ || echo -e ' '${RED}'[!] Issue when git cloning'${RESET} 1>&2
 
 
-##### Install gobuster (https://bugs.kali.org/view.php?id=2438)
+##### Install gobuster 
 (( STAGE++ )); echo -e "\n\n ${GREEN}[+]${RESET} (${STAGE}/${TOTAL}) Installing ${GREEN}gobuster${RESET} ~ Directory/File/DNS busting tool"
 apt-get -y -qq install git golang || echo -e ' '${RED}'[!] Issue with apt-get'${RESET} 1>&2
 git clone -q https://github.com/OJ/gobuster.git /opt/gobuster-git/ || echo -e ' '${RED}'[!] Issue when git cloning'${RESET} 1>&2
@@ -2382,7 +2381,7 @@ apt-get -y -qq install webshells || echo -e ' '${RED}'[!] Issue with apt-get'${R
 ln -sf /opt/reGeorg-git /usr/share/webshells/reGeorg
 
 
-##### Install b374k (https://bugs.kali.org/view.php?id=1097)
+##### Install b374k 
 (( STAGE++ )); echo -e "\n\n ${GREEN}[+]${RESET} (${STAGE}/${TOTAL}) Installing ${GREEN}b374k${RESET} ~ (PHP) web shell"
 apt-get -y -qq install git php5-cli || echo -e ' '${RED}'[!] Issue with apt-get'${RESET} 1>&2
 git clone -q https://github.com/b374k/b374k.git /opt/b374k-git/ || echo -e ' '${RED}'[!] Issue when git cloning'${RESET} 1>&2
@@ -2524,7 +2523,7 @@ git pull -q
 popd >/dev/null
 
 
-##### Install proxychains-ng (https://bugs.kali.org/view.php?id=2037)
+##### Install proxychains-ng 
 (( STAGE++ )); echo -e "\n\n ${GREEN}[+]${RESET} (${STAGE}/${TOTAL}) Installing ${GREEN}proxychains-ng${RESET} ~ proxifier"
 apt-get -y -qq install git gcc || echo -e ' '${RED}'[!] Issue with apt-get'${RESET} 1>&2
 git clone -q https://github.com/rofl0r/proxychains-ng.git /opt/proxychains-ng-git/ || echo -e ' '${RED}'[!] Issue when git cloning'${RESET} 1>&2
@@ -2856,7 +2855,7 @@ git pull -q
 popd >/dev/null
 
 
-##### Install pwntools (https://bugs.kali.org/view.php?id=1236)
+##### Install pwntools 
 (( STAGE++ )); echo -e "\n\n ${GREEN}[+]${RESET} (${STAGE}/${TOTAL})  Installing ${GREEN}pwntools${RESET} ~ handy CTF tools"
 apt-get -y -qq install git || echo -e ' '${RED}'[!] Issue with apt-get'${RESET} 1>&2
 git clone -q https://github.com/Gallopsled/pwntools.git /opt/pwntools-git/ || echo -e ' '${RED}'[!] Issue when git cloning'${RESET} 1>&2
@@ -2874,7 +2873,7 @@ git pull -q
 popd >/dev/null
 
 
-##### Install gdb-peda (https://bugs.kali.org/view.php?id=2327)
+##### Install gdb-peda 
 (( STAGE++ )); echo -e "\n\n ${GREEN}[+]${RESET} (${STAGE}/${TOTAL})  Installing ${GREEN}gdb-peda${RESET} ~ GDB exploit development assistance"
 apt-get -y -qq install git gdb || echo -e ' '${RED}'[!] Issue with apt-get'${RESET} 1>&2
 git clone -q https://github.com/longld/peda.git /opt/gdb-peda-git/ || echo -e ' '${RED}'[!] Issue when git cloning'${RESET} 1>&2
@@ -2883,7 +2882,7 @@ git pull -q
 popd >/dev/null
 echo "source ~/peda/peda.py" >> ~/.gdbinit
 
-##### Install ropeme (https://bugs.kali.org/view.php?id=2328)
+##### Install ropeme 
 (( STAGE++ )); echo -e "\n\n ${GREEN}[+]${RESET} (${STAGE}/${TOTAL}) Installing ${GREEN}ropeme${RESET} ~ generate ROP gadgets and payload"
 apt-get -y -qq install git python-distorm3 libdistorm64-1 libdistorm64-dev binutils || echo -e ' '${RED}'[!] Issue with apt-get'${RESET} 1>&2
 git clone -q https://github.com/packz/ropeme.git /opt/ropeme-git/ || echo -e ' '${RED}'[!] Issue when git cloning'${RESET} 1>&2
@@ -2901,7 +2900,7 @@ EOF
 chmod +x "${file}"
 
 
-##### Install ropper (https://bugs.kali.org/view.php?id=2329)
+##### Install ropper 
 (( STAGE++ )); echo -e "\n\n ${GREEN}[+]${RESET} (${STAGE}/${TOTAL})  Installing ${GREEN}ropper${RESET} ~ generate ROP gadgets and payload"
 apt-get -y -qq install git python-capstone || echo -e ' '${RED}'[!] Issue with apt-get'${RESET} 1>&2
 git clone -q https://github.com/sashs/Ropper.git /opt/ropper-git/ || echo -e ' '${RED}'[!] Issue when git cloning'${RESET} 1>&2
@@ -2996,7 +2995,7 @@ EOF
 chmod +x "${file}"
 
 
-##### Install commix (https://bugs.kali.org/view.php?id=2201)
+##### Install commix 
 (( STAGE++ )); echo -e "\n\n ${GREEN}[+]${RESET} (${STAGE}/${TOTAL})  Installing ${GREEN}commix${RESET} ~ automatic command injection"
 apt-get -y -qq install git || echo -e ' '${RED}'[!] Issue with apt-get'${RESET} 1>&2
 git clone -q https://github.com/stasinopoulos/commix.git /opt/commix-git/ || echo -e ' '${RED}'[!] Issue when git cloning'${RESET} 1>&2
@@ -3046,7 +3045,7 @@ apt-get -y -qq install git || echo -e ' '${RED}'[!] Issue with apt-get'${RESET} 
 git clone -q https://github.com/PowerShellEmpire/Empire.git /opt/empire-git/ || echo -e ' '${RED}'[!] Issue when git cloning'${RESET} 1>&2
 
 
-##### Install wig (https://bugs.kali.org/view.php?id=1932)
+##### Install wig 
 (( STAGE++ )); echo -e "\n\n ${GREEN}[+]${RESET} (${STAGE}/${TOTAL}) Installing ${GREEN}wig${RESET} ~ web application detection"
 apt-get -y -qq install git || echo -e ' '${RED}'[!] Issue with apt-get'${RESET} 1>&2
 git clone -q https://github.com/jekyc/wig.git /opt/wig-git/ || echo -e ' '${RED}'[!] Issue when git cloning'${RESET} 1>&2

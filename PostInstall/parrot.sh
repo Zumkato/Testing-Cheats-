@@ -2845,7 +2845,19 @@ pushd /opt/exploitdb-bin-git/ >/dev/null
 git pull -q
 popd >/dev/null
 
-
+##### Install Exploit-DB 
+(( STAGE++ )); echo -e "\n\n ${GREEN}[+]${RESET} (${STAGE}/${TOTAL}) Installing ${GREEN}Installing Exploit-DB binaries${RESET} ~ pre-compiled exploits"
+apt-get -y -qq install git || echo -e ' '${RED}'[!] Issue with apt-get'${RESET} 1>&2
+git clone -q https://github.com/offensive-security/exploit-database.git /opt/exploitdb-git/
+pushd /opt/exploitdb-git/ >/dev/null
+git pull -q
+popd >/dev/null
+file=/usr/local/bin/searchsploit-git
+cat <<EOF > "${file}" || echo -e ' '${RED}'[!] Issue with writing file'${RESET} 1>&2
+#!/bin/bash
+cd /opt/exploitdb-git/ &&  searchsploit "\$@"
+EOF
+chmod +x "${file}"
 ##### Install Babel scripts
 (( STAGE++ )); echo -e "\n\n ${GREEN}[+]${RESET} (${STAGE}/${TOTAL})  Installing ${GREEN}Babel scripts${RESET} ~ post exploitation scripts"
 apt-get -y -qq install git || echo -e ' '${RED}'[!] Issue with apt-get'${RESET} 1>&2

@@ -2857,7 +2857,7 @@ cat <<EOF > "${file}" || echo -e ' '${RED}'[!] Issue with writing file'${RESET} 
 #!/bin/bash
 cd /opt/exploitdb-git/ &&  searchsploit "\$@"
 EOF
-chmod +x "${file}"
+chmod a+x "${file}"
 ##### Install Babel scripts
 (( STAGE++ )); echo -e "\n\n ${GREEN}[+]${RESET} (${STAGE}/${TOTAL})  Installing ${GREEN}Babel scripts${RESET} ~ post exploitation scripts"
 apt-get -y -qq install git || echo -e ' '${RED}'[!] Issue with apt-get'${RESET} 1>&2

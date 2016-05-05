@@ -43,8 +43,11 @@ https://github.com/PaulSec/awesome-sec-talks
 
 Add
 http://www.remote-exploit.org/content/wyd-0.2.tar.gz 
-EX: ./wyd.pl bobby.txt /root/bobby.html  
+   EX: ./wyd.pl bobby.txt /root/bobby.html  
 
 https://github.com/byt3bl33d3r/pth-toolkit.git
 
 https://digi.ninja/files/cewl_5.1.tar.bz2
+   bundle install
+   gem source -c
+   gem install --user-install spider http_configuration mini_exiftool zip mime-types

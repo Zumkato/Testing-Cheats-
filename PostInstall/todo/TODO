@@ -50,3 +50,5 @@ https://github.com/byt3bl33d3r/pth-toolkit.git
 
 apt-get install cewl
    cewl -d 2 -m 5 -w docswords.txt http://docs.kali.org
+
+https://sourceforge.net/projects/passwordsafe/files/Linux-BETA/0.98.1/passwordsafe-ubuntu15-0.98.1BETA.amd64.deb/download

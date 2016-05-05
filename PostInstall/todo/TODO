@@ -49,3 +49,4 @@ https://github.com/byt3bl33d3r/pth-toolkit.git
 
 
 apt-get install cewl
+   cewl -d 2 -m 5 -w docswords.txt http://docs.kali.org

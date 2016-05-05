@@ -47,7 +47,5 @@ http://www.remote-exploit.org/content/wyd-0.2.tar.gz
 
 https://github.com/byt3bl33d3r/pth-toolkit.git
 
-https://digi.ninja/files/cewl_5.1.tar.bz2
-   bundle install
-   gem source -c
-   gem install --user-install spider http_configuration mini_exiftool zip mime-types
+
+apt-get install cewl

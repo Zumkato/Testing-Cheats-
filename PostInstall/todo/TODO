@@ -19,9 +19,7 @@ start xfce auto
 Add destop icon to open file location 
 exo-open --launch FileManager %u
  /path/to/file
-Docker     
-Pick background  
-lair -
+
 Password Safe
 Chrome or Chouiumi - https://www.comodo.com/home/browsers-toolbars/chromodo-private-internet-browser.php
 http://www.kitploit.com/2016/03/ctf-tools-some-setup-scripts-for.html
@@ -33,62 +31,20 @@ http://www.kitploit.com/2015/12/0d1n-tool-for-automating-customized.html - 0d1n 
 http://www.kitploit.com/2015/10/powercat-netcat-powershell-version.html - Powercat - Netcat: The Powershell Version
 http://www.kitploit.com/2015/10/burpkit-next-gen-burpsuite-penetration.html - Burpkit - Next-Gen Burpsuite Penetration Testing Tool
 http://www.kitploit.com/2015/10/thefuck-magnificent-app-which-corrects.html - TheFuck - Magnificent App Which Corrects Your Previous Console Command
-https://github.com/n1nj4sec/pupy
-https://github.com/GDSSecurity/Windows-Exploit-Suggester
-https://github.com/Raikia/CredSwissArmy
 
 
-pip 
-yapf
-PEP 8
-glances
-whatportis
-Maybe - See What A Program Does Before Deciding Whether You Really Want It To Happen
+
 
 Bookmarks 
 https://github.com/vhf/free-programming-books/blob/master/free-programming-books.md
 https://github.com/PaulSec/awesome-sec-talks 
- 
- Use For alias 
- 
-echo "alias listen=\"lsof -i TCP -n -P | grep LISTEN\"" >> ~/.bash_profile # show listening ports
-echo "alias atom='open -a \"Atom\"'" >> ~/.bash_profile   # alternative to sublime
-alias ..="cd .."
-alias ...="cd ../.."
-alias ....="cd ../../.."
-alias .5="cd ../../../.."
 
-alias ports='netstat -tulanp'
-alias update="apt-get update && apt-get upgrade"
 
-function extract {
- if [ -z "$1" ]; then
-    # display usage if no parameters given
-    echo "Usage: extract <path/file_name>.<zip|rar|bz2|gz|tar|tbz2|tgz|Z|7z|xz|ex|tar.bz2|tar.gz|tar.xz>"
- else
-    if [ -f $1 ] ; then
-        # NAME=${1%.*}
-        # mkdir $NAME && cd $NAME
-        case $1 in
-          *.tar.bz2)   tar xvjf ../$1    ;;
-          *.tar.gz)    tar xvzf ../$1    ;;
-          *.tar.xz)    tar xvJf ../$1    ;;
-          *.lzma)      unlzma ../$1      ;;
-          *.bz2)       bunzip2 ../$1     ;;
-          *.rar)       unrar x -ad ../$1 ;;
-          *.gz)        gunzip ../$1      ;;
-          *.tar)       tar xvf ../$1     ;;
-          *.tbz2)      tar xvjf ../$1    ;;
-          *.tgz)       tar xvzf ../$1    ;;
-          *.zip)       unzip ../$1       ;;
-          *.Z)         uncompress ../$1  ;;
-          *.7z)        7z x ../$1        ;;
-          *.xz)        unxz ../$1        ;;
-          *.exe)       cabextract ../$1  ;;
-          *)           echo "extract: '$1' - unknown archive method" ;;
-        esac
-    else
-        echo "$1 - file does not exist"
-    fi
-fi
-}
+
+Add
+http://www.remote-exploit.org/content/wyd-0.2.tar.gz 
+EX: ./wyd.pl bobby.txt /root/bobby.html  
+
+https://github.com/byt3bl33d3r/pth-toolkit.git
+
+https://digi.ninja/files/cewl_5.1.tar.bz2

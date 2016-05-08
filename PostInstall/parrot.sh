@@ -3357,6 +3357,9 @@ wget -qO /tmp/lair-v1.0.5-linux.7z https://github.com/lair-framework/lair/releas
 sleep 2s
 7z x /tmp/lair-v1.0.5-linux.7z -y  -o/opt/lair/
 
+#-- deps
+apt-get -y - qq install libssl-dev || echo -e ' '${RED}'[!] Issue with apt-get libssl-dev '${RESET} 1>&2
+
 #--- Lair Drones
 curl -sSLkf https://github.com/lair-framework/lair-drones-version1-deprecated/releases/download/1.0.1/lairdrone-1.0.1.tar.gz > /opt/lair/lairdrone-1.0.1.tar.gz|| echo -e ' '${RED}'[!] Issue when Lair Drones'${RESET} 1>&2
 ###---- Installing Drones
@@ -3367,15 +3370,20 @@ pip install /opt/lair/lairdrone-1.0.1.tar.gz || echo -e ' '${RED}'[!] Issue with
 (( STAGE++ )); echo -e "\n\n ${GREEN}[+]${RESET} (${STAGE}/${TOTAL}) Installing ${GREEN}sshpass${RESET} ~ automating SSH connections"
 apt-get -y -qq install sshpass || echo -e ' '${RED}'[!] Issue with apt-get'${RESET} 1>&2
 
+
+##### Install rdesktop
+(( STAGE++ )); echo -e "\n\n ${GREEN}[+]${RESET} (${STAGE}/${TOTAL}) Installing ${GREEN}rdesktop${RESET} ~ connecting to remote windows"
+apt-get -y -qq install rdesktop || echo -e ' '${RED}'[!] Issue with apt-get'${RESET} 1>&2
+
 ##### Install DBeaver
-(( STAGE++ )); echo -e "\n\n ${GREEN}[+]${RESET} (${STAGE}/${TOTAL}) Installing ${GREEN}DBeaver${RESET} ~ GUI DB manager"
-apt-get -y -qq install curl || echo -e ' '${RED}'[!] Issue with apt-get'${RESET} 1>&2
-arch="i386"
-[[ "$(uname -m)" == "x86_64" ]] && arch="amd64"
-timeout 300 curl --progress -k -L -f "http://dbeaver.jkiss.org/files/dbeaver-ce_latest_${arch}.deb" > /tmp/dbeaver.deb || echo -e ' '${RED}'[!]'${RESET}" Issue downloading dbeaver.deb" 1>&2   #***!!! hardcoded version! Need to manually check for updates
-dpkg -i /tmp/dbeaver.deb
+#(( STAGE++ )); echo -e "\n\n ${GREEN}[+]${RESET} (${STAGE}/${TOTAL}) Installing ${GREEN}DBeaver${RESET} ~ GUI DB manager"
+#apt-get -y -qq install curl || echo -e ' '${RED}'[!] Issue with apt-get'${RESET} 1>&2
+#arch="i386"
+#[[ "$(uname -m)" == "x86_64" ]] && arch="amd64"
+#timeout 300 curl --progress -k -L -f "http://dbeaver.jkiss.org/files/dbeaver-ce_latest_${arch}.deb" > /tmp/dbeaver.deb || echo -e ' '${RED}'[!]'${RESET}" Issue downloading dbeaver.deb" 1>&2   #***!!! hardcoded version! Need to manually check for updates
+#dpkg -i /tmp/dbeaver.deb
 #--- Add to path
-ln -sf /usr/share/dbeaver/dbeaver /usr/local/bin/dbeaver
+#ln -sf /usr/share/dbeaver/dbeaver /usr/local/bin/dbeaver
 
 ##### Install ashttp
 (( STAGE++ )); echo -e "\n\n ${GREEN}[+]${RESET} (${STAGE}/${TOTAL}) Installing ${GREEN}ashttp${RESET} ~ Share your terminal via the web"

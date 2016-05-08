@@ -1024,7 +1024,7 @@ grep -q '^## find all' "${file}" 2>/dev/null ||echo -e '## find all\nalias ff="f
 grep -q '^## find here' "${file}" 2>/dev/null ||echo -e '## find here\nalias f.="find . -type f -name"\n'>> "${file}"
 grep -q '^## update and upgrade' "${file}" 2>/dev/null ||echo -e '## update and upgrade\nalias update="apt-get update && apt-get upgrade"\n'>> "${file}"
 grep -q '^## process in nice output' "${file}" 2>/dev/null ||echo -e '## process in nice output\nalias psg="ps aux | grep -v grep | grep -i -e VSZ -e"\n'>> "${file}"
-grep -q '^## Command History' "${file}" 2>/dev/null ||echo -e '## Command History\nalias clc="history | awk '{CMD[$2]++;count++;}END { for (a in CMD)print CMD[a] " " CMD[a]/count*100 "% " a;}' | grep -v "./" | column -c3 -s " " -t | sort -nr | nl |  head -n10 "/' >> "${file}"
+#grep -q '^## Command History' "${file}" 2>/dev/null ||echo -e '## Command History\nalias clc="history | awk '{CMD[$2]++;count++;}END { for (a in CMD)print CMD[a] " " CMD[a]/count*100 "% " a;}' | grep -v "./" | column -c3 -s " " -t | sort -nr | nl |  head -n10 "/' >> "${file}"
 #alias ll="ls -l --block-size=\'1 --color=auto"
 #--- Add in tools
 grep -q '^## nmap' "${file}" 2>/dev/null || echo -e '## nmap\nalias nmap="nmap --reason --open"\n' >> "${file}"

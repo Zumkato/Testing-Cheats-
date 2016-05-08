@@ -2859,7 +2859,7 @@ popd >/dev/null
 file=/usr/local/bin/searchsploit-git
 cat <<EOF > "${file}" || echo -e ' '${RED}'[!] Issue with writing file'${RESET} 1>&2
 #!/bin/bash
-cd /opt/exploitdb-git/ &&  searchsploit "\$@"
+cd /opt/exploitdb-git/ &&  ./searchsploit "\$@"
 EOF
 chmod a+x "${file}"
 ##### Install Babel scripts

@@ -54,3 +54,5 @@ apt-get install cewl
 https://sourceforge.net/projects/passwordsafe/files/Linux-BETA/0.98.1/passwordsafe-ubuntu15-0.98.1BETA.amd64.deb/download
 
 http://hashcat.net/files/cudaHashcat-2.01.7z
+
+apt-get install onesixtyone

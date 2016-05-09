@@ -1810,9 +1810,9 @@ fi
 
 ##### Install PyCharm 
 (( STAGE++ )); echo -e "\n\n ${GREEN}[+]${RESET} (${STAGE}/${TOTAL}) Installing ${GREEN}PyCharm ${RESET} ~ Python IDE"
-wget -qO /tmp/pycharms-professional.tar.gz "https://download.jetbrains.com/python/pycharm-professional-2016.1.1.tar.gz" #Hard-coded
-tar -zxf /tmp/pycharms-professional.tar.gz -C /tmp/
-mv -f /tmp/pycharm-2016.1.1/ /usr/share/pycharms #Hard-coded
+wget -qO /tmp/pycharms.tar.gz "https://download.jetbrains.com/python/pycharm-community-2016.1.2.tar.gz" #Hard-coded
+tar -zxf /tmp/pycharms.tar.gz -C /tmp/
+mv -f /tmp/pycharm-*/ /usr/share/pycharms #Hard-coded
 ln -sf /usr/share/pycharms/bin/pycharm.sh /usr/local/bin/pycharms
 
 

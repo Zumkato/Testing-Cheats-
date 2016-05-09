@@ -2355,6 +2355,60 @@ apt-get -y -qq install git || echo -e ' '${RED}'[!] Issue with apt-get'${RESET} 
 git clone -q https://github.com/jseidl/Babadook.git /opt/babadook-git/ || echo -e ' '${RED}'[!] Issue when git cloning'${RESET} 1>&2
 
 
+##### Install pth-toolkit 
+(( STAGE++ )); echo -e "\n\n ${GREEN}[+]${RESET} (${STAGE}/${TOTAL}) Installing ${GREEN}graudit${RESET} ~ Pass-The-Hash"
+apt-get -y -qq install git || echo -e ' '${RED}'[!] Issue with apt-get'${RESET} 1>&2
+git clone -q git clone https://github.com/byt3bl33d3r/pth-toolkit.git /opt/pth-tookit-git/ || echo -e ' '${RED}'[!] Issue when git cloning'${RESET} 1>&2
+#--- Add to path
+file=/opt/pth-tookit-git/pth-net
+cat <<EOF > "${file}" || echo -e ' '${RED}'[!] Issue with writing file'${RESET} 1>&2
+#!/bin/bash
+cd /opt/pth-tookit-git && bash pth-net "\$@"
+EOF
+chmod +x "${file}"
+#--- Add to path
+file=/opt/pth-tookit-git/pth-rpcclient
+cat <<EOF > "${file}" || echo -e ' '${RED}'[!] Issue with writing file'${RESET} 1>&2
+#!/bin/bash
+cd /opt/pth-tookit-git && bash pth-rpcclient "\$@"
+EOF
+chmod +x "${file}"
+#--- Add to path
+file=/opt/pth-tookit-gi/pth-smbclient
+cat <<EOF > "${file}" || echo -e ' '${RED}'[!] Issue with writing file'${RESET} 1>&2
+#!/bin/bash
+cd /opt/pth-tookit-git && bash pth-smbclient "\$@"
+EOF
+chmod +x "${file}"
+#--- Add to path
+file=/opt/pth-tookit-git/pth-smbget
+cat <<EOF > "${file}" || echo -e ' '${RED}'[!] Issue with writing file'${RESET} 1>&2
+#!/bin/bash
+cd /opt/pth-tookit-git && bash pth-smbget "\$@"
+EOF
+chmod +x "${file}"
+#--- Add to path
+file=/opt/pth-tookit-git/pth-winexe
+cat <<EOF > "${file}" || echo -e ' '${RED}'[!] Issue with writing file'${RESET} 1>&2
+#!/bin/bash
+cd /opt/pth-tookit-git && bash pth-winexe "\$@"
+EOF
+chmod +x "${file}"
+#--- Add to path
+file=/opt/pth-tookit-git/pth-wmic
+cat <<EOF > "${file}" || echo -e ' '${RED}'[!] Issue with writing file'${RESET} 1>&2
+#!/bin/bash
+cd /opt/pth-tookit-git && bash pth-wmic "\$@"
+EOF
+chmod +x "${file}"
+#--- Add to path
+file=/opt/pth-tookit-git/pth-wmis
+cat <<EOF > "${file}" || echo -e ' '${RED}'[!] Issue with writing file'${RESET} 1>&2
+#!/bin/bash
+cd /opt/pth-tookit-git && bash pth-wmis "\$@"
+EOF
+chmod +x "${file}"
+
 ##### Install pupy
 (( STAGE++ )); echo -e "\n\n ${GREEN}[+]${RESET} (${STAGE}/${TOTAL})Installing ${GREEN}pupy${RESET} ~ Remote Administration Tool"
 apt-get -y -qq install git || echo -e ' '${RED}'[!] Issue with apt-get'${RESET} 1>&2

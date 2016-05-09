@@ -1982,6 +1982,9 @@ apt-get -y -qq install golang || echo -e ' '${RED}'[!] Issue with apt-get'${RESE
 (( STAGE++ )); echo -e "\n\n ${GREEN}[+]${RESET} (${STAGE}/${TOTAL}) Installing ${GREEN}gitg${RESET} ~ GUI git client"
 apt-get -y -qq install gitg || echo -e ' '${RED}'[!] Issue with apt-get'${RESET} 1>&2
 
+##### Install onesixtyone 
+(( STAGE++ )); echo -e "\n\n ${GREEN}[+]${RESET} (${STAGE}/${TOTAL}) Installing ${GREEN}graudit${RESET} ~ onesixtyone"
+apt-get -y -qq install onesixtyone || echo -e ' '${RED}'[!] Issue with apt-get'${RESET} 1>&2
 
 ##### Install sparta 
 (( STAGE++ )); echo -e "\n\n ${GREEN}[+]${RESET} (${STAGE}/${TOTAL}) Installing ${GREEN}sparta${RESET} ~ GUI automatic wrapper"

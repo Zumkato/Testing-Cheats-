@@ -3486,7 +3486,8 @@ grep -q '^## ssh' "${file}" 2>/dev/null || echo -e '## ssh\nalias ssh-start="sys
 
 ############ Pip Install ############
 (( STAGE++ )); echo -e "\n\n ${GREEN}[+]${RESET} (${STAGE}/${TOTAL}) ${GREEN}PIP${RESET} Installs"
-pip install glances maybe whatportis yapf thefuck tmux2html|| echo -e ' '${RED}'[!] Issue with pip'${RESET} 1>&2
+pip install glances maybe whatportis yapf thefuck tmux2html webkit2png|| echo -e ' '${RED}'[!] Issue with pip'${RESET} 1>&2
+pip install https://github.com/guelfoweb/knock/archive/knock3.zip|| echo -e ' '${RED}'[!] Issue with pip'${RESET} 1>&2
 
 ##### Custom insert point
 

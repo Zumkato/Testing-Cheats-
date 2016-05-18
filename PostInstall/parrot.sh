@@ -2187,6 +2187,30 @@ apt-get -y -qq install lynx || echo -e ' '${RED}'[!] Issue with apt-get'${RESET}
 apt -y -qq install ncftp \
   || echo -e ' '${RED}'[!] Issue with apt install'${RESET} 1>&2
 
+##### Install PhantomJS
+(( STAGE++ )); echo -e "\n\n ${GREEN}[+]${RESET} (${STAGE}/${TOTAL}) Installing ${GREEN}PhantomJS${RESET} ~ Headless Browser"
+#_-
+PHANTOM_VERSION="phantomjs-2.1.1-linux-x86_64"
+ARCH=$(uname -m)
+
+if ! [ $ARCH = "x86_64" ]; then
+	$ARCH="i686"
+fi
+
+PHANTOM_JS="$PHANTOM_VERSION-linux-$ARCH"
+
+sudo apt-get update
+sudo apt-get install build-essential chrpath libssl-dev libxft-dev -y
+sudo apt-get install libfreetype6 libfreetype6-dev -y
+sudo apt-get install libfontconfig1 libfontconfig1-dev -y
+
+cd ~
+wget https://bitbucket.org/ariya/phantomjs/downloads/$PHANTOM_JS.tar.bz2
+sudo tar xvjf $PHANTOM_JS.tar.bz2
+
+sudo mv $PHANTOM_JS /usr/local/share
+sudo ln -sf /usr/local/share/$PHANTOM_JS/bin/phantomjs /usr/local/bin
+
 
 ##### Install p7zip
 (( STAGE++ )); echo -e "\n\n ${GREEN}[+]${RESET} (${STAGE}/${TOTAL}) Installing ${GREEN}p7zip${RESET} ~ CLI file extractor"
@@ -2358,59 +2382,7 @@ apt-get -y -qq install git || echo -e ' '${RED}'[!] Issue with apt-get'${RESET} 
 git clone -q https://github.com/jseidl/Babadook.git /opt/babadook-git/ || echo -e ' '${RED}'[!] Issue when git cloning'${RESET} 1>&2
 
 
-##### Install pth-toolkit 
-(( STAGE++ )); echo -e "\n\n ${GREEN}[+]${RESET} (${STAGE}/${TOTAL}) Installing ${GREEN}graudit${RESET} ~ Pass-The-Hash"
-apt-get -y -qq install git || echo -e ' '${RED}'[!] Issue with apt-get'${RESET} 1>&2
-git clone -q git clone https://github.com/byt3bl33d3r/pth-toolkit.git /opt/pth-tookit-git/ || echo -e ' '${RED}'[!] Issue when git cloning'${RESET} 1>&2
-#--- Add to path
-file=/opt/pth-tookit-git/pth-net
-cat <<EOF > "${file}" || echo -e ' '${RED}'[!] Issue with writing file'${RESET} 1>&2
-#!/bin/bash
-cd /opt/pth-tookit-git && bash pth-net "\$@"
-EOF
-chmod +x "${file}"
-#--- Add to path
-file=/opt/pth-tookit-git/pth-rpcclient
-cat <<EOF > "${file}" || echo -e ' '${RED}'[!] Issue with writing file'${RESET} 1>&2
-#!/bin/bash
-cd /opt/pth-tookit-git && bash pth-rpcclient "\$@"
-EOF
-chmod +x "${file}"
-#--- Add to path
-file=/opt/pth-tookit-gi/pth-smbclient
-cat <<EOF > "${file}" || echo -e ' '${RED}'[!] Issue with writing file'${RESET} 1>&2
-#!/bin/bash
-cd /opt/pth-tookit-git && bash pth-smbclient "\$@"
-EOF
-chmod +x "${file}"
-#--- Add to path
-file=/opt/pth-tookit-git/pth-smbget
-cat <<EOF > "${file}" || echo -e ' '${RED}'[!] Issue with writing file'${RESET} 1>&2
-#!/bin/bash
-cd /opt/pth-tookit-git && bash pth-smbget "\$@"
-EOF
-chmod +x "${file}"
-#--- Add to path
-file=/opt/pth-tookit-git/pth-winexe
-cat <<EOF > "${file}" || echo -e ' '${RED}'[!] Issue with writing file'${RESET} 1>&2
-#!/bin/bash
-cd /opt/pth-tookit-git && bash pth-winexe "\$@"
-EOF
-chmod +x "${file}"
-#--- Add to path
-file=/opt/pth-tookit-git/pth-wmic
-cat <<EOF > "${file}" || echo -e ' '${RED}'[!] Issue with writing file'${RESET} 1>&2
-#!/bin/bash
-cd /opt/pth-tookit-git && bash pth-wmic "\$@"
-EOF
-chmod +x "${file}"
-#--- Add to path
-file=/opt/pth-tookit-git/pth-wmis
-cat <<EOF > "${file}" || echo -e ' '${RED}'[!] Issue with writing file'${RESET} 1>&2
-#!/bin/bash
-cd /opt/pth-tookit-git && bash pth-wmis "\$@"
-EOF
-chmod +x "${file}"
+
 
 ##### Install pupy
 (( STAGE++ )); echo -e "\n\n ${GREEN}[+]${RESET} (${STAGE}/${TOTAL})Installing ${GREEN}pupy${RESET} ~ Remote Administration Tool"
@@ -2574,6 +2546,20 @@ cd /opt/wifiphisher-git/ && python wifiphisher.py "\$@"
 EOF
 chmod +x "${file}"
 
+##### Install ReconDomain
+(( STAGE++ )); echo -e "\n\n ${GREEN}[+]${RESET} (${STAGE}/${TOTAL}) Installing ${GREEN}ReconDomain${RESET} ~ Domian Setup script for Regon-ng"
+apt-get -y -qq install git || echo -e ' '${RED}'[!] Issue with apt-get'${RESET} 1>&2
+git clone -q https://github.com/jhaddix/domain.git /opt/recon-domain-git || echo -e ' '${RED}'[!] Issue when git cloning'${RESET} 1>&2
+pushd /opt/recon-domain-git/ >/dev/null
+git pull -q
+popd >/dev/null
+#--- Add to path
+file=/usr/local/bin/recon-domain-git
+cat <<EOF > "${file}" || echo -e ' '${RED}'[!] Issue with writing file'${RESET} 1>&2
+#!/bin/bash
+cd /opt/recon-domain-git/ && bash enumall.sh "\$@"
+EOF
+chmod +x "${file}"
 
 ##### Install hostapd-wpe-extended
 (( STAGE++ )); echo -e "\n\n ${GREEN}[+]${RESET} (${STAGE}/${TOTAL})Installing ${GREEN}hostapd-wpe-extended${RESET} ~ rogue AP for WPA-Enterprise"
@@ -2583,6 +2569,14 @@ pushd /opt/hostapd-wpe-extended-git/ >/dev/null
 git pull -q
 popd >/dev/null
 
+
+##### Install Dorks
+(( STAGE++ )); echo -e "\n\n ${GREEN}[+]${RESET} (${STAGE}/${TOTAL})Installing ${GREEN}dorks${RESET} ~ google hack database automation tool"
+apt-get -y -qq install git || echo -e ' '${RED}'[!] Issue with apt-get'${RESET} 1>&2
+git clone -q https://github.com/USSCltd/dorks.git /opt/dorks-git/ || echo -e ' '${RED}'[!] Issue when git cloning'${RESET} 1>&2
+pushd /opt/dorks-git/ >/dev/null
+git pull -q
+popd >/dev/null
 
 ##### Install proxychains-ng 
 (( STAGE++ )); echo -e "\n\n ${GREEN}[+]${RESET} (${STAGE}/${TOTAL}) Installing ${GREEN}proxychains-ng${RESET} ~ proxifier"
@@ -2944,6 +2938,18 @@ git clone -q https://github.com/nullsecuritynet/tools.git /opt/nullsecuritynet-g
 pushd /opt/nullsecuritynet-git/ >/dev/null
 git pull -q
 popd >/dev/null
+
+##### Install dirsearch
+(( STAGE++ )); echo -e "\n\n ${GREEN}[+]${RESET} (${STAGE}/${TOTAL}) Installing ${GREEN}dirsearch${RESET} ~ brute force directories and files in websites"
+apt-get -y -qq install git || echo -e ' '${RED}'[!] Issue with apt-get'${RESET} 1>&2
+git clone -q git clone https://github.com/maurosoria/dirsearch.git /opt/dirsearch-git/ || echo -e ' '${RED}'[!] Issue when git cloning'${RESET} 1>&2
+#--- Add to path
+file=/usr/local/bin/dirsearch-git
+cat <<EOF > "${file}" || echo -e ' '${RED}'[!] Issue with writing file'${RESET} 1>&2
+#!/bin/bash
+cd /opt/dirsearch-git/ && python dirsearch.py "\$@"
+EOF
+chmod +x "${file}"
 
 
 ##### Install gdb-peda 

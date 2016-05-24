@@ -2,7 +2,7 @@
 #-Metadata----------------------------------------------------#
 #  Filename: parrot.sh                   (Update: 2016-20-03) #
 #-Info--------------------------------------------------------#
-#  Personal post-install script for Parrot Security OS#
+#  Personal post-install script for Parrot Security OS        #
 #-Author(s)---------------------------------------------------#
 #  g0tmilk ~ https://blog.g0tmi1k.com/                        #
 #-Modder------------------------------------------------------#
@@ -223,11 +223,11 @@ sleep 2s
 file=/etc/apt/sources.list; [ -e "${file}" ] && cp -n $file{,.bkup}
 ([[ -e "${file}" && "$(tail -c 1 ${file})" != "" ]]) && echo >> "${file}"
 #--- Stable-security
-grep -q 'deb .* stable-security main contrib non-free' "${file}" 2>/dev/null || echo "deb http://ftp.halifax.rwth-aachen.de/parrot stable-security main contrib non-free" >> "${file}"
-grep -q 'deb-src .* stable-security main contrib non-free' "${file}" 2>/dev/null || echo "deb-src http://ftp.halifax.rwth-aachen.de/parrot stable-security main contrib non-free" >> "${file}"
+grep -q 'deb .* stable-security main contrib non-free' "${file}" 2>/dev/null || echo "deb http://ftp.halifax.rwth-aachen.de/parrotsec parrot stable-security main contrib non-free" >> "${file}"
+grep -q 'deb-src .* stable-security main contrib non-free' "${file}" 2>/dev/null || echo "deb-src http://ftp.halifax.rwth-aachen.de/parrotsec parrot stable-security main contrib non-free" >> "${file}"
 #--- Security-updates
-grep -q 'deb .* stable-updates main contrib non-free' "${file}" 2>/dev/null || echo "deb http://ftp.halifax.rwth-aachen.de/parrot stable-updates main contrib non-free" >> "${file}"
-grep -q 'deb-src .* stable-updates main contrib non-free' "${file}" 2>/dev/null || echo "deb-src http://ftp.halifax.rwth-aachen.de/parrot stable-updates main contrib non-free" >> "${file}"
+grep -q 'deb .* stable-updates main contrib non-free' "${file}" 2>/dev/null || echo "http://ftp.halifax.rwth-aachen.de/parrotsec parrot stable-updates main contrib non-free" >> "${file}"
+grep -q 'deb-src .* stable-updates main contrib non-free' "${file}" 2>/dev/null || echo "http://ftp.halifax.rwth-aachen.de/parrotsec parrot stable-updates main contrib non-free" >> "${file}"
 
 #--- Update
 apt-get -qq update

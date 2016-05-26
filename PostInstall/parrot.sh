@@ -222,12 +222,15 @@ sleep 2s
 #--- Add network repositories
 file=/etc/apt/sources.list; [ -e "${file}" ] && cp -n $file{,.bkup}
 ([[ -e "${file}" && "$(tail -c 1 ${file})" != "" ]]) && echo >> "${file}"
+#--- ParrotSec
+grep -q 'deb .* parrot main contrib non-free' "${file}" 2>/dev/null || echo "deb http://mirror.jmu.edu/pub/parrot/  parrot main contrib non-free" >> "${file}"
+grep -q 'deb-src .* parrot main contrib non-free' "${file}" 2>/dev/null || echo "deb-src http://mirror.jmu.edu/pub/parrot/  parrot main contrib non-free" >> "${file}"
 #--- Stable-security
-grep -q 'deb .* stable-security main contrib non-free' "${file}" 2>/dev/null || echo "deb http://ftp.halifax.rwth-aachen.de/parrotsec parrot stable-security main contrib non-free" >> "${file}"
-grep -q 'deb-src .* stable-security main contrib non-free' "${file}" 2>/dev/null || echo "deb-src http://ftp.halifax.rwth-aachen.de/parrotsec parrot stable-security main contrib non-free" >> "${file}"
+grep -q 'deb .* stable-security main contrib non-free' "${file}" 2>/dev/null || echo "deb http://mirror.jmu.edu/pub/parrot/  stable-security main contrib non-free" >> "${file}"
+grep -q 'deb-src .* stable-security main contrib non-free' "${file}" 2>/dev/null || echo "deb-src http://mirror.jmu.edu/pub/parrot/  stable-security main contrib non-free" >> "${file}"
 #--- Security-updates
-grep -q 'deb .* stable-updates main contrib non-free' "${file}" 2>/dev/null || echo "http://ftp.halifax.rwth-aachen.de/parrotsec parrot stable-updates main contrib non-free" >> "${file}"
-grep -q 'deb-src .* stable-updates main contrib non-free' "${file}" 2>/dev/null || echo "http://ftp.halifax.rwth-aachen.de/parrotsec parrot stable-updates main contrib non-free" >> "${file}"
+grep -q 'deb .* stable-updates main contrib non-free' "${file}" 2>/dev/null || echo "deb http://mirror.jmu.edu/pub/parrot/  stable-updates main contrib non-free" >> "${file}"
+grep -q 'deb-src .* stable-updates main contrib non-free' "${file}" 2>/dev/null || echo "deb-src http://mirror.jmu.edu/pub/parrot/  stable-updates main contrib non-free" >> "${file}"
 
 #--- Update
 apt-get -qq update

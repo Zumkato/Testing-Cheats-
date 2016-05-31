@@ -229,8 +229,8 @@ grep -q 'deb-src .* parrot main contrib non-free' "${file}" 2>/dev/null || echo 
 grep -q 'deb .* stable-security main contrib non-free' "${file}" 2>/dev/null || echo "deb http://mirror.jmu.edu/pub/parrot/  stable-security main contrib non-free" >> "${file}"
 grep -q 'deb-src .* stable-security main contrib non-free' "${file}" 2>/dev/null || echo "deb-src http://mirror.jmu.edu/pub/parrot/  stable-security main contrib non-free" >> "${file}"
 #--- Security-updates
-grep -q 'deb .* stable-updates main contrib non-free' "${file}" 2>/dev/null || echo "deb http://mirror.jmu.edu/pub/parrot/  stable-updates main contrib non-free" >> "${file}"
-grep -q 'deb-src .* stable-updates main contrib non-free' "${file}" 2>/dev/null || echo "deb-src http://mirror.jmu.edu/pub/parrot/  stable-updates main contrib non-free" >> "${file}"
+#grep -q 'deb .* stable-updates main contrib non-free' "${file}" 2>/dev/null || echo "deb http://mirror.jmu.edu/pub/parrot/  stable-updates main contrib non-free" >> "${file}"
+#grep -q 'deb-src .* stable-updates main contrib non-free' "${file}" 2>/dev/null || echo "deb-src http://mirror.jmu.edu/pub/parrot/  stable-updates main contrib non-free" >> "${file}"
 
 #--- Update
 apt-get -qq update
@@ -2194,13 +2194,6 @@ apt -y -qq install ncftp \
 (( STAGE++ )); echo -e "\n\n ${GREEN}[+]${RESET} (${STAGE}/${TOTAL}) Installing ${GREEN}PhantomJS${RESET} ~ Headless Browser"
 #_-
 PHANTOM_VERSION="phantomjs-2.1.1-linux-x86_64"
-ARCH=$(uname -m)
-
-if ! [ $ARCH = "x86_64" ]; then
-	$ARCH="i686"
-fi
-
-PHANTOM_JS="$PHANTOM_VERSION-linux-$ARCH"
 
 sudo apt-get update
 sudo apt-get install build-essential chrpath libssl-dev libxft-dev -y

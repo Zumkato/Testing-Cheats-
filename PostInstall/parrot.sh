@@ -2214,13 +2214,13 @@ apt-get -y -qq install p7zip-full || echo -e ' '${RED}'[!] Issue with apt-get'${
 
 
 ##### Install zip & unzip
-echo -e "\n ${GREEN}[+]${RESET} Installing ${GREEN}zip${RESET} & ${GREEN}unzip${RESET} ~ CLI file extractors"
+(( STAGE++ )); echo -e "\n\n ${GREEN}[+]${RESET} (${STAGE}/${TOTAL}) Installing ${GREEN}zip${RESET} & ${GREEN}unzip${RESET} ~ CLI file extractors"
 apt-get -y -qq install zip || echo -e ' '${RED}'[!] Issue with apt-get'${RESET}     # Compress
 apt-get -y -qq install unzip || echo -e ' '${RED}'[!] Issue with apt-get'${RESET}   # Decompress
 
 
 ##### Install file roller
- Installing ${GREEN}file roller${RESET} ~ GUI file extractor"
+(( STAGE++ )); echo -e "\n\n ${GREEN}[+]${RESET} (${STAGE}/${TOTAL})Installing ${GREEN}file roller${RESET} ~ GUI file extractor"
 apt-get -y -qq install file-roller || echo -e ' '${RED}'[!] Issue with apt-get'${RESET}                                            # GUI program
 apt-get -y -qq install unace unrar rar unzip zip p7zip p7zip-full p7zip-rar || echo -e ' '${RED}'[!] Issue with apt-get'${RESET}   # Supported file compressions types
 

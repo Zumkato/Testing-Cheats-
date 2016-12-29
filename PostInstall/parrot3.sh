@@ -223,8 +223,8 @@ sleep 2s
 file=/etc/apt/sources.list; [ -e "${file}" ] && cp -n $file{,.bkup}
 ([[ -e "${file}" && "$(tail -c 1 ${file})" != "" ]]) && echo >> "${file}"
 #--- ParrotSec
-#grep -q 'deb .* parrot main contrib non-free' "${file}" 2>/dev/null || echo "deb http://mirror.jmu.edu/pub/parrot/  parrot main contrib non-free" >> "${file}"
-#grep -q 'deb-src .* parrot main contrib non-free' "${file}" 2>/dev/null || echo "deb-src http://mirror.jmu.edu/pub/parrot/  parrot main contrib non-free" >> "${file}"
+grep -q 'deb .* parrot main contrib non-free' "${file}" 2>/dev/null || echo "deb http://mirror.jmu.edu/pub/parrot/  parrot main contrib non-free" >> "${file}"
+grep -q 'deb-src .* parrot main contrib non-free' "${file}" 2>/dev/null || echo "deb-src http://mirror.jmu.edu/pub/parrot/  parrot main contrib non-free" >> "${file}"
 #--- Stable-security
 #grep -q 'deb .* stable-security main contrib non-free' "${file}" 2>/dev/null || echo "deb http://mirror.jmu.edu/pub/parrot/  stable-security main contrib non-free" >> "${file}"
 #grep -q 'deb-src .* stable-security main contrib non-free' "${file}" 2>/dev/null || echo "deb-src http://mirror.jmu.edu/pub/parrot/  stable-security main contrib non-free" >> "${file}"

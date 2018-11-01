@@ -1,6 +1,6 @@
 #!/bin/bash
 #-Metadata----------------------------------------------------#
-#  Filename: parrot3.sh                   (Update: 2016-20-03) #
+#  Filename: parrot4.sh                  (Update: 2018-31-11) #
 #-Info--------------------------------------------------------#
 #  Personal post-install script for Parrot Security OS        #
 #-Author(s)---------------------------------------------------#
@@ -39,10 +39,10 @@
 
 if [ 1 -eq 0 ]; then    # This is never true, thus it acts as block comments ;)
 ### One liner - Grab the latest version and execute! ###########################
-wget -qO parrot.sh https://raw.githubusercontent.com/Zumkato/Testing-Cheats-/master/PostInstall/parrot3.sh && bash parrot.sh -dns -full -openvas
+wget -qO parrot.sh https://raw.githubusercontent.com/Zumkato/Testing-Cheats-/master/PostInstall/parrot4.sh && bash parrot.sh -dns -full -openvas
 ################################################################################
 ## Shorten URL: >->->   wget -qO- https://goo.gl/MdG1fG | bash   <-<-<
-##  Alt Method: curl -s -L -k https://raw.githubusercontent.com/Zumkato/Testing-Cheats-/master/PostInstall/parrot3.sh > parrot.sh | nohup bash
+##  Alt Method: curl -s -L -k https://raw.githubusercontent.com/Zumkato/Testing-Cheats-/master/PostInstall/parrot4.sh > parrot.sh | nohup bash
 ################################################################################
 fi
 

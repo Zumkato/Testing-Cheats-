@@ -449,66 +449,6 @@ sed -i 's/^GRUB_TIMEOUT=.*/GRUB_TIMEOUT='${grubTimeout}'/' "${file}"            
 sed -i 's/^GRUB_CMDLINE_LINUX_DEFAULT=.*/GRUB_CMDLINE_LINUX_DEFAULT=""/' "${file}"   # TTY resolution    #GRUB_CMDLINE_LINUX_DEFAULT="vga=0x0318 quiet"   (crashes VM/vmwgfx)   (See Cosmetics)
 update-grub
 
-###### Disable login manager (console login - non GUI) ***
-(( STAGE++ )); echo -e "\n\n ${GREEN}[+]${RESET} (${STAGE}/${TOTAL}) ${GREEN}Disabling GUI${RESET} login screen"
-#--- Disable GUI login screen
-systemctl set-default multi-user.target   # ...or: file=/etc/X11/default-display-manager; [ -e "${file}" ] && cp -n $file{,.bkup} ; echo /bin/true > "${file}"   # ...or: mv -f /etc/rc2.d/S19gdm3 /etc/rc2.d/K17gdm   # ...or: apt-get -y -qq install chkconfig; chkconfig gdm3 off
-if [[ $(dmidecode | grep -i virtual) ]]; then
-  ###### Configure login screen
-  (( STAGE++ )); echo -e "\n\n ${GREEN}[+]${RESET} (${STAGE}/${TOTAL}) Configuring ${GREEN}login screen${RESET}"
-  #--- Enable auto (gui) login
-  file=/etc/gdm3/daemon.conf; [ -e "${file}" ] && cp -n $file{,.bkup}
-  sed -i 's/^.*AutomaticLoginEnable = .*/AutomaticLoginEnable = true/' "${file}"
-  sed -i 's/^.*AutomaticLogin = .*/AutomaticLogin = root/' "${file}"
-fi
-
-file=/usr/local/bin/mac-rand; [ -e "${file}" ] && cp -n $file{,.bkup}
-cat <<EOF > "${file}" || echo -e ' '${RED}'[!] Issue with writing file'${RESET} 1>&2
-#!/bin/bash
-for INT in eth0 wlan0; do
-  echo "[i] Randomizing: \${INT}"
-  ifconfig \${INT} down
-  macchanger -r \${INT} && sleep 3s
-  ifconfig \${INT} up
-  echo "--------------------"
-done
-exit 0
-EOF
-chmod -f 0500 "${file}"
-rm -f /etc/network/if-pre-up.d/macchanger
-
-
-if [[ $(which gnome-shell) ]]; then
-  ##### Configure GNOME 3
-  (( STAGE++ )); echo -e "\n\n ${GREEN}[+]${RESET} (${STAGE}/${TOTAL}) Configuring ${GREEN}GNOME 3${RESET} ~ desktop environment"
-  export DISPLAY=:0.0
-  #-- Gnome Extension - Dash Dock (the toolbar with all the icons)
-  gsettings set org.gnome.shell.extensions.dash-to-dock extend-height true      # Set dock to use the full height
-  gsettings set org.gnome.shell.extensions.dash-to-dock dock-position 'RIGHT'   # Set dock to the right
-  gsettings set org.gnome.shell.extensions.dash-to-dock dock-fixed true         # Set dock to be always visible
-  gsettings set org.gnome.shell favorite-apps \
-    "['gnome-terminal.desktop', 'org.gnome.Nautilus.desktop', 'wireshark.desktop', 'firefox.desktop', 'burpsuite.desktop', 'msfconsole.desktop', 'gedit.desktop']"
-  #-- Gnome Extension - Alternate-tab (So it doesn't group the same windows up)
-  GNOME_EXTENSIONS=$(gsettings get org.gnome.shell enabled-extensions | sed 's_^.\(.*\).$_\1_')
-  echo "${GNOME_EXTENSIONS}" | grep -q "alternate-tab@gnome-shell-extensions.gcampax.github.com" \
-    || gsettings set org.gnome.shell enabled-extensions "[${GNOME_EXTENSIONS}, 'alternate-tab@gnome-shell-extensions.gcampax.github.com']"
-  #-- Gnome Extension - Drive Menu (Show USB devices in tray)
-  GNOME_EXTENSIONS=$(gsettings get org.gnome.shell enabled-extensions | sed 's_^.\(.*\).$_\1_')
-  echo "${GNOME_EXTENSIONS}" | grep -q "drive-menu@gnome-shell-extensions.gcampax.github.com" \
-    || gsettings set org.gnome.shell enabled-extensions "[${GNOME_EXTENSIONS}, 'drive-menu@gnome-shell-extensions.gcampax.github.com']"
-  #--- Workspaces
-  gsettings set org.gnome.shell.overrides dynamic-workspaces false                         # Static
-  gsettings set org.gnome.desktop.wm.preferences num-workspaces 5                          # Increase workspaces count to 5
-  #--- Top bar
-  gsettings set org.gnome.desktop.interface clock-show-date true                           # Show date next to time in the top tool bar
-  #--- Keyboard short-cuts
-  (dmidecode | grep -iq virtual) && gsettings set org.gnome.mutter overlay-key "Super_R"   # Change 'super' key to right side (rather than left key), if in a VM
-  #--- Hide desktop icon
-  dconf write /org/gnome/nautilus/desktop/computer-icon-visible false
-else
-  echo -e "\n\n ${YELLOW}[i]${RESET} ${YELLOW}Skipping GNOME${RESET}..." 1>&2
-fi
-
 
 ##### Install XFCE4
 (( STAGE++ )); echo -e "\n\n ${GREEN}[+]${RESET} (${STAGE}/${TOTAL}) Installing ${GREEN}XFCE4${RESET}${RESET} ~ desktop environment"
@@ -684,7 +624,7 @@ xfconf-query -n -c xfce4-panel -p /plugins/plugin-19/miniature-view -t bool -s t
 xfconf-query -n -c xfce4-panel -p /plugins/plugin-19/rows -t int -s 1
 xfconf-query -n -c xfwm4 -p /general/workspace_count -t int -s 5
 #--- Theme options
-xfconf-query -n -c xsettings -p /Net/ThemeName -s "Kali-X"
+xfconf-query -n -c xsettings -p /Net/ThemeName -s "air"
 xfconf-query -n -c xsettings -p /Net/IconThemeName -s "Vibrancy-Kali"
 xfconf-query -n -c xsettings -p /Gtk/MenuImages -t bool -s true
 xfconf-query -n -c xfce4-panel -p /plugins/plugin-1/button-icon -t string -s "parrot-menu"
@@ -829,11 +769,13 @@ timeout 300 curl --progress -k -L -f "http://xfce-look.org/CONTENT/content-files
 tar -zxf /tmp/Shiki-Colors-Light-Menus.tar.gz -C ~/.themes/
 #xfconf-query -n -c xsettings -p /Net/ThemeName -s "Shiki-Colors-Light-Menus"
 #xfconf-query -n -c xsettings -p /Net/IconThemeName -s "Vibrancy-Kali-Dark"
+
 #--- axiom / axiomd (May 18 2010) XFCE4 theme
 timeout 300 curl --progress -k -L -f "http://xfce-look.org/CONTENT/content-files/90145-axiom.tar.gz" > /tmp/axiom.tar.gz || echo -e ' '${RED}'[!]'${RESET}" Issue downloading axiom.tar.gz" 1>&2    #***!!! hardcoded path!
 tar -zxf /tmp/axiom.tar.gz -C ~/.themes/
 xfconf-query -n -c xsettings -p /Net/ThemeName -s "axiomd"
 xfconf-query -n -c xsettings -p /Net/IconThemeName -s "Vibrancy-Kali-Dark"
+
 #--- Get new desktop wallpaper
 ##--Temp for wallpapers
 # timeout 300 curl --progress -k -L -f "" > /usr/share/wallpapers/*name.jpg || echo -e ' '${RED}'[!]'${RESET}" Issue downloading *name.jpg" 1>&2
@@ -1481,7 +1423,7 @@ own_window_transparent yes
 own_window_class conky-semi
 own_window_argb_visual yes   # GNOME & XFCE yes, KDE no
 #own_window_argb_visual no
-own_window_colour brown
+own_window_colour black
 own_window_hints undecorated,below,sticky,skip_taskbar,skip_pager
 double_buffer yes
 maximum_width 260
@@ -1809,15 +1751,6 @@ EOF
   #--- Add to panel (XFCE)
   ln -sf /usr/share/applications/atom.desktop ~/.config/xfce4/panel/launcher-8/textedit.desktop
 fi
-
-
-##### Install PyCharm
-(( STAGE++ )); echo -e "\n\n ${GREEN}[+]${RESET} (${STAGE}/${TOTAL}) Installing ${GREEN}PyCharm ${RESET} ~ Python IDE"
-wget -qO /tmp/pycharms.tar.gz "https://download.jetbrains.com/python/pycharm-community-2016.1.2.tar.gz" #Hard-coded
-tar -zxf /tmp/pycharms.tar.gz -C /tmp/
-mv -f /tmp/pycharm-*/ /usr/share/pycharms #Hard-coded
-ln -sf /usr/share/pycharms/bin/pycharm.sh /usr/local/bin/pycharms
-
 
 ##### Install wdiff
 (( STAGE++ )); echo -e "\n\n ${GREEN}[+]${RESET} (${STAGE}/${TOTAL}) Installing ${GREEN}wdiff${RESET} ~ Compares two files word by word"
@@ -2233,6 +2166,16 @@ for FILE in network-manager-openvpn network-manager-pptp network-manager-vpnc ne
 done
 
 
+##### Install CherryTree
+(( STAGE++ )); echo -e "\n\n ${GREEN}[+]${RESET} (${STAGE}/${TOTAL}) Installing ${GREEN}CherryTree${RESET} ~ note taker high"
+apt-get -y -qq install cherrytree || echo -e ' '${RED}'[!] Issue with apt-get'${RESET} 1>&2
+
+##### Install KeepNote
+(( STAGE++ )); echo -e "\n\n ${GREEN}[+]${RESET} (${STAGE}/${TOTAL}) Installing ${GREEN}KeepNote${RESET} ~ note taker high"
+apt-get -y -qq install apt-get install python python-gtk2 python-glade2 libgtk2.0-dev python-gnome2-extras aspell aspell-en aspell-XX || echo -e ' '${RED}'[!] Issue with apt-get'${RESET} 1>&2
+timeout 300 curl --progress -k -L -f "http://keepnote.org/download-test/keepnote_0.7.9-1_all.deb" > /tmp/keepnote_0.7.9-1_all.deb
+dpkg -i /tmp/keepnote_0.7.9-1_all.deb
+
 ##### Install hashid
 (( STAGE++ )); echo -e "\n\n ${GREEN}[+]${RESET} (${STAGE}/${TOTAL}) Installing ${GREEN}hashid${RESET} ~ identify hash types"
 apt-get -y -qq install hashid || echo -e ' '${RED}'[!] Issue with apt-get'${RESET} 1>&2
@@ -2272,20 +2215,6 @@ file=~/.bash_aliases; [ -e "${file}" ] && cp -n $file{,.bkup}   #/etc/bash.bash_
 grep -q '^## aircrack-ng' "${file}" 2>/dev/null || echo -e '## aircrack-ng\nalias aircrack-ng="aircrack-ng -z"\n' >> "${file}"
 grep -q '^## airodump-ng' "${file}" 2>/dev/null || echo -e '## airodump-ng \nalias airodump-ng="airodump-ng --manufacturer --wps --uptime"\n' >> "${file}"    # aircrack-ng 1.2 rc2
 
-
-##### Install reaver (Community Fork)
-(( STAGE++ )); echo -e "\n\n ${GREEN}[+]${RESET} (${STAGE}/${TOTAL}) Installing ${GREEN}reaver (community fork)${RESET} ~ WPS pin brute force + Pixie Attack"
-apt-get -y -qq install reaver pixiewps || echo -e ' '${RED}'[!] Issue with apt-get'${RESET} 1>&2
-
-
-##### Install bully
-(( STAGE++ )); echo -e "\n\n ${GREEN}[+]${RESET} (${STAGE}/${TOTAL}) Installing ${GREEN}bully${RESET} ~ WPS pin brute force"
-apt-get -y -qq install bully || echo -e ' '${RED}'[!] Issue with apt-get'${RESET} 1>&2
-
-
-##### Install wifite
-(( STAGE++ )); echo -e "\n\n ${GREEN}[+]${RESET} (${STAGE}/${TOTAL}) Installing ${GREEN}wifite${RESET} ~ automated Wi-Fi tool"
-apt-get -y -qq install wifite || echo -e ' '${RED}'[!] Issue with apt-get'${RESET} 1>&2
 
 
 ##### Install vulscan script for nmap
@@ -2376,8 +2305,6 @@ popd >/dev/null
 (( STAGE++ )); echo -e "\n\n ${GREEN}[+]${RESET} (${STAGE}/${TOTAL}) Installing ${GREEN}Babadook${RESET} ~ connection-less powershell backdoor"
 apt-get -y -qq install git || echo -e ' '${RED}'[!] Issue with apt-get'${RESET} 1>&2
 git clone -q https://github.com/jseidl/Babadook.git /opt/babadook-git/ || echo -e ' '${RED}'[!] Issue when git cloning'${RESET} 1>&2
-
-
 
 
 ##### Install pupy
@@ -2737,21 +2664,6 @@ unzip -q -o -d /usr/share/windows-binaries/pstools/ /tmp/pstools.zip
 unrar x -y /tmp/pshtoolkit.rar /usr/share/windows-binaries/ >/dev/null
 
 
-##### Install Python (Windows via WINE)
-(( STAGE++ )); echo -e "\n\n ${GREEN}[+]${RESET} (${STAGE}/${TOTAL}) Installing ${GREEN}Python (Windows)${RESET}"
-echo -n '[1/2]'; timeout 300 curl --progress -k -L -f "https://www.python.org/ftp/python/2.7.9/python-2.7.9.msi" > /tmp/python.msi \
-  || echo -e ' '${RED}'[!]'${RESET}" Issue downloading python.msi" 1>&2       #***!!! hardcoded path!
-echo -n '[2/2]'; timeout 300 curl --progress -k -L -f "http://sourceforge.net/projects/pywin32/files/pywin32/Build%20219/pywin32-219.win32-py2.7.exe/download" > /tmp/pywin32.exe \
-  || echo -e ' '${RED}'[!]'${RESET}" Issue downloading pywin32.exe" 1>&2      #***!!! hardcoded path!
-wine msiexec /i /tmp/python.msi /qb 2>&1 | grep -v 'If something goes wrong, please rerun with\|for more detailed debugging output'
-pushd /tmp/ >/dev/null
-rm -rf "PLATLIB/" "SCRIPTS/"
-unzip -q -o /tmp/pywin32.exe
-cp -rf PLATLIB/* ~/.wine/drive_c/Python27/Lib/site-packages/
-cp -rf SCRIPTS/* ~/.wine/drive_c/Python27/Scripts/
-rm -rf "PLATLIB/" "SCRIPTS/"
-popd >/dev/null
-
 ##### Install veil framework
 (( STAGE++ )); echo -e "\n\n ${GREEN}[+]${RESET} (${STAGE}/${TOTAL}) Installing ${GREEN}veil-evasion framework${RESET} ~ bypassing anti-virus"
 apt -y -qq install veil-evasion \
@@ -2888,13 +2800,6 @@ apt-file update
 (( STAGE++ )); echo -e "\n\n ${GREEN}[+]${RESET} (${STAGE}/${TOTAL}) Installing ${GREEN}apt-show-versions${RESET} ~ which package version in repo"
 apt-get -y -qq install apt-show-versions || echo -e ' '${RED}'[!] Issue with apt-get'${RESET} 1>&2
 
-##### Install Exploit-DB binaries
-(( STAGE++ )); echo -e "\n\n ${GREEN}[+]${RESET} (${STAGE}/${TOTAL}) Installing ${GREEN}Installing Exploit-DB binaries${RESET} ~ pre-compiled exploits"
-apt-get -y -qq install git || echo -e ' '${RED}'[!] Issue with apt-get'${RESET} 1>&2
-git clone -q https://github.com/offensive-security/exploit-database-bin-sploits.git/ /opt/exploitdb-bin-git/
-pushd /opt/exploitdb-bin-git/ >/dev/null
-git pull -q
-popd >/dev/null
 
 ##### Install Exploit-DB
 (( STAGE++ )); echo -e "\n\n ${GREEN}[+]${RESET} (${STAGE}/${TOTAL}) Installing ${GREEN}Installing Exploit-DB binaries${RESET} ~ pre-compiled exploits"

@@ -1,6 +1,6 @@
 #!/bin/bash
 #-Metadata----------------------------------------------------#
-#  Filename: parrot4.sh                  (Update: 2018-31-11) #
+#  Filename: parrot4.sh                  (Update: 2019-13-12) #
 #-Info--------------------------------------------------------#
 #  Personal post-install script for Parrot Security OS        #
 #-Author(s)---------------------------------------------------#
@@ -8,7 +8,7 @@
 #-Modder------------------------------------------------------#
 #  Zumkato ~ I_am@Zumkato.ninja                               #
 #-Operating System--------------------------------------------#
-#  Modded for: Parrot Security OS 3.*                         #
+#  Modded for: Parrot Security OS 4.*                         #
 #-Licence-----------------------------------------------------#
 #  MIT License ~ http://opensource.org/licenses/MIT           #
 

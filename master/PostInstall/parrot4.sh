@@ -865,7 +865,7 @@ gconftool-2 -t string -s /apps/gnome-terminal/profiles/Default/background_type t
 
 
 ##### Configure bash - all users
-(( STAGE++ )); echo -e "\n\n ${GREEN}[+]${RESET} (${STAGE}/${TOTAL}) Configuring ${GREEN}bash${RESET} ~ CLI shell"
+echo -e "\n  Configuring ${GREEN}bash ~ CLI shell"
 file=/etc/bash.bashrc; [ -e "${file}" ] && cp -n $file{,.bkup}   #~/.bashrc
 grep -q "cdspell" "${file}" || echo "shopt -sq cdspell" >> "${file}"             # Spell check 'cd' commands
 grep -q "checkwinsize" "${file}" || echo "shopt -sq checkwinsize" >> "${file}"   # Wrap lines correctly after resizing
@@ -875,9 +875,8 @@ grep -q "HISTFILESIZE" "${file}" || echo "HISTFILESIZE=10000" >> "${file}"      
 #--- Apply new configs
 if [[ "${SHELL}" == "/bin/zsh" ]]; then source ~/.zshrc else source "${file}"; fi
 
-
 ##### Install bash colour - all users
-(( STAGE++ )); echo -e "\n\n ${GREEN}[+]${RESET} (${STAGE}/${TOTAL}) Installing ${GREEN}bash colour${RESET} ~ colours shell output"
+echo -e "\n Installing bash colour ~ colours shell output"
 file=/etc/bash.bashrc; [ -e "${file}" ] && cp -n $file{,.bkup}   #~/.bashrc
 ([[ -e "${file}" && "$(tail -c 1 ${file})" != "" ]]) && echo >> "${file}"
 sed -i 's/.*force_color_prompt=.*/force_color_prompt=yes/' "${file}"
@@ -885,7 +884,7 @@ grep -q '^force_color_prompt' "${file}" 2>/dev/null || echo 'force_color_prompt=
 sed -i 's#PS1='"'"'.*'"'"'#PS1='"'"'${debian_chroot:+($debian_chroot)}\\[\\033\[01;31m\\]\\u@\\h\\\[\\033\[00m\\]:\\[\\033\[01;34m\\]\\w\\[\\033\[00m\\]\\$ '"'"'#' "${file}"
 grep -q "^export LS_OPTIONS='--color=auto'" "${file}" 2>/dev/null || echo "export LS_OPTIONS='--color=auto'" >> "${file}"
 grep -q '^eval "$(dircolors)"' "${file}" 2>/dev/null || echo 'eval "$(dircolors)"' >> "${file}"
-grep -q "^alias ls='ls $LS_OPTIONS'" "${file}" 2>/dev/null || echo "alias ls='ls $LS_OPTIONS'" >> "${file}"
+grep -q "^ls='ls $LS_OPTIONS'" "${file}" 2>/dev/null || echo "alias ls='ls $LS_OPTIONS'" >> "${file}"
 grep -q "^alias ll='ls $LS_OPTIONS -l'" "${file}" 2>/dev/null || echo "alias ll='ls $LS_OPTIONS -l'" >> "${file}"
 grep -q "^alias l='ls $LS_OPTIONS -lA'" "${file}" 2>/dev/null || echo "alias l='ls $LS_OPTIONS -lA'" >> "${file}"
 #--- All other users that are made afterwards
@@ -896,45 +895,8 @@ if [[ "${SHELL}" == "/bin/zsh" ]]; then source ~/.zshrc else source "${file}"; f
 
 
 ##### Install grc
-(( STAGE++ )); echo -e "\n\n ${GREEN}[+]${RESET} (${STAGE}/${TOTAL}) Installing ${GREEN}grc${RESET} ~ colours shell output"
+echo -e "\n ${GREEN}[+]${RESET} Installing ${GREEN}grc${RESET} ~ colours shell output"
 apt-get -y -qq install grc || echo -e ' '${RED}'[!] Issue with apt-get'${RESET} 1>&2
-#--- Setup aliases
-file=~/.bash_aliases; [ -e "${file}" ] && cp -n $file{,.bkup}   #/etc/bash.bash_aliases
-([[ -e "${file}" && "$(tail -c 1 ${file})" != "" ]]) && echo >> "${file}"
-grep -q '^## grc diff alias' "${file}" 2>/dev/null || echo -e "## grc diff alias\nalias diff='$(which grc) $(which diff)'\n" >> "${file}"
-grep -q '^## grc dig alias' "${file}" 2>/dev/null || echo -e "## grc dig alias\nalias dig='$(which grc) $(which dig)'\n" >> "${file}"
-grep -q '^## grc gcc alias' "${file}" 2>/dev/null || echo -e "## grc gcc alias\nalias gcc='$(which grc) $(which gcc)'\n" >> "${file}"
-grep -q '^## grc ifconfig alias' "${file}" 2>/dev/null || echo -e "## grc ifconfig alias\nalias ifconfig='$(which grc) $(which ifconfig)'\n" >> "${file}"
-grep -q '^## grc mount alias' "${file}" 2>/dev/null || echo -e "## grc mount alias\nalias mount='$(which grc) $(which mount)'\n" >> "${file}"
-#grep -q '^## grc mount alias' "${file}" 2>/dev/null || echo -e "## grc mount alias\nalias mount='$(which grc) $(which mount) | $(whereis column -t)'\n" >> "${file}"
-grep -q '^## grc netstat alias' "${file}" 2>/dev/null || echo -e "## grc netstat alias\nalias netstat='$(which grc) $(which netstat)'\n" >> "${file}"
-grep -q '^## grc ping alias' "${file}" 2>/dev/null || echo -e "## grc ping alias\nalias ping='$(which grc) $(which ping)'\n" >> "${file}"
-grep -q '^## grc ps alias' "${file}" 2>/dev/null || echo -e "## grc ps alias\nalias ps='$(which grc) $(which ps)'\n" >> "${file}"
-grep -q '^## grc tail alias' "${file}" 2>/dev/null || echo -e "## grc tail alias\nalias tail='$(which grc) $(which tail)'\n" >> "${file}"
-grep -q '^## grc traceroute alias' "${file}" 2>/dev/null || echo -e "## grc traceroute alias\nalias traceroute='$(which grc) $(which traceroute)'\n" >> "${file}"
-grep -q '^## grc wdiff alias' "${file}" 2>/dev/null || echo -e "## grc wdiff alias\nalias wdiff='$(which grc) $(which wdiff)'\n" >> "${file}"
-#configure  #esperanto  #ldap  #e  #cvs  #log  #mtr  #ls  #irclog  #mount2
-#--- Apply new aliases
-if [[ "${SHELL}" == "/bin/zsh" ]]; then source ~/.zshrc else source "${file}"; fi
-
-
-##### Install bash completion - all users
-(( STAGE++ )); echo -e "\n\n ${GREEN}[+]${RESET} (${STAGE}/${TOTAL}) Installing ${GREEN}bash completion${RESET} ~ tab complete CLI commands"
-apt-get -y -qq install bash-completion || echo -e ' '${RED}'[!] Issue with apt-get'${RESET} 1>&2
-file=/etc/bash.bashrc; [ -e "${file}" ] && cp -n $file{,.bkup}   #~/.bashrc
-sed -i '/# enable bash completion in/,+7{/enable bash completion/!s/^#//}' "${file}"
-#--- Apply new configs
-if [[ "${SHELL}" == "/bin/zsh" ]]; then source ~/.zshrc else source "${file}"; fi
-
-
-##### Configure aliases - root user
-(( STAGE++ )); echo -e "\n\n ${GREEN}[+]${RESET} (${STAGE}/${TOTAL}) Configuring ${GREEN}aliases${RESET} ~ CLI shortcuts"
-#--- Enable defaults - root user
-for FILE in /etc/bash.bashrc ~/.bashrc ~/.bash_aliases; do    #/etc/profile /etc/bashrc /etc/bash_aliases /etc/bash.bash_aliases
-  [[ ! -f "${FILE}" ]] && continue
-  cp -n $FILE{,.bkup}
-  sed -i 's/#alias/alias/g' "${FILE}"
-done
 #--- General system ones
 file=~/.bash_aliases; [ -e "${file}" ] && cp -n $file{,.bkup}   #/etc/bash.bash_aliases
 ([[ -e "${file}" && "$(tail -c 1 ${file})" != "" ]]) && echo >> "${file}"
@@ -946,9 +908,14 @@ grep -q '^alias tmux' "${file}" 2>/dev/null || echo -e '## tmux\nalias tmux="tmu
 grep -q '^alias axel' "${file}" 2>/dev/null || echo -e '## axel\nalias axel="axel -a"\n' >> "${file}"
 grep -q '^alias screen' "${file}" 2>/dev/null || echo -e '## screen\nalias screen="screen -xRR"\n' >> "${file}"
 #--- Add in ours (shortcuts)
+grep -q '^## nmap scripts' "${file}" 2>/dev/null || echo -e '## nmap scripts\nalias nse="ls /usr/share/nmap/scripts | grep"\n' >> "${file}"
 grep -q '^## Checksums' "${file}" 2>/dev/null || echo -e '## Checksums\nalias sha1="openssl sha1"\nalias md5="openssl md5"\n' >> "${file}"
-grep -q '^## Force create folders' "${file}" 2>/dev/null || echo -e '## Force create folders\nalias mkdir="/bin/mkdir -pv"\n' >> "${file}"
-#grep -q '^## Mount' "${file}" 2>/dev/null || echo -e '## Mount\nalias mount="mount | column -t"\n' >> "${file}"
+grep -q '^## python web server' "${file}" 2>/dev/null || echo -e '## python web server\nalias pyweb="python -m SimpleHTTPServer 8000"\n' >> "${file}"
+grep -q '^## ping count 5' "${file}" 2>/dev/null || echo -e '## ping count 5\nalias check="ping -c 5"\n' >> "${file}"
+echo "making Lab directory"
+mkdir -pv ~/lab
+grep -q '^## cd lab' "${file}" 2>/dev/null || echo -e '## cd lab\nalias lab="cd ~/lab" \n' >> "${file}"
+grep -q '^## list file pref' "${file}" 2>/dev/null || echo -e '## list file pref\nalias lh="ls -lisAd .[^.]*" \n' >> "${file}"
 grep -q '^## List open ports' "${file}" 2>/dev/null || echo -e '## List open ports\nalias ports="netstat -tulanp"\n' >> "${file}"
 grep -q '^## Get header' "${file}" 2>/dev/null || echo -e '## Get header\nalias header="curl -I"\n' >> "${file}"
 grep -q '^## Get external IP address' "${file}" 2>/dev/null || echo -e '## Get external IP address\nalias ipx="curl -s http://ipinfo.io/ip"\n' >> "${file}"
@@ -959,17 +926,7 @@ grep -q '^## Directory navigation aliases' "${file}" 2>/dev/null || echo -e '## 
 grep -q '^## Extract file' "${file}" 2>/dev/null || echo -e '## Extract file, example. "ex package.tar.bz2"\nex() {\n  if [[ -f $1 ]]; then\n    case $1 in\n      *.tar.bz2)   tar xjf $1  ;;\n      *.tar.gz)  tar xzf $1  ;;\n      *.bz2)     bunzip2 $1  ;;\n      *.rar)     rar x $1  ;;\n      *.gz)    gunzip $1   ;;\n      *.tar)     tar xf $1   ;;\n      *.tbz2)    tar xjf $1  ;;\n      *.tgz)     tar xzf $1  ;;\n      *.zip)     unzip $1  ;;\n      *.Z)     uncompress $1  ;;\n      *.7z)    7z x $1   ;;\n      *)       echo $1 cannot be extracted ;;\n    esac\n  else\n    echo $1 is not a valid file\n  fi\n}\n' >> "${file}"
 grep -q '^## strings' "${file}" 2>/dev/null || echo -e '## strings\nalias strings="strings -a"\n' >> "${file}"
 grep -q '^## history' "${file}" 2>/dev/null || echo -e '## history\nalias hg="history | grep"\n' >> "${file}"
-grep -q '^## Network Services' "${file}" 2>/dev/null || echo -e '### Network Services\nalias listen="netstat -antp | grep LISTEN"\n' >> "${file}"
-grep -q '^## HDD size' "${file}" 2>/dev/null || echo -e '### HDD size\nalias hogs="for i in G M K; do du -ah | grep [0-9]$i | sort -nr -k 1; done | head -n 11"\n' >> "${file}"
-grep -q '^## Listing' "${file}" 2>/dev/null || echo -e '### Listing\nalias ll="ls -l --block-size=1 --color=auto"\n' >> "${file}"
 grep -q '^## Add more aliases' "${file}" 2>/dev/null || echo -e '## Add more aliases\nalias upd="sudo apt-get update"\nalias upg="sudo apt-get upgrade"\nalias ins="sudo apt-get install"\nalias rem="sudo apt-get purge"\nalias fix="sudo apt-get install -f"\n' >> "${file}"
-grep -q '^## show listening ports' "${file}" 2>/dev/null ||echo -e '## show listening ports\nalias listen="lsof -i TCP -n -P | grep LISTEN"\n'>> "${file}"
-grep -q '^## list with filetype' "${file}" 2>/dev/null ||echo -e '## list with filetype\nalias lf="ls -CashF"\n'>> "${file}"
-grep -q '^## find all' "${file}" 2>/dev/null ||echo -e '## find all\nalias ff="find / -type f -name"\n'>> "${file}"
-grep -q '^## find here' "${file}" 2>/dev/null ||echo -e '## find here\nalias f.="find . -type f -name"\n'>> "${file}"
-grep -q '^## update and upgrade' "${file}" 2>/dev/null ||echo -e '## update and upgrade\nalias update="apt-get update && apt-get upgrade"\n'>> "${file}"
-grep -q '^## process in nice output' "${file}" 2>/dev/null ||echo -e '## process in nice output\nalias psg="ps aux | grep -v grep | grep -i -e VSZ -e"\n'>> "${file}"
-#grep -q '^## Command History' "${file}" 2>/dev/null ||echo -e '## Command History\nalias clc="history | awk '{CMD[$2]++;count++;}END { for (a in CMD)print CMD[a] " " CMD[a]/count*100 "% " a;}' | grep -v "./" | column -c3 -s " " -t | sort -nr | nl |  head -n10 "/' >> "${file}"
 #alias ll="ls -l --block-size=\'1 --color=auto"
 #--- Add in tools
 grep -q '^## nmap' "${file}" 2>/dev/null || echo -e '## nmap\nalias nmap="nmap --reason --open"\n' >> "${file}"
@@ -977,11 +934,8 @@ grep -q '^## aircrack-ng' "${file}" 2>/dev/null || echo -e '## aircrack-ng\nalia
 grep -q '^## airodump-ng' "${file}" 2>/dev/null || echo -e '## airodump-ng \nalias airodump-ng="airodump-ng --manufacturer --wps --uptime"\n' >> "${file}"    # aircrack-ng 1.2 rc2
 grep -q '^## metasploit' "${file}" 2>/dev/null || echo -e '## metasploit\nalias msfc="systemctl start postgresql; msfdb start; msfconsole -q \"$@\""\nalias msfconsole="systemctl start postgresql; msfdb start; msfconsole \"$@\""\n' >> "${file}"
 [ "${openVAS}" != "false" ] && grep -q '^## openvas' "${file}" 2>/dev/null || echo -e '## openvas\nalias openvas="openvas-stop; openvas-start; sleep 3s; xdg-open https://127.0.0.1:9392/ >/dev/null 2>&1"\n' >> "${file}"
-grep -q '^## mana-toolkit' "${file}" 2>/dev/null || echo -e '## mana-toolkit\nalias mana-toolkit-start="a2ensite 000-mana-toolkit;a2dissite 000-default;systemctl apache2 restart"\n\nalias mana-toolkit-stop="a2dissite 000-mana-toolkit;a2ensite 000-default;systemctl apache2 restart"\n' >> "${file}"
-grep -q '^## samba' "${file}" 2>/dev/null || echo -e '## samba\nalias smb-start="systemctl restart smbd nmbd"\nalias smb-stop="systemctl stop smbd nmbd"\n' >> "${file}"
-grep -q '^## rdesktop' "${file}" 2>/dev/null || echo -e '## rdesktop\nalias rdesktop="rdesktop -z -P -g 90% -r disk:local=\"/tmp/\""\n' >> "${file}"
 grep -q '^## ssh' "${file}" 2>/dev/null || echo -e '## ssh\nalias ssh-start="systemctl restart ssh"\nalias ssh-stop="systemctl stop ssh"\n' >> "${file}"
-#airmon-vz --verbose
+
 #--- Add in folders
 grep -q '^## www' "${file}" 2>/dev/null || echo -e '## www\nalias wwwroot="cd /var/www/html/"\n#alias www="cd /var/www/html/"\n' >> "${file}"       # systemctl apache2 start
 grep -q '^## ftp' "${file}" 2>/dev/null || echo -e '## ftp\nalias ftproot="cd /var/ftp/"\n' >> "${file}"                                            # systemctl pure-ftpd start
@@ -992,7 +946,7 @@ grep -q '^## edb' "${file}" 2>/dev/null || echo -e '## edb\nalias edb="cd /usr/s
 grep -q '^## wordlist' "${file}" 2>/dev/null || echo -e '## wordlist\nalias wordlist="cd /usr/share/wordlists/"\nalias wordls="cd /usr/share/wordlists/"\n' >> "${file}"
 #--- Apply new aliases
 if [[ "${SHELL}" == "/bin/zsh" ]]; then source ~/.zshrc else source "${file}"; fi
-source "${file}" || source ~/.zshrc
+#--- Check
 #--- Check
 #alias
 

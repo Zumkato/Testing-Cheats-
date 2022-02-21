@@ -56,9 +56,6 @@ if ! zplug check --verbose; then
 fi
 zplug load --verbose
 
-#source $HOME/.oh-my-zsh.sh
-#source /init.zsh 
-source $ZPLUG_HOME/init.zsh
 
 source $HOME/.bash_aliases
 #if ([[ -z "$TMUX" && -n "$SSH_CONNECTION" ]]); then /usr/bin/tmux attach || /usr/bin/tmux new; fi

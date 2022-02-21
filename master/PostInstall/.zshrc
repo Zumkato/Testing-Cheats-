@@ -1,5 +1,5 @@
 # Greeting
-echo "Hi Zumkato, Welcome to Parrot OS"
+echo "Hi Zumkato, Welcome to Parrot OS Hack All The Things!"
 
 # Prompt
 PROMPT="%F{red}┌[%f%F{cyan}%m%f%F{red}]─[%f%F{yellow}%D{%H:%M-%d/%m}%f%F{red}]─[%f%F{magenta}%d%f%F{red}]%f"$'\n'"%F{red}└╼%f%F{green}$USER%f%F{yellow}$%f"
@@ -13,30 +13,7 @@ alias vdir='vdir --color=auto'
 alias grep='grep --color=auto'
 alias fgrep='fgrep --color=auto'
 alias egrep='egrep --color=auto'
-#####################################################
-# Auto completion / suggestion
-# Mixing zsh-autocomplete and zsh-autosuggestions
-# Requires: zsh-autocomplete (custom packaging by Parrot Team)
-# Jobs: suggest files / foldername / histsory bellow the prompt
-# Requires: zsh-autosuggestions (packaging by Debian Team)
-# Jobs: Fish-like suggestion for command history
-source /usr/share/zsh-autosuggestions/zsh-autosuggestions.zsh
-source /usr/share/zsh-autocomplete/zsh-autocomplete.plugin.zsh
-# Select all suggestion instead of top on result only
-zstyle ':autocomplete:tab:*' insert-unambiguous yes
-zstyle ':autocomplete:tab:*' widget-style menu-select
-zstyle ':autocomplete:*' min-input 2
-bindkey $key[Up] up-line-or-history
-bindkey $key[Down] down-line-or-history
-#bindkey "^[[A" history-beginning-search-backward-end
-#bindkey "^[[B" history-beginning-search-forward-end
-#zle -N history-beginning-search-forward-end history-search-end
-#zle -N history-beginning-search-backward-end history-search-end
-#eval bindkey '^r' zaw-history
-##################################################
-# Fish like syntax highlighting
-# Requires "zsh-syntax-highlighting" from apt
-source /usr/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
+
 
 # Save type history for completion and easier life
 HISTFILE=~/.zsh_history
@@ -48,8 +25,8 @@ setopt appendhistory
 # require install package "time" sudo apt install time
 # alias time="/usr/bin/time -f '\t%E real,\t%U user,\t%S sys,\t%K amem,\t%M mmem'"
 # Display last command interminal
-echo -en "\e]2;Parrot Terminal\a"
-preexec () { print -Pn "\e]0;$1 - Parrot Terminal\a" }
+echo -en "\e]2;Matrix Terminal\a"
+preexec () { print -Pn "\e]0;$1 - Matrix Terminal\a" }
 
 setopt interactivecomments
 setopt ignoreeof
@@ -57,8 +34,33 @@ setopt correctall
 setopt globdots
 setopt auto_cd
 
+if [[ ! -d ~/.zplug ]];then
+  git clone https://github.com/zplug/zplug ~/.zplug
+fi
+source ~/.zplug/init.zsh
+zplug "plugins/git", from:oh-my-zsh
+zplug "plugins/git", from:oh-my-zsh
+zplug "plugins/dotenv", from:oh-my-zsh
+zplug "plugins/sudo", from:oh-my-zsh
+zplug "plugins/osx", from:oh-my-zsh
+zplug "plugins/command-not-found", from:oh-my-zsh
+zplug "zsh-users/zsh-syntax-highlighting"
+zplug "zsh-users/zsh-history-substring-search"
+zplug "zsh-users/zsh-autosuggestions"
+zplug "zsh-users/zsh-completions"
+if ! zplug check --verbose; then
+    printf "Install? [y/N]: "
+    if read -q; then
+        echo; zplug install
+    fi
+fi
+zplug load --verbose
+
+#source $HOME/.oh-my-zsh.sh
+#source /init.zsh 
+source $ZPLUG_HOME/init.zsh
+
 source $HOME/.bash_aliases
 #if ([[ -z "$TMUX" && -n "$SSH_CONNECTION" ]]); then /usr/bin/tmux attach || /usr/bin/tmux new; fi
 MSF_DATABASE_CONFIG=/usr/share/metasploit-framework/config/database.yml
 
-source /opt/zaw/zaw.zsh
